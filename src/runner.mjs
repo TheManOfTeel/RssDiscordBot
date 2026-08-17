@@ -82,7 +82,7 @@ function buildEmbed(item, feed) {
   return {
     title: item.title || '(untitled)',
     url: item.link || undefined,
-    description: feed.descriptionChars > 0 ? clip(item.summary, feed.descriptionChars) : undefined,
+    description: feed.showDescription && feed.descriptionChars > 0 ? clip(item.summary, feed.descriptionChars) : undefined,
     timestamp: item.isoDate,
     color: feed.color,
     author: feed.showAuthor && item.author ? { name: item.author } : undefined,
