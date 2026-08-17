@@ -261,15 +261,11 @@ export function stripHtml(html) {
       .replace(/([(\[{«]) +/g, '$1')
       .trim();
 
-  const withLinks = String(html)
+  const withoutLinks = String(html)
     .replace(/<script[\s\S]*?<\/script\s*>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style\s*>/gi, ' ')
     .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<a\b[^>]*href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>([\s\S]*?)<\/a\s*>/gi, (_, dq, sq, bare, inner) => {
-      const href = (dq ?? sq ?? bare ?? '').trim();
-      const text = asText(inner.replace(/<[^<>]+>/g, ' '));
-      return href && text ? `[${text}](${href})` : text || '';
-    })
+    .replace(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi, (_, inner) => asText(inner.replace(/<[^<>]+>/g, ' ')))
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(p|div|li|h[1-6]|tr|blockquote)\s*>/gi, '\n\n')
     .replace(/<li[^>]*>/gi, '• ')
@@ -277,5 +273,5 @@ export function stripHtml(html) {
     .replace(/<\/?(abbr|b|cite|code|del|em|font|i|ins|kbd|mark|q|s|small|span|strong|sub|sup|time|u|var)\b[^<>]*>/gi, '')
     .replace(/<[^<>]*>/g, ' ');
 
-  return asText(withLinks);
+  return asText(withoutLinks);
 }

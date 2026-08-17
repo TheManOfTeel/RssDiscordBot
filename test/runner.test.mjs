@@ -104,6 +104,21 @@ test('the second run posts only what is new, oldest first', async () => {
   assert.equal(posted.length, 1, 'a third run with no changes posts nothing');
 });
 
+test('feed-level description toggle suppresses the body text while keeping the title link', async () => {
+  const file = await writeConfig({ feeds: [{ id: 'f', url: FEED_URL, showDescription: false, filters: { include: ['typescript'] } }] });
+  routes[FEED_URL] = { body: rss([{ ...ITEM_A, desc: 'A longer body that should be hidden' }]) };
+
+  assert.equal(await run(file), 0, 'first run seeds state and posts nothing');
+
+  routes[FEED_URL] = { body: rss([{ ...ITEM_B, desc: 'A longer body that should be hidden' }]) };
+  assert.equal(await run(file), 0, 'second run posts the change set');
+
+  assert.equal(posted.length, 1, 'only the new item is posted');
+  assert.equal(posted[0].title, 'Beta about TypeScript');
+  assert.equal(posted[0].url, 'https://example.com/b');
+  assert.equal(posted[0].description, undefined, 'body text disabled via config should not ship in the embed');
+});
+
 test('304 Not Modified short-circuits the run', async () => {
   const file = await writeConfig({ feeds: [{ id: 'f', url: FEED_URL }] });
   routes[FEED_URL] = { body: rss([ITEM_A]), headers: { etag: 'W/"v1"' } };
