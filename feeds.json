@@ -58,6 +58,7 @@
       "color": "#34c759",
       "maxPerRun": 15,
       "descriptionChars": 300,
+      "showImage": true,
       "filters": {
         "fields": ["title"],
         "exclude": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b"]
@@ -78,6 +79,7 @@
       "color": "#ff9f0a",
       "maxPerRun": 20,
       "descriptionChars": 300,
+      "showImage": true,
       "filters": {
         "fields": ["title"],
         "include": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b"]
