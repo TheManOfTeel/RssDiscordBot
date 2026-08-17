@@ -1,0 +1,121 @@
+name: rss-to-discord
+
+on:
+  schedule:
+    # Weighted to when Apple actually publishes, to keep the Actions bill down: a flat
+    # `7,37 * * * *` is ~1,460 runs/month, and every run bills a full minute even though it
+    # takes ~25s. This is ~690 for the same 30-minute latency in the window that matters.
+    #
+    # Deliberately off the hour: GitHub's scheduler is best-effort and the :00 slot is the
+    # most congested, which is where runs get delayed the longest or dropped outright.
+    #
+    # UTC, and cron does not follow DST — this window has an hour of slack on each side so
+    # it still covers Cupertino business hours in both PST and PDT. The hour lists must not
+    # overlap: two entries firing the same minute queue behind the concurrency group below
+    # and each still bill a minute.
+    - cron: '7,37 13-22 * * 1-5' # weekdays ~06:00-15:00 PT: every 30 min
+    - cron: '7 1,3,5,7,9,11,23 * * 1-5' # rest of the weekday: every 2 hours
+    - cron: '7 1,3,5,7,9,11,13,15,17,19,21,23 * * 6,0' # weekends: every 2 hours
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Fetch and filter but post nothing'
+        type: boolean
+        default: false
+      seed:
+        description: 'Re-seed state (record current ids, post nothing)'
+        type: boolean
+        default: false
+      only:
+        description: 'Comma-separated feed ids (blank = all)'
+        type: string
+        default: ''
+
+permissions:
+  # Deliberately read, not write: the state commit pushes with the App installation token
+  # stored by checkout, so GITHUB_TOKEN needs no write scope. Keeping it read means a
+  # compromised step can't push with the ambient token, and it makes accidental removal of
+  # the app-token step fail loudly rather than silently reverting to github-actions[bot].
+  contents: read
+
+concurrency:
+  group: rss-to-discord
+  cancel-in-progress: false # never let two runs race the state files
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Mints a 1-hour installation token for the state-commit App. MUST run before checkout:
+      # checkout stores whatever token it is handed into .git/config as an auth extraheader,
+      # and the "Persist state" step's bare `git push` silently reuses that stored credential.
+      # The default (GITHUB_TOKEN) pushes as github-actions[bot], which cannot be named in a
+      # ruleset bypass list. An App installation can, so a protected default branch can let
+      # exactly this bot through and nobody else.
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          # No dependency install step: this project has zero dependencies on purpose.
+
+      - name: Poll feeds
+        env:
+          # One secret per target channel. Every webhookEnv named in feeds.json must be
+          # listed here — secrets are NOT injected automatically.
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_WEBHOOK_APPLE_NEWSROOM: ${{ secrets.DISCORD_WEBHOOK_APPLE_NEWSROOM }}
+          DISCORD_WEBHOOK_APPLE_DEV_NEWS: ${{ secrets.DISCORD_WEBHOOK_APPLE_DEV_NEWS }}
+          DISCORD_WEBHOOK_APPLE_RELEASES: ${{ secrets.DISCORD_WEBHOOK_APPLE_RELEASES }}
+          DISCORD_WEBHOOK_APPLE_RELEASES_BETA: ${{ secrets.DISCORD_WEBHOOK_APPLE_RELEASES_BETA }}
+          # Via env, not interpolated into the script: a ${{ inputs.only }} inside `run:`
+          # is a shell-injection hole for anyone who can dispatch the workflow.
+          DRY_RUN: ${{ inputs.dry_run }}
+          SEED: ${{ inputs.seed }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [ "${DRY_RUN:-}" = 'true' ]; then args+=(--dry-run); fi
+          if [ "${SEED:-}" = 'true' ]; then args+=(--seed); fi
+          if [ -n "${ONLY:-}" ]; then args+=(--only "$ONLY"); fi
+          node src/runner.mjs ${args[@]+"${args[@]}"}
+
+      - name: Persist state
+        # always(): if a feed failed, the state for the feeds that succeeded must still be
+        # committed, or their posts get re-sent on the next run.
+        # On a schedule event `inputs.dry_run` is null, so !null is true and this runs.
+        if: always() && !inputs.dry_run
+        run: |
+          set -euo pipefail
+          # Author is free-form and plays no part in authorization — the ruleset evaluates the
+          # pusher, which is the App installation whose token checkout stored. This address
+          # deliberately maps to no GitHub account: the previous 41898282+github-actions[bot]
+          # value would attribute commits to GitHub's own Actions bot, which is not what pushes.
+          git config user.name 'rss-bot'
+          git config user.email 'rss-bot@users.noreply.github.com'
+          git add state/
+          if git diff --quiet --cached; then
+            echo 'no state changes'
+            exit 0
+          fi
+          git commit -m 'chore(state): update feed cursors [skip ci]'
+          # Retry loop: a concurrent push (a human commit landing mid-run) must not fail the job.
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "push failed, rebasing (attempt $attempt)"
+            git pull --rebase --autostash
+          done
+          echo 'could not push state after 3 attempts' >&2
+          exit 1
