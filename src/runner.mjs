@@ -270,7 +270,10 @@ async function runFeed(feed, options, log) {
 
 async function writeGithubSummary(results) {
   const file = process.env.GITHUB_STEP_SUMMARY;
+  const githubEventName = process.env.GITHUB_EVENT_NAME;
   if (!file) return;
+  // Keep PR validation runs focused on tests; the feed summary is operational noise there.
+  if (githubEventName === 'pull_request' || githubEventName === 'pull_request_target' || process.env.GITHUB_HEAD_REF) return;
   const rows = results.map(
     (r) => `| ${r.id} | ${r.status} | ${r.fetched} | ${r.fresh} | ${r.filtered} | ${r.posted} | ${r.pinged} | ${r.skipped} | ${r.note.replace(/\|/g, '\\|').slice(0, 160)} |`
   );

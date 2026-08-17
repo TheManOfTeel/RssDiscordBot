@@ -250,25 +250,32 @@ export function findAllDeep(node, local, out = []) {
 /** Strip markup from a description/content blob and collapse it to readable plain text. */
 export function stripHtml(html) {
   if (!html) return '';
-  const withoutTags = String(html)
+
+  const asText = (value) =>
+    decodeEntities(value)
+      .replace(/\r\n?/g, '\n')
+      .replace(/[ \t ]+/g, ' ')
+      .replace(/ *\n */g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/ +([.,;:!?…%)\]}»])/g, '$1')
+      .replace(/([(\[{«]) +/g, '$1')
+      .trim();
+
+  const withLinks = String(html)
     .replace(/<script[\s\S]*?<\/script\s*>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style\s*>/gi, ' ')
     .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<a\b[^>]*href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>([\s\S]*?)<\/a\s*>/gi, (_, dq, sq, bare, inner) => {
+      const href = (dq ?? sq ?? bare ?? '').trim();
+      const text = asText(inner.replace(/<[^<>]+>/g, ' '));
+      return href && text ? `[${text}](${href})` : text || '';
+    })
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(p|div|li|h[1-6]|tr|blockquote)\s*>/gi, '\n\n')
     .replace(/<li[^>]*>/gi, '• ')
     // Inline formatting goes WITHOUT a space: "<b>out</b>." must not become "out .".
-    .replace(/<\/?(a|abbr|b|cite|code|del|em|font|i|ins|kbd|mark|q|s|small|span|strong|sub|sup|time|u|var)\b[^<>]*>/gi, '')
+    .replace(/<\/?(abbr|b|cite|code|del|em|font|i|ins|kbd|mark|q|s|small|span|strong|sub|sup|time|u|var)\b[^<>]*>/gi, '')
     .replace(/<[^<>]*>/g, ' ');
-  // Decode after stripping: feed descriptions are frequently double-escaped, so the
-  // XML pass produced markup and this pass produces the literal text under it.
-  return decodeEntities(withoutTags)
-    .replace(/\r\n?/g, '\n')
-    .replace(/[ \t ]+/g, ' ')
-    .replace(/ *\n */g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    // Safety net for inline tags outside the list above.
-    .replace(/ +([.,;:!?…%)\]}»])/g, '$1')
-    .replace(/([(\[{«]) +/g, '$1')
-    .trim();
+
+  return asText(withLinks);
 }

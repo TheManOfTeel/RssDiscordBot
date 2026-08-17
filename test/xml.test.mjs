@@ -75,5 +75,7 @@ test('stripHtml produces readable plain text and double-decodes', () => {
   assert.equal(stripHtml('<script>evil()</script>ok'), 'ok');
   // The XML pass decoded &amp;lt;b&amp;gt; to &lt;b&gt;; this pass yields the literal text.
   assert.equal(stripHtml('&lt;b&gt;bold&lt;/b&gt;'), '<b>bold</b>');
+  assert.equal(stripHtml('<a href="https://example.com/downloads">View downloads</a>'), '[View downloads](https://example.com/downloads)');
+  assert.equal(stripHtml('<p>Read the <a href="https://example.com/releases">View release notes</a>.</p>'), 'Read the [View release notes](https://example.com/releases).');
   assert.equal(stripHtml(''), '');
 });
