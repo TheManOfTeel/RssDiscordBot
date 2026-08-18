@@ -581,32 +581,43 @@ The bot detects corrupt state and resets it automatically, logging a warning. Th
 - **Conditional logic**: Global filters applied before per-feed filters (fail fast)
 - **GitHub Actions**: Runs in seconds (~2–10s per feed, depending on feed size)
 
-# Seed: mark current items seen, post nothing
-node src/runner.mjs --seed
+---
 
-# Run only specific feeds
-node src/runner.mjs --only example,other
-```
+## Secrets & GitHub App Token
 
-Secrets & push identity
-- Store webhook URLs as repository secrets referenced by webhookEnv.
-- The workflow commits state using a GitHub App token; create a GitHub App with Contents: Read & Write, generate a private key, install it on this repo, then add BOT_APP_ID and BOT_PRIVATE_KEY as repository secrets.
+The workflow commits state changes to the repo. To avoid being blocked by branch protections and to allow specific authorization of the bot:
 
-Tests
-- npm test (82 unit tests; no network required).
+1. **Create a GitHub App**:
+   - Go to Settings → Developer settings → GitHub Apps → New GitHub App
+   - Set permissions: `Contents` → Read & Write
+   - Install on this repository
+   - Generate a private key
 
-Files of interest
-- .github/workflows/rss-to-discord.yml — schedule, secret injection, state commit
-- feeds.json — feeds + filter config
-- state/<id>.json — per-feed cursor (seen ids, ETag)
-- src/runner.mjs — orchestration + CLI
-- src/{config,http,feed,xml,filter,discord,state}.mjs — core functionality
+2. **Store as Secrets**:
+   - Add `BOT_APP_ID` with the App ID value
+   - Add `BOT_PRIVATE_KEY` with the generated private key PEM content
 
-Operational notes
-- GitHub cron is best-effort; runs may be delayed.
-- Renaming a feed id creates a new state file and re-seeds.
-- Widening filters does not backfill; delete state/<id>.json to reprocess history.
-- Branch protections that block the bot will cause state commits to fail and duplicate postings.
+3. **Reference in Workflow**:
+   - The workflow uses `actions/create-github-app-token@v3` to mint a short-lived token
+   - This token is used for state commits instead of `GITHUB_TOKEN`, allowing it to bypass protected branch rules
 
-When to consider alternatives
-- If you need strict 1-minute scheduling or higher trigger reliability, run the code on another scheduler and swap the state backend (e.g., Cloudflare Workers + KV).
+See [.github/workflows/rss-to-discord.yml](.github/workflows/rss-to-discord.yml) for the full implementation.
+
+---
+
+## Operational Notes
+
+- **GitHub cron is best-effort**: Runs may be delayed during heavy load
+- **Renaming a feed id**: Creates a new state file and re-seeds the feed
+- **Widening filters**: Does not backfill old items; delete `state/<id>.json` to reprocess history
+- **Branch protections**: If branch rules block the bot, state commits will fail and cause duplicate postings on retry
+- **Concurrent runs**: The workflow uses `concurrency.cancel-in-progress: false` to serialize state updates and prevent races
+
+---
+
+## When to Consider Alternatives
+
+This bot is optimized for low operational overhead on GitHub Actions. Consider alternatives if you need:
+- **Strict 1-minute scheduling**: GitHub cron is best-effort; use another scheduler (cron server, Cloudflare Workers, AWS Lambda, etc.)
+- **Persistent external state**: If you need state to survive repo deletion, use a database or key-value store
+- **Complex multi-feed logic**: For advanced event routing and aggregation, consider a message queue or rules engine
