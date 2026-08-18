@@ -61,7 +61,7 @@
       "showDescription": false,
       "filters": {
         "fields": ["title"],
-        "exclude": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b"]
+        "exclude": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b", "^App Store Connect", "^Xcode", "^Testflight"]
       },
       "notify": [
         {
@@ -82,7 +82,8 @@
       "showDescription": false,
       "filters": {
         "fields": ["title"],
-        "include": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b"]
+        "include": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b"],
+        "exclude": ["^App Store Connect", "^Xcode", "^Testflight"]
       },
       "notify": [
         {
