@@ -1,4 +1,4 @@
-name: rss-to-discord
+name: RSS to Discord
 
 on:
   schedule:

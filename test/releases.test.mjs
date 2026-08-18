@@ -37,19 +37,16 @@ const PUBLIC = [
   'watchOS 26.1 (23R5000)',
   'tvOS 26.1 (23J5000)',
   'visionOS 26.1 (23N5000)',
-  'Xcode 26.1 (17B55)',
-  'TestFlight 3.9 for iOS',
+  'AirPods Pro (2nd generation) Firmware 8.1.1',
 ];
 
 const PRERELEASE = [
   'iOS 26.2 beta (23C5030d)',
   'iOS 26.2 beta 3 (23C5044f)',
   'macOS 26.2 beta 2 (25C5033e)',
-  'Xcode 26.2 Release Candidate (17C5020a)',
   'watchOS 26.2 RC (23S5040c)',
-  'Safari Technology Preview 214',
   'iOS 26.2 Public Beta',
-  'App Store Connect API 4.0 beta',
+  'AirPods Pro 26.2 beta (23C5030d)',
 ];
 
 test('every public release reaches the public stream only', () => {
