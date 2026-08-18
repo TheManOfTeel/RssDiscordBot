@@ -16,7 +16,7 @@
       "username": "Apple Newsroom",
       "color": "#333333",
       "maxPerRun": 5,
-      "descriptionChars": 500,
+      "descriptionChars": 4096,
       "showAuthor": false,
       "notify": [
         {
@@ -24,7 +24,7 @@
           "text": "New hardware:",
           "when": {
             "fields": ["title", "summary"],
-            "include": ["\\biphone\\b", "\\bmac(book)?\\b", "\\bipad\\b", "\\bvision pro\\b", "\\bapple watch\\b"]
+            "include": ["\\biphone\\b", "\\bmac(book)?\\b", "\\bipad\\b", "\\bvision pro\\b", "\\bapple watch\\b", "\\bairpods\\b", "\\bapple tv\\b", "\\bhomepod\\b"]
           }
         }
       ]
@@ -37,7 +37,7 @@
       "username": "Apple Dev News",
       "color": "#0071e3",
       "maxPerRun": 10,
-      "descriptionChars": 500,
+      "descriptionChars": 4096,
       "notify": [
         {
           "roles": ["1539012206782455868"],
