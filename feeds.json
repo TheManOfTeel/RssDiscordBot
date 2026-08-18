@@ -73,7 +73,7 @@
     },
     {
       "id": "apple-releases-beta",
-      "name": "Apple Releases — pre-release",
+      "name": "Apple Releases — Betas",
       "url": "https://developer.apple.com/news/releases/rss/releases.rss",
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES_BETA",
       "username": "Apple Releases (beta)",
@@ -88,7 +88,7 @@
       "notify": [
         {
           "roles": ["1539012420125593620"],
-          "text": "Pre-release:"
+          "text": "Beta release:"
         }
       ]
     }
