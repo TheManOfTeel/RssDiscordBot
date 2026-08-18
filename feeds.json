@@ -24,7 +24,7 @@
           "text": "New hardware:",
           "when": {
             "fields": ["title", "summary"],
-            "include": ["\\biphone\\b", "\\bmac(book)?\\b", "\\bipad\\b", "\\bvision pro\\b", "\\bapple watch\\b", "\\bairpods\\b", "\\bapple tv\\b", "\\bhomepod\\b"]
+            "include": ["\\biphone\\b", "\\bmac(book)?\\b", "\\bipad\\b", "\\bvision pro\\b", "\\bapple watch\\b", "\\bairpods\\b", "\\bapple tv\\b.*\\b(4k|device|hardware|box)\\b|\\b(4k|device|hardware|box)\\b.*\\bapple tv\\b", "\\bhomepod\\b"]
           }
         }
       ]
