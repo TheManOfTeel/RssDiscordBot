@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/08/apple-announces-changes-for-apps-in-the-european-union/",
     "https://www.apple.com/ca/newsroom/2026/08/apple-arcade-levels-up-with-block-blast-plus-and-art-of-fauna-cozy-puzzles-plus/",
     "https://www.apple.com/ca/newsroom/2026/08/apple-mlb-announce-september-friday-night-baseball-schedule/",
     "https://www.apple.com/ca/newsroom/2026/08/leagues-cup-kicks-off-tomorrow-august-4-on-apple-tv/",
@@ -24,7 +25,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/mini-football-legends-family-feud-pocket-and-seven-more-hits-join-apple-arcade/"
   ],
   "etag": null,
-  "lastModified": "Tue, 11 Aug 2026 14:04:59 GMT",
-  "lastRun": "2026-08-18T15:41:55.119Z",
-  "lastSuccess": "2026-08-18T15:41:55.119Z"
+  "lastModified": "Tue, 18 Aug 2026 16:14:59 GMT",
+  "lastRun": "2026-08-18T16:45:01.654Z",
+  "lastSuccess": "2026-08-18T16:45:01.654Z"
 }
