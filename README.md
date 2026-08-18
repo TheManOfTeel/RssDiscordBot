@@ -44,7 +44,7 @@ Notes:
 - Use webhookEnv (secret name), never embed webhook URLs in feeds.json.
 - Every webhookEnv used must be listed under env: in .github/workflows/rss-to-discord.yml so Actions injects the secret.
 
-## Key behaviors (short)
+## Key behaviors
 
 - Dedupe by guid/id/link (not date).
 - Conditional GET (ETag/If-Modified-Since) to minimize work and bandwidth.
