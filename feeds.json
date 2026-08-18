@@ -61,7 +61,8 @@
       "showDescription": false,
       "filters": {
         "fields": ["title"],
-        "exclude": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b", "^App Store Connect", "^Xcode", "^Testflight"]
+        "include": ["\\w*OS\\b|AirPods"],
+        "exclude": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b"]
       },
       "notify": [
         {
@@ -82,8 +83,7 @@
       "showDescription": false,
       "filters": {
         "fields": ["title"],
-        "include": ["\\bbetas?\\b", "\\brelease candidate\\b", "\\brc\\b", "\\bpreview\\b", "\\bseed\\b"],
-        "exclude": ["^App Store Connect", "^Xcode", "^Testflight"]
+        "include": ["(\\w*OS|AirPods).*(\\bbetas?\\b|\\brelease candidate\\b|\\brc\\b|\\bpreview\\b|\\bseed\\b)|(\\bbetas?\\b|\\brelease candidate\\b|\\brc\\b|\\bpreview\\b|\\bseed\\b).*(\\w*OS|AirPods)"]
       },
       "notify": [
         {
