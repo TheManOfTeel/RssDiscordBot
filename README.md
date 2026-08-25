@@ -191,10 +191,11 @@ Filters are **regex patterns** applied to feed items. They are compiled once at 
 ```json
 {
   "id": "apple-newsroom",
-  "url": "https://www.apple.com/newsroom/rss-feed.rss",
+  "name": "Apple Newsroom",
+  "url": "https://www.apple.com/ca/newsroom/rss-feed.rss",
   "filters": {
     "fields": ["title", "summary"],
-    "include": ["\\biphone\\b", "\\bmac(book)?\\b", "\\bipad\\b", "\\bapple watch\\b"]
+    "include": ["\\biphone\\b", "\\bmac(book)?\\b", "\\bipad\\b", "\\bvision pro\\b", "\\bapple watch\\b", "\\bairpods\\b", "\\bapple tv\\b.*\\b(4k|device|hardware|box)\\b", "\\b(4k|device|hardware|box)\\b.*\\bapple tv\\b", "\\bhomepod\\b"]
   }
 }
 ```
