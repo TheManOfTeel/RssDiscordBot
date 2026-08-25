@@ -52,6 +52,15 @@ test('the workflow does not interpolate dispatch inputs into the shell', () => {
   }
 });
 
+test('scheduled runs route release and news feeds to separate cadences', () => {
+  assert.match(workflow, /SCHEDULE: \$\{\{ github\.event\.schedule \}\}/);
+  assert.match(
+    workflow,
+    /'0,30 16-23 \* \* 1-5'\|'0,30 0 \* \* 2-6'\|'0 1 \* \* 2-6'\)[\s\S]*--only 'apple-releases,apple-releases-beta'/
+  );
+  assert.match(workflow, /'17 13-23 \* \* \*'|'17 0-2 \* \* \*'\)[\s\S]*--only 'apple-newsroom,apple-dev-news'/);
+});
+
 /** The poll job's `steps:` list, one string per step, in declaration order. */
 const steps = workflow.split(/\n {6}- (?=uses:|name:)/).slice(1);
 const stepWith = (needle) => steps.findIndex((s) => s.includes(needle));

@@ -445,7 +445,9 @@ name: Poll RSS Feeds
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Every 15 minutes
+    # See the committed workflow for the complete feed-specific UTC schedule.
+    - cron: '0,30 16-23 * * 1-5'  # Release feeds: every 30 minutes in the Pacific safety envelope
+    - cron: '17 13-23 * * *'      # News feeds: hourly in the Pacific safety envelope
   workflow_dispatch:         # Manual trigger
 
 jobs:
@@ -480,9 +482,14 @@ List all `webhookEnv` references in the `env:` section so GitHub Actions injects
 
 ### Scheduling
 
-- `*/15 * * * *` → Every 15 minutes
-- `0 8 * * *` → Daily at 8 AM UTC
-- Customize per your needs
+GitHub Actions cron is UTC-only and best-effort, so the workflow uses a fixed UTC safety
+envelope rather than maintaining separate PST/PDT schedules:
+
+- The two Apple release feeds run every 30 minutes during approximately 8 AM–6 PM Pacific.
+- The Apple Newsroom and Apple Developer news feeds run hourly at `:17` in a fixed UTC safety
+  envelope covering approximately 5 AM–7 PM Pacific, with extra coverage around daylight saving.
+- Outside that news safety envelope, news feeds run every 2 hours.
+- Manual dispatch with an empty `only` input polls all feeds; `only` can target specific feeds.
 
 ---
 
