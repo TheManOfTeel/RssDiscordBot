@@ -2,22 +2,15 @@ name: PR Tests
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     types: [opened, synchronize, reopened]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-      - name: Install dependencies
-        run: npm install --no-fund --no-audit
-      - name: Run tests
-        run: npm test
+    uses: TheManOfTeel/SharedWorkflows/.github/workflows/node-ci.yml@v1.0.0
+    with:
+      node-version: '24'
+      working-directory: .
+      install-command: npm install --no-fund --no-audit
+      build-command: npm run build --if-present
+      test-command: npm test
