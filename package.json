@@ -1,6 +1,6 @@
 {
   "name": "rss-discord-bot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Scheduled RSS/Atom -> Discord webhook relay with regex filtering. Zero dependencies, runs on GitHub Actions cron.",
   "private": true,
   "type": "module",

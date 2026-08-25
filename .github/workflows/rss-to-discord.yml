@@ -2,15 +2,17 @@ name: RSS to Discord
 
 on:
   schedule:
-    # GitHub cron is UTC and does not support a timezone. These entries use fixed PST
-    # (UTC-8), with the local weekday crossing into the next UTC date after midnight.
+    # GitHub cron is UTC and does not support a timezone. Use a fixed safety envelope instead
+    # of seasonal month rules: UTC 16:00-01:00 is approximately 08:00-18:00 in California,
+    # covering Apple's 09:00-17:00 core window in both PST and PDT without yearly maintenance.
     # The hour lists are deliberately disjoint so the concurrency group never queues
-    # duplicate runs. The :07 offset avoids the busiest :00 scheduler slot.
-    - cron: '7,37 17-23 * * 1-5' # local weekdays 09:00-15:30 PST: every 30 min
-    - cron: '7,37 0-1 * * 2-6' # local weekdays 16:00-17:00 PST: every 30 min
+    # duplicate runs. Outside this envelope, polling remains every 2 hours.
+    - cron: '0,30 16-23 * * 1-5' # weekdays: 08:00-16:30 PT in PST, 09:00-17:30 PT in PDT
+    - cron: '0,30 0 * * 2-6' # weekdays: 16:00-16:30 PT in PST, 17:00-17:30 PT in PDT
+    - cron: '0 1 * * 2-6' # weekdays: 17:00 PT in PST, 18:00 PT in PDT
     - cron: '7 0,2,4,6,8,10,12,14,16,18,20,22 * * 0' # Sunday: every 2 hours
-    - cron: '7 0,2,4,6,8,10,12,14,16 * * 1' # Monday before fast window: every 2 hours
-    - cron: '7 2,4,6,8,10,12,14,16 * * 2-5' # weekday overnight: every 2 hours
+    - cron: '7 0,2,4,6,8,10,12,14 * * 1' # Monday before fast window: every 2 hours
+    - cron: '7 2,4,6,8,10,12,14 * * 2-5' # weekday overnight: every 2 hours
     - cron: '7 2,4,6,8,10,12,14,16,18,20,22 * * 6' # Saturday: every 2 hours
   workflow_dispatch:
     inputs:
