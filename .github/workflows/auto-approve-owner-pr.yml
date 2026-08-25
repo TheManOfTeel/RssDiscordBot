@@ -7,14 +7,6 @@ on:
 
 jobs:
   auto-approve:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == github.repository_owner
+    uses: TheManOfTeel/SharedWorkflows/.github/workflows/auto-approve-owner-pr.yml@v1.0.0
     permissions:
       pull-requests: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-      - name: Auto-approve PR
-        run: gh pr review ${{ github.event.pull_request.number }} --approve
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
