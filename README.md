@@ -1,4 +1,4 @@
-# RSS → Discord Bot
+# RSS → Discord Bot [![RSS to Discord](https://github.com/TheManOfTeel/RssDiscordBot/actions/workflows/rss-to-discord.yml/badge.svg)](https://github.com/TheManOfTeel/RssDiscordBot/actions/workflows/rss-to-discord.yml)
 
 A lightweight, serverless RSS/Atom feed aggregator that posts new items to Discord via webhooks. Designed to run on GitHub Actions cron schedules with zero external dependencies and state persistence directly in the repository.
 
