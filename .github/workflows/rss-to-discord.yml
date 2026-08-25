@@ -2,11 +2,11 @@ name: RSS to Discord
 
 on:
   schedule:
-    # GitHub cron is UTC and does not support a timezone. Use a fixed safety envelope instead
-    # of seasonal month rules: UTC 16:00-01:00 is approximately 08:00-18:00 in California,
-    # covering Apple's 09:00-17:00 core window in both PST and PDT without yearly maintenance.
+    # GitHub cron is UTC and does not support a timezone. Use fixed safety envelopes instead
+    # of seasonal month rules, covering Apple's core hours without yearly maintenance.
     # The hour lists are deliberately disjoint so the concurrency group never queues
-    # duplicate runs. Outside this envelope, polling remains every 2 hours.
+    # duplicate runs. The release feeds use the envelope plus the two-hour fallback;
+    # the news feeds use the two-hour cadence all day.
     - cron: '0,30 16-23 * * 1-5' # weekdays: 08:00-16:30 PT in PST, 09:00-17:30 PT in PDT
     - cron: '0,30 0 * * 2-6' # weekdays: 16:00-16:30 PT in PST, 17:00-17:30 PT in PDT
     - cron: '0 1 * * 2-6' # weekdays: 17:00 PT in PST, 18:00 PT in PDT
@@ -14,6 +14,8 @@ on:
     - cron: '7 0,2,4,6,8,10,12,14 * * 1' # Monday before fast window: every 2 hours
     - cron: '7 2,4,6,8,10,12,14 * * 2-5' # weekday overnight: every 2 hours
     - cron: '7 2,4,6,8,10,12,14,16,18,20,22 * * 6' # Saturday: every 2 hours
+    - cron: '17 13-23 * * *' # news safety envelope: approximately 05:00-18:00 Pacific
+    - cron: '17 0-2 * * *' # news safety envelope: approximately 16:00-19:00 Pacific
   workflow_dispatch:
     inputs:
       dry_run:
@@ -77,12 +79,30 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
           SEED: ${{ inputs.seed }}
           ONLY: ${{ inputs.only }}
+          SCHEDULE: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
           args=()
           if [ "${DRY_RUN:-}" = 'true' ]; then args+=(--dry-run); fi
           if [ "${SEED:-}" = 'true' ]; then args+=(--seed); fi
-          if [ -n "${ONLY:-}" ]; then args+=(--only "$ONLY"); fi
+          if [ -n "${ONLY:-}" ]; then
+            args+=(--only "$ONLY")
+          elif [ "${GITHUB_EVENT_NAME:-}" = 'schedule' ]; then
+            case "$SCHEDULE" in
+              '0,30 16-23 * * 1-5'|'0,30 0 * * 2-6'|'0 1 * * 2-6')
+                args+=(--only 'apple-releases,apple-releases-beta')
+                ;;
+              '17 13-23 * * *'|'17 0-2 * * *')
+                args+=(--only 'apple-newsroom,apple-dev-news')
+                ;;
+              '7 0,2,4,6,8,10,12,14,16,18,20,22 * * 0'|'7 0,2,4,6,8,10,12,14 * * 1'|'7 2,4,6,8,10,12,14 * * 2-5'|'7 2,4,6,8,10,12,14,16,18,20,22 * * 6')
+                args+=(--only 'apple-newsroom,apple-dev-news,apple-releases,apple-releases-beta')
+                ;;
+              *)
+                args+=(--only 'apple-newsroom,apple-dev-news')
+                ;;
+            esac
+          fi
           node src/runner.mjs ${args[@]+"${args[@]}"}
       - name: Persist state
         # always(): if a feed failed, the state for the feeds that succeeded must still be
