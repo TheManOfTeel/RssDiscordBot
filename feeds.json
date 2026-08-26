@@ -41,10 +41,10 @@
       "notify": [
         {
           "roles": ["1539012206782455868"],
-          "text": "Action required:",
+          "text": "Attention:",
           "when": {
             "fields": ["title", "summary"],
-            "include": ["\\bdeadline\\b", "\\brequire(d|ment|ments)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b"]
+            "include": ["\\bdeadline\\b", "\\brequire(d|ment|ments)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b", "\\bApple Event\\b", "\\bWWDC\\b"]
           }
         }
       ]
