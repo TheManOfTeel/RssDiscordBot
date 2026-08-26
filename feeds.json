@@ -45,6 +45,13 @@
           "when": {
             "fields": ["title", "summary"],
             "include": ["\\bdeadline\\b", "\\brequire(d|ment|ments)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b"]
+          },
+          {
+          "roles": ["1539012206782455868"],
+          "text": "New event:",
+          "when": {
+            "fields": ["title", "summary"],
+            "include": ["\\bApple Event\\b", "\\bWWDC\d\d\\b"]
           }
         }
       ]
