@@ -133,3 +133,6 @@ jobs:
           done
           echo 'could not push state after 3 attempts' >&2
           exit 1
+    permissions:
+      contents: write
+      pull-requests: write
