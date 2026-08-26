@@ -9,9 +9,5 @@ jobs:
   test:
     uses: TheManOfTeel/SharedWorkflows/.github/workflows/node-ci.yml@v1.0.0
     with:
-      node-version: '24'
       cache: ''
-      working-directory: .
       install-command: npm install --no-fund --no-audit
-      build-command: npm run build --if-present
-      test-command: npm test
