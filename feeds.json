@@ -44,7 +44,7 @@
           "text": "Attention:",
           "when": {
             "fields": ["title", "summary"],
-            "include": ["\\bdeadline\\b", "\\brequir(e|ed|ement|ements)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b", "\\bchang(e|es|ing)\\b", "\\baler(t|ted|ting|ts)\\b", "\\bupdat(e|ed|es)\\b", "\\bcritical\\b"]
+            "include": ["\\bdeadline\\b", "\\brequir(e|ed|ement|ements)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b", "\\bchang(e|es|ed|ing)\\b", "\\baler(t|ts|ted|ting)\\b", "\\bupdat(e|es|ed)\\b", "\\bvuln\\b", "\\bcritical\\b", "\\bimportant\\b", "\\bsecurity\\b", "\\bfi(x|xes|xed|xing)\\b", "\\bbu(gs|gfi(x|xes))\\b", "\\bissu(e|es|ed)\\b", "\\boutag(e|es)\\b"]
           }
         },
         {
