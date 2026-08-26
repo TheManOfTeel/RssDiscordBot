@@ -44,7 +44,7 @@
           "text": "Attention:",
           "when": {
             "fields": ["title", "summary"],
-            "include": ["\\bdeadline\\b", "\\brequire(d|ment|ments)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b", "\\bApple Event\\b", "\\bWWDC\\b"]
+            "include": ["\\bdeadline\\b", "\\brequir(e|ed|ement|ements)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b", "\\bchang(e|es|ing)\\b", "\\baler(t|ted|ting|ts)\\b", "\\bupdat(e|ed|es)\\b", "\\bcritical\\b"]
           }
         },
         {
