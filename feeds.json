@@ -51,7 +51,7 @@
           "text": "New event:",
           "when": {
             "fields": ["title", "summary"],
-            "include": ["\\bApple Event\\b", "\\bWWDC\d\d\\b"]
+            "include": ["\\bApple Event\\b", "\\bWWDC\\b"]
           }
         }
       ]
