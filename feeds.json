@@ -44,7 +44,15 @@
           "text": "Attention:",
           "when": {
             "fields": ["title", "summary"],
-            "include": ["\\bdeadline\\b", "\\brequire(d|ment|ments)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b", "\\bApple Event\\b", "\\bWWDC\\b"]
+            "include": ["\\bdeadline\\b", "\\brequir(e|ed|ement|ements)\\b", "\\bdeprecat\\w*", "\\bsubmissions?\\b", "\\bno longer\\b", "\\bchang(e|es|ed|ing)\\b", "\\baler(t|ts|ted|ting)\\b", "\\bupdat(e|es|ed)\\b", "\\bvuln\\b", "\\bcritical\\b", "\\bimportant\\b", "\\bsecurity\\b", "\\bfi(x|xes|xed|xing)\\b", "\\bbu(gs|gfi(x|xes))\\b", "\\bissu(e|es|ed)\\b", "\\boutag(e|es)\\b"]
+          }
+        },
+        {
+          "roles": ["1539012206782455868"],
+          "text": "New event:",
+          "when": {
+            "fields": ["title", "summary"],
+            "include": ["\\bApple Event\\b", "\\bWWDC\\b"]
           }
         }
       ]
