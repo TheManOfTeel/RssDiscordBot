@@ -13,6 +13,7 @@ import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfig } from './config.mjs';
 import { allowedMentionsFor, clip, mentionContent, postEmbeds } from './discord.mjs';
+import { parseEspnNews } from './espn.mjs';
 import { parseFeed } from './feed.mjs';
 import { fetchFeed } from './http.mjs';
 import { evaluate } from './filter.mjs';
@@ -20,6 +21,16 @@ import { DEFAULT_SEEN_CAP, loadState, mergeSeen, saveState } from './state.mjs';
 
 const CHUNK = 10; // embeds per Discord message
 const DRY_RUN_WEBHOOK = 'https://discord.com/api/webhooks/0/dry-run-no-secret-needed';
+
+/**
+ * Body -> normalised feed. Every parser returns the same { format, title, link, items[] }, so
+ * nothing downstream of here knows whether the source was XML or JSON. Keyed by the feed's
+ * "parser" config value; config.mjs rejects anything not in this table.
+ */
+export const PARSERS = {
+  feed: (body) => parseFeed(body),
+  'espn-json': (body, feed) => parseEspnNews(body, feed.parserOptions),
+};
 
 export function parseArgs(argv) {
   const options = {
@@ -170,8 +181,6 @@ async function runFeed(feed, options, log) {
       etag: options.force ? undefined : state.etag,
       lastModified: options.force ? undefined : state.lastModified,
       timeoutMs: feed.timeoutMs,
-      sessionUrl: feed.sessionUrl,
-      browserHeaders: feed.browserHeaders,
       log,
     });
 
@@ -180,7 +189,7 @@ async function runFeed(feed, options, log) {
       result.note = '304';
       log(`  304 not modified`);
     } else {
-      const parsed = parseFeed(response.body);
+      const parsed = PARSERS[feed.parser](response.body, feed);
       state.etag = response.etag ?? null;
       state.lastModified = response.lastModified ?? null;
       result.fetched = parsed.items.length;
