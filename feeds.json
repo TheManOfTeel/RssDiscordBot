@@ -112,7 +112,7 @@
       "showDescription": false,
       "filters": {
         "fields": ["title", "summary"],
-        "exclude": ["\\bbe(t|ts|tting)?\\b"]
+        "exclude": ["\\bbet(s|ting|tor|tors)?\\b|\\bsportsbook|\\bodds\\b|\\bspread\\b", "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b"]
       },
       "notify": [
         {
@@ -148,6 +148,22 @@
           }
         }
       ]
+    },
+    {
+      "id": "cfb-news",
+      "name": "College Football News",
+      "url": "https://www.espn.com/espn/rss/ncf/news",
+      "enabled": false,
+      "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
+      "username": "CFB News",
+      "color": "#8C1515",
+      "maxPerRun": 20,
+      "descriptionChars": 4096,
+      "showDescription": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "exclude": ["\\bbet(s|ting|tor|tors)?\\b|\\bsportsbook|\\bodds\\b|\\bspread\\b", "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b"]
+      }
     }
   ]
 }
