@@ -1,8 +1,9 @@
 name: RSS to Discord
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'
+  # scheduling handled by cron-job.org since actions scheduler is too loose
+  # schedule:
+  #   - cron: '*/30 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
