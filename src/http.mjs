@@ -46,11 +46,15 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
     const timer = setTimeout(() => controller.abort(new Error(`timeout after ${timeoutMs}ms`)), timeoutMs);
     try {
       const res = await fetchImpl(url, { headers, redirect: 'follow', signal: controller.signal })
-      .then(response => response.text())
-      .then((response) => {
-        console.log(response); // returns empty string
-        return response;
-      });
+      // debugging
+      console.log('res.type', res.type);
+      console.log('res.status', res.status, 'ok', res.ok);
+      console.log('content-type', res.headers.get('content-type'));
+      console.log('content-encoding', res.headers.get('content-encoding'));
+      const xmlText = await res.text();
+      console.log('body.length', xmlText.length);
+      console.log('body.preview', xmlText.slice(0, 500));
+
       if (res.status === 304) return { notModified: true };
       if (res.status === 429 || res.status >= 500) {
         // Transient by definition — retry. Anything else is our problem, not theirs.
