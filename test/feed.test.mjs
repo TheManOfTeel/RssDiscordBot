@@ -138,3 +138,33 @@ test('unescaped ampersands in a feed do not lose the item', () => {
   const feed = parseFeed('<rss><channel><item><title>Tom & Jerry</title><link>https://e.com/a</link></item></channel></rss>');
   assert.equal(feed.items[0].title, 'Tom & Jerry');
 });
+
+test('an Atom enclosure link supplies the image (RFC 4287 §4.2.7 form, not <enclosure url>)', () => {
+  const atom = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Newsroom</title>
+  <entry>
+    <title>Testcorp introduces the testdevice</title>
+    <link href="https://example.test/story"/>
+    <id>https://example.test/story</id>
+    <updated>2026-08-27T14:34:38Z</updated>
+    <content>A new testdevice.</content>
+    <link href="https://example.test/tile.jpg" rel="enclosure" title="tile" type="image/jpeg"/>
+  </entry>
+  <entry>
+    <title>No image here</title>
+    <link href="https://example.test/second"/>
+    <id>https://example.test/second</id>
+    <updated>2026-08-26T14:34:38Z</updated>
+    <content>Nothing attached.</content>
+    <link href="https://example.test/whitepaper.pdf" rel="enclosure" type="application/pdf"/>
+  </entry>
+</feed>`;
+  const { items } = parseFeed(atom);
+  assert.equal(items[0].image, 'https://example.test/tile.jpg');
+  // The alternate link must still win for `link` — the enclosure is not the article URL.
+  assert.equal(items[0].link, 'https://example.test/story');
+  // A non-image enclosure must not become an image.
+  assert.equal(items[1].image, undefined);
+  assert.equal(items[1].link, 'https://example.test/second');
+});

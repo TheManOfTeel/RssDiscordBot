@@ -13,6 +13,7 @@ import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfig } from './config.mjs';
 import { allowedMentionsFor, clip, mentionContent, postEmbeds } from './discord.mjs';
+import { parseEspnNews } from './espn.mjs';
 import { parseFeed } from './feed.mjs';
 import { fetchFeed } from './http.mjs';
 import { evaluate } from './filter.mjs';
@@ -20,6 +21,16 @@ import { DEFAULT_SEEN_CAP, loadState, mergeSeen, saveState } from './state.mjs';
 
 const CHUNK = 10; // embeds per Discord message
 const DRY_RUN_WEBHOOK = 'https://discord.com/api/webhooks/0/dry-run-no-secret-needed';
+
+/**
+ * Body -> normalised feed. Every parser returns the same { format, title, link, items[] }, so
+ * nothing downstream of here knows whether the source was XML or JSON. Keyed by the feed's
+ * "parser" config value; config.mjs rejects anything not in this table.
+ */
+export const PARSERS = {
+  feed: (body) => parseFeed(body),
+  'espn-json': (body, feed) => parseEspnNews(body, feed.parserOptions),
+};
 
 export function parseArgs(argv) {
   const options = {
@@ -78,7 +89,13 @@ const HELP = `rss-discord-bot
   The webhook URL comes from the environment variable named by "webhookEnv"
   (default DISCORD_WEBHOOK). It is never read from the config file.`;
 
-function buildEmbed(item, feed) {
+/**
+ * @param {boolean} notified whether this item matched a notify rule. Only consulted when the
+ *   feed sets `"showImage": "notified"`, which attaches an image to the items that ping and
+ *   nothing else — so a feed whose only notify rule is "new hardware" gets images on hardware
+ *   posts without restating the condition as a second regex that could drift out of sync.
+ */
+function buildEmbed(item, feed, notified = false) {
   return {
     title: item.title || '(untitled)',
     url: item.link || undefined,
@@ -87,7 +104,9 @@ function buildEmbed(item, feed) {
     color: feed.color,
     author: feed.showAuthor && item.author ? { name: item.author } : undefined,
     footer: { text: feed.name },
-    image: feed.showImage && item.image ? { url: item.image } : undefined,
+    image: (feed.showImage === true || (feed.showImage === 'notified' && notified)) && item.image
+      ? { url: item.image }
+      : undefined,
   };
 }
 
@@ -178,7 +197,7 @@ async function runFeed(feed, options, log) {
       result.note = '304';
       log(`  304 not modified`);
     } else {
-      const parsed = parseFeed(response.body);
+      const parsed = PARSERS[feed.parser](response.body, feed);
       state.etag = response.etag ?? null;
       state.lastModified = response.lastModified ?? null;
       result.fetched = parsed.items.length;
@@ -225,7 +244,7 @@ async function runFeed(feed, options, log) {
         // One postEmbeds call per group so `postedIds` is only credited after a message
         // actually lands. A crash mid-run therefore re-sends at most one group.
         for (const group of groupForDelivery(queue, feed.notify, now)) {
-          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, group.items.map((item) => buildEmbed(item, feed)), {
+          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, group.items.map((item) => buildEmbed(item, feed, group.mention !== null)), {
             content: group.mention ? mentionContent(group.mention) : undefined,
             allowedMentions: group.mention ? allowedMentionsFor(group.mention) : undefined,
             username: feed.username,

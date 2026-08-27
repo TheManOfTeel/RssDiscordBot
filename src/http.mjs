@@ -16,6 +16,7 @@ export class HttpError extends Error {
 }
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleepDefault = sleep;
 
 /**
  * Node's fetch reports every transport failure as the useless string "fetch failed" and
@@ -31,7 +32,7 @@ export function describeError(err) {
 /**
  * @returns {Promise<{notModified: boolean, body?: string, etag?: string|null, lastModified?: string|null}>}
  */
-export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, retries = 2, fetchImpl = fetch, log = () => {} } = {}) {
+export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, retries = 2, fetchImpl = fetch, sleep: sleepImpl = sleepDefault, log = () => {} } = {}) {
   const headers = {
     accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*;q=0.5',
     'accept-encoding': 'gzip, deflate, br',
@@ -42,7 +43,7 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
 
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt++) {
-    if (attempt > 0) await sleep(1000 * 2 ** (attempt - 1));
+    if (attempt > 0) await sleepImpl(1000 * 2 ** (attempt - 1));
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(new Error(`timeout after ${timeoutMs}ms`)), timeoutMs);
     try {
@@ -55,9 +56,19 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
         continue;
       }
       if (!res.ok) throw new HttpError(res.status, res.statusText, url);
+      const body = await res.text();
+      if (!body.trim()) {
+        // A 2xx with no body is a soft block, not an answer, and it must never reach the
+        // parser: parseFeed's "empty response body" hides the status, which is the one fact
+        // worth having. ESPN's CloudFront answers datacenter egress with exactly this —
+        // 202 Accepted, content-length 0, x-cache: Error from cloudfront.
+        lastError = new HttpError(res.status, `${res.statusText} with an empty body`, url);
+        log(`  ${url} -> ${res.status} ${res.statusText}, 0 bytes (soft block?), retrying`);
+        continue;
+      }
       return {
         notModified: false,
-        body: await res.text(),
+        body,
         etag: res.headers.get('etag'),
         lastModified: res.headers.get('last-modified'),
       };

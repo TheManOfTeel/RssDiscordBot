@@ -32,7 +32,15 @@ const DEFAULTS = {
   threadId: undefined,
   color: undefined,
   timeoutMs: 20_000,
+  parser: 'feed',
 };
+
+/**
+ * Must stay in sync with the PARSERS table in runner.mjs. Duplicated as a literal rather than
+ * imported so config validation has no dependency on the runner — a typo'd parser name is a
+ * config error reported alongside the others, before any request is made.
+ */
+const VALID_PARSERS = new Set(['feed', 'espn-json']);
 
 /** "#5865F2" | "5865F2" | 5793266 -> integer, which is what the embed API wants. */
 export function parseColor(value, errors, label) {
@@ -189,6 +197,20 @@ export function validateConfig(raw) {
       errors.push(`${label}: put the webhook URL in an environment variable / repo secret and name it via "webhookEnv" — never in this file`);
     }
 
+    // true | false | "notified" — the last attaches an image only to items that ping.
+    const rawShowImage = feed.showImage ?? defaults.showImage;
+    if (rawShowImage !== true && rawShowImage !== false && rawShowImage !== 'notified') {
+      errors.push(`${label}.showImage: must be true, false, or "notified"`);
+    }
+
+    const parser = feed.parser ?? defaults.parser;
+    if (!VALID_PARSERS.has(parser)) {
+      errors.push(`${label}.parser: unknown parser ${JSON.stringify(parser)} (valid: ${[...VALID_PARSERS].join(', ')})`);
+    }
+    if (feed.parserOptions != null && (typeof feed.parserOptions !== 'object' || Array.isArray(feed.parserOptions))) {
+      errors.push(`${label}.parserOptions: must be an object`);
+    }
+
     let filters;
     try {
       filters = compileFilters(feed.filters ?? {}, `${label}.filters`);
@@ -206,12 +228,14 @@ export function validateConfig(raw) {
       seenCap: positiveInt(feed.seenCap ?? defaults.seenCap, `${label}.seenCap`, errors, { min: 10, max: 20_000 }),
       descriptionChars: positiveInt(feed.descriptionChars ?? defaults.descriptionChars, `${label}.descriptionChars`, errors, { min: 0, max: 4096 }),
       showDescription: (feed.showDescription ?? defaults.showDescription) !== false,
-      showImage: (feed.showImage ?? defaults.showImage) === true,
+      showImage: rawShowImage === 'notified' ? 'notified' : rawShowImage === true,
       showAuthor: (feed.showAuthor ?? defaults.showAuthor) !== false,
       username: feed.username ?? defaults.username,
       avatarUrl: feed.avatarUrl ?? defaults.avatarUrl,
       threadId: feed.threadId ?? defaults.threadId,
       timeoutMs: feed.timeoutMs ?? defaults.timeoutMs,
+      parser,
+      parserOptions: feed.parserOptions ?? {},
       color: 'color' in feed ? parseColor(feed.color, errors, `${label}.color`) : defaults.color,
       filterChain: [globalFilters, filters].filter(Boolean),
       notify: [...globalNotify, ...compileNotify(feed.notify, `${label}.notify`, errors, warnings)],
