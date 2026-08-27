@@ -49,10 +49,7 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
       .then(response => response.text())
       .then((response) => {
         console.log(response); // returns empty string
-        return dispatch({
-          type: "GET_CALL",
-          response: response
-        });
+        return response;
       });
       if (res.status === 304) return { notModified: true };
       if (res.status === 429 || res.status >= 500) {
