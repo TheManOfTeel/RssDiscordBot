@@ -119,7 +119,7 @@
           "roles": ["1542330701066801203"],
           "text": "League news:",
           "when": {
-            "fields": ["title", "description"],
+            "fields": ["title", "summary"],
             "exclude": [ "\\b49ers\\b", "\\bBears\\b", "\\bBengals\\b", "\\bBills\\b", "\\bBroncos\\b", "\\bBrowns\\b", "\\bBuccaneers\\b", "\\bCardinals\\b", "\\bChargers\\b", "\\bChiefs\\b", "\\bColts\\b", "\\bCommanders\\b", "\\bCowboys\\b", "\\bDolphins\\b", "\\bEagles\\b", "\\bFalcons\\b", "\\bGiants\\b", "\\bJaguars\\b", "\\bJets\\b", "\\bLions\\b", "\\bPackers\\b", "\\bPanthers\\b", "\\bPatriots\\b", "\\bRaiders\\b", "\\bRams\\b", "\\bRavens\\b", "\\bSaints\\b", "\\bSeahawks\\b", "\\bSteelers\\b", "\\bTexans\\b", "\\bTitans\\b", "\\bVikings?\\b"]
           }
         },
@@ -127,7 +127,7 @@
           "roles": ["1542335085280235632"],
           "text": "Browns news:",
           "when": {
-            "fields": ["title", "description"],
+            "fields": ["title", "summary"],
             "include": ["\\bBrowns\\b"]
           }
         },
@@ -135,7 +135,7 @@
           "roles": ["1542334746942644274"],
           "text": "Giants news:",
           "when": {
-            "fields": ["title", "description"],
+            "fields": ["title", "summary"],
             "include": ["\\bGiants\\b"]
           }
         },
@@ -143,7 +143,7 @@
           "roles": ["1542337543260086382"],
           "text": "Lions news:",
           "when": {
-            "fields": ["title", "description"],
+            "fields": ["title", "summary"],
             "include": ["\\bLions\\b"]
           }
         }
