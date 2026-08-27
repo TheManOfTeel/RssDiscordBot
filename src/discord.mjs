@@ -238,7 +238,12 @@ export async function postEmbeds(webhookUrl, embeds, {
         continue;
       }
 
+      // Discord answers a webhook POST with 204, or 200 when wait=true, so a 202 here is
+      // unexpected rather than routine. Retry it, but the exhaustion check is mandatory: the
+      // loop is `for (attempt = 0; ; attempt++)` with no bound, so a branch that continues
+      // unconditionally spins until the job's timeout-minutes kills the whole run.
       if (res.status === 202) {
+        if (attempt >= maxRetries) throw new DiscordError(202, 'accepted with no body, retries exhausted');
         const wait = Math.min(1000 * 2 ** attempt, maxSleepMs);
         log(`  202 Accepted — no body, waiting ${wait}ms (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(wait);
