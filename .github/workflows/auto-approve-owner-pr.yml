@@ -11,4 +11,4 @@ permissions:
 
 jobs:
   auto-approve:
-    uses: TheManOfTeel/SharedWorkflows/.github/workflows/auto-approve-owner-pr.yml@v1.0.
+    uses: TheManOfTeel/SharedWorkflows/.github/workflows/auto-approve-owner-pr.yml@v1.0.0
