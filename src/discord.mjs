@@ -215,7 +215,7 @@ export async function postEmbeds(webhookUrl, embeds, {
       if (res.status === 429) {
         let body;
         try {
-          body = resForInspect.json();
+          body = await resForInspect.json();
         } catch {
           body = undefined;
         }
@@ -227,7 +227,7 @@ export async function postEmbeds(webhookUrl, embeds, {
       }
 
       if (res.status >= 500) {
-        if (attempt >= maxRetries) throw new DiscordError(res.status, resForInspect.text().catch(() => ''));
+        if (attempt >= maxRetries) throw new DiscordError(res.status, await resForInspect.text().catch(() => ''));
         const wait = Math.min(1000 * 2 ** attempt, maxSleepMs);
         log(`  ${res.status} from Discord, waiting ${wait}ms (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(wait);
