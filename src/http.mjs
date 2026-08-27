@@ -65,7 +65,7 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
       if (!res.ok) throw new HttpError(res.status, res.statusText, url);
       return {
         notModified: false,
-        body: await res.text(),
+        body: xmlText,
         etag: res.headers.get('etag'),
         lastModified: res.headers.get('last-modified'),
       };
