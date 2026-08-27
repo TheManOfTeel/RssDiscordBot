@@ -111,7 +111,7 @@
       "descriptionChars": 4096,
       "showDescription": false,
       "filters": {
-        "fields": ["title"],
+        "fields": ["title", "summary"],
         "exclude": ["\\bbe(t|ts|tting)?\\b"]
       },
       "notify": [

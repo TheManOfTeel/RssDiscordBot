@@ -74,6 +74,7 @@ jobs:
           DISCORD_WEBHOOK_APPLE_DEV_NEWS: ${{ secrets.DISCORD_WEBHOOK_APPLE_DEV_NEWS }}
           DISCORD_WEBHOOK_APPLE_RELEASES: ${{ secrets.DISCORD_WEBHOOK_APPLE_RELEASES }}
           DISCORD_WEBHOOK_APPLE_RELEASES_BETA: ${{ secrets.DISCORD_WEBHOOK_APPLE_RELEASES_BETA }}
+          DISCORD_WEBHOOK_NFL_NEWS: ${{ secrets.DISCORD_WEBHOOK_NFL_NEWS }}
           # Via env, not interpolated into the script: a ${{ inputs.only }} inside `run:`
           # is a shell-injection hole for anyone who can dispatch the workflow.
           DRY_RUN: ${{ inputs.dry_run }}
