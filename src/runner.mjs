@@ -170,6 +170,8 @@ async function runFeed(feed, options, log) {
       etag: options.force ? undefined : state.etag,
       lastModified: options.force ? undefined : state.lastModified,
       timeoutMs: feed.timeoutMs,
+      sessionUrl: feed.sessionUrl,
+      browserHeaders: feed.browserHeaders,
       log,
     });
 
