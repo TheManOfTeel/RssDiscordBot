@@ -89,7 +89,13 @@ const HELP = `rss-discord-bot
   The webhook URL comes from the environment variable named by "webhookEnv"
   (default DISCORD_WEBHOOK). It is never read from the config file.`;
 
-function buildEmbed(item, feed) {
+/**
+ * @param {boolean} notified whether this item matched a notify rule. Only consulted when the
+ *   feed sets `"showImage": "notified"`, which attaches an image to the items that ping and
+ *   nothing else — so a feed whose only notify rule is "new hardware" gets images on hardware
+ *   posts without restating the condition as a second regex that could drift out of sync.
+ */
+function buildEmbed(item, feed, notified = false) {
   return {
     title: item.title || '(untitled)',
     url: item.link || undefined,
@@ -98,7 +104,9 @@ function buildEmbed(item, feed) {
     color: feed.color,
     author: feed.showAuthor && item.author ? { name: item.author } : undefined,
     footer: { text: feed.name },
-    image: feed.showImage && item.image ? { url: item.image } : undefined,
+    image: (feed.showImage === true || (feed.showImage === 'notified' && notified)) && item.image
+      ? { url: item.image }
+      : undefined,
   };
 }
 
@@ -236,7 +244,7 @@ async function runFeed(feed, options, log) {
         // One postEmbeds call per group so `postedIds` is only credited after a message
         // actually lands. A crash mid-run therefore re-sends at most one group.
         for (const group of groupForDelivery(queue, feed.notify, now)) {
-          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, group.items.map((item) => buildEmbed(item, feed)), {
+          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, group.items.map((item) => buildEmbed(item, feed, group.mention !== null)), {
             content: group.mention ? mentionContent(group.mention) : undefined,
             allowedMentions: group.mention ? allowedMentionsFor(group.mention) : undefined,
             username: feed.username,
