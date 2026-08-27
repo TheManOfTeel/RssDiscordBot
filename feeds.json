@@ -104,6 +104,8 @@
       "id": "nfl-news",
       "name": "NFL News",
       "url": "https://www.espn.com/espn/rss/nfl/news",
+      "sessionUrl": "https://www.espn.com/",
+      "browserHeaders": true,
       "webhookEnv": "DISCORD_WEBHOOK_NFL_NEWS",
       "username": "NFL News",
       "color": "#0B2265",
