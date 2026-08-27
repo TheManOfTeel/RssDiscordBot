@@ -34,7 +34,8 @@ export function describeError(err) {
 export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, retries = 2, fetchImpl = fetch, log = () => {} } = {}) {
   const headers = {
     accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*;q=0.5',
-    'user-agent': USER_AGENT
+    'accept-encoding': 'gzip, deflate, br',
+    'user-agent': USER_AGENT,
   };
   if (etag) headers['if-none-match'] = etag;
   if (lastModified) headers['if-modified-since'] = lastModified;
@@ -45,24 +46,20 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(new Error(`timeout after ${timeoutMs}ms`)), timeoutMs);
     try {
-      const res = await fetchImpl(url, { headers, redirect: 'follow', signal: controller.signal })
-      // debugging
-      console.log('res.type', res.type);
-      console.log('res.status', res.status, 'ok', res.ok);
-      console.log('content-type', res.headers.get('content-type'));
-      console.log('content-encoding', res.headers.get('content-encoding'));
-      const xmlText = await res.text();
-      console.log('body.length', xmlText.length);
-      console.log('body.preview', xmlText.slice(0, 500));
-
+      const res = await fetchImpl(url, { headers, redirect: 'follow', signal: controller.signal });
+      var xmlText = await res.text();
       if (res.status === 304) return { notModified: true };
-      if (res.status === 429 || res.status >= 500) {
-        // Transient by definition — retry. Anything else is our problem, not theirs.
+      if (res.status === 202 || res.status === 429 || res.status >= 500) {
+        // 202 + empty body is a CDN soft block, not an answer. Retryable.
         lastError = new HttpError(res.status, res.statusText, url);
-        log(`  ${url} -> ${res.status}, retrying`);
+        log(`  ${url} -> ${res.status}${xmlText?.length === 0 ? ' (empty body - soft block?)' : ''}, retrying`);
         continue;
       }
       if (!res.ok) throw new HttpError(res.status, res.statusText, url);
+      if (!xmlText.trim()) {
+        lastError = new Error(`${url} -> ${res.status} with an empty body`);
+        continue;
+      }
       return {
         notModified: false,
         body: xmlText,
