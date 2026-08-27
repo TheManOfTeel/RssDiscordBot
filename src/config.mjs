@@ -197,6 +197,12 @@ export function validateConfig(raw) {
       errors.push(`${label}: put the webhook URL in an environment variable / repo secret and name it via "webhookEnv" — never in this file`);
     }
 
+    // true | false | "notified" — the last attaches an image only to items that ping.
+    const rawShowImage = feed.showImage ?? defaults.showImage;
+    if (rawShowImage !== true && rawShowImage !== false && rawShowImage !== 'notified') {
+      errors.push(`${label}.showImage: must be true, false, or "notified"`);
+    }
+
     const parser = feed.parser ?? defaults.parser;
     if (!VALID_PARSERS.has(parser)) {
       errors.push(`${label}.parser: unknown parser ${JSON.stringify(parser)} (valid: ${[...VALID_PARSERS].join(', ')})`);
@@ -222,7 +228,7 @@ export function validateConfig(raw) {
       seenCap: positiveInt(feed.seenCap ?? defaults.seenCap, `${label}.seenCap`, errors, { min: 10, max: 20_000 }),
       descriptionChars: positiveInt(feed.descriptionChars ?? defaults.descriptionChars, `${label}.descriptionChars`, errors, { min: 0, max: 4096 }),
       showDescription: (feed.showDescription ?? defaults.showDescription) !== false,
-      showImage: (feed.showImage ?? defaults.showImage) === true,
+      showImage: rawShowImage === 'notified' ? 'notified' : rawShowImage === true,
       showAuthor: (feed.showAuthor ?? defaults.showAuthor) !== false,
       username: feed.username ?? defaults.username,
       avatarUrl: feed.avatarUrl ?? defaults.avatarUrl,
