@@ -34,9 +34,7 @@ export function describeError(err) {
 export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, retries = 2, fetchImpl = fetch, log = () => {} } = {}) {
   const headers = {
     accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*;q=0.5',
-    'accept-encoding': 'gzip, deflate, br',
-    'user-agent': USER_AGENT,
-    'access-control-allow-origin': '*',
+    'user-agent': USER_AGENT
   };
   if (etag) headers['if-none-match'] = etag;
   if (lastModified) headers['if-modified-since'] = lastModified;
