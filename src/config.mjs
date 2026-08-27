@@ -32,6 +32,8 @@ const DEFAULTS = {
   threadId: undefined,
   color: undefined,
   timeoutMs: 20_000,
+  sessionUrl: undefined,
+  browserHeaders: false,
 };
 
 /** "#5865F2" | "5865F2" | 5793266 -> integer, which is what the embed API wants. */
@@ -181,6 +183,16 @@ export function validateConfig(raw) {
 
     if (!isHttpUrl(feed.url)) errors.push(`${label}.url: required, must start with http:// or https://`);
 
+    // Opt-in workarounds for edges that refuse a stateless poller. Validated here so a typo is
+    // a config error rather than a silently ignored key.
+    const sessionUrl = feed.sessionUrl ?? defaults.sessionUrl;
+    if (sessionUrl != null && !isHttpUrl(sessionUrl)) {
+      errors.push(`${label}.sessionUrl: must start with http:// or https://`);
+    }
+    if (feed.browserHeaders != null && typeof feed.browserHeaders !== 'boolean') {
+      errors.push(`${label}.browserHeaders: must be true or false`);
+    }
+
     const webhookEnv = feed.webhookEnv ?? defaults.webhookEnv;
     if (typeof webhookEnv !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(webhookEnv)) {
       errors.push(`${label}.webhookEnv: must be a valid environment variable name`);
@@ -212,6 +224,8 @@ export function validateConfig(raw) {
       avatarUrl: feed.avatarUrl ?? defaults.avatarUrl,
       threadId: feed.threadId ?? defaults.threadId,
       timeoutMs: feed.timeoutMs ?? defaults.timeoutMs,
+      sessionUrl,
+      browserHeaders: (feed.browserHeaders ?? defaults.browserHeaders) === true,
       color: 'color' in feed ? parseColor(feed.color, errors, `${label}.color`) : defaults.color,
       filterChain: [globalFilters, filters].filter(Boolean),
       notify: [...globalNotify, ...compileNotify(feed.notify, `${label}.notify`, errors, warnings)],
