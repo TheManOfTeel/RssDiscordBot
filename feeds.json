@@ -103,9 +103,8 @@
     {
       "id": "nfl-news",
       "name": "NFL News",
-      "url": "https://www.espn.com/espn/rss/nfl/news",
-      "sessionUrl": "https://www.espn.com/",
-      "browserHeaders": true,
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=50",
+      "parser": "espn-json",
       "webhookEnv": "DISCORD_WEBHOOK_NFL_NEWS",
       "username": "NFL News",
       "color": "#0B2265",
@@ -113,8 +112,8 @@
       "descriptionChars": 4096,
       "showDescription": false,
       "filters": {
-        "fields": ["title", "summary"],
-        "exclude": ["\\bbet(s|ting|tor|tors)?\\b|\\bsportsbook|\\bodds\\b|\\bspread\\b", "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b"]
+        "fields": ["title", "summary", "categories"],
+        "exclude": ["\\bbet(s|ting|tor|tors)?\\b|\\bsportsbook|\\bodds\\b|\\bspread\\b", "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b", "^league:Fantasy NFL$"]
       },
       "notify": [
         {
@@ -150,22 +149,6 @@
           }
         }
       ]
-    },
-    {
-      "id": "cfb-news",
-      "name": "College Football News",
-      "url": "https://www.espn.com/espn/rss/ncf/news",
-      "enabled": false,
-      "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
-      "username": "CFB News",
-      "color": "#8C1515",
-      "maxPerRun": 20,
-      "descriptionChars": 4096,
-      "showDescription": false,
-      "filters": {
-        "fields": ["title", "summary"],
-        "exclude": ["\\bbet(s|ting|tor|tors)?\\b|\\bsportsbook|\\bodds\\b|\\bspread\\b", "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b"]
-      }
     }
   ]
 }
