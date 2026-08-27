@@ -32,9 +32,15 @@ const DEFAULTS = {
   threadId: undefined,
   color: undefined,
   timeoutMs: 20_000,
-  sessionUrl: undefined,
-  browserHeaders: false,
+  parser: 'feed',
 };
+
+/**
+ * Must stay in sync with the PARSERS table in runner.mjs. Duplicated as a literal rather than
+ * imported so config validation has no dependency on the runner — a typo'd parser name is a
+ * config error reported alongside the others, before any request is made.
+ */
+const VALID_PARSERS = new Set(['feed', 'espn-json']);
 
 /** "#5865F2" | "5865F2" | 5793266 -> integer, which is what the embed API wants. */
 export function parseColor(value, errors, label) {
@@ -183,22 +189,20 @@ export function validateConfig(raw) {
 
     if (!isHttpUrl(feed.url)) errors.push(`${label}.url: required, must start with http:// or https://`);
 
-    // Opt-in workarounds for edges that refuse a stateless poller. Validated here so a typo is
-    // a config error rather than a silently ignored key.
-    const sessionUrl = feed.sessionUrl ?? defaults.sessionUrl;
-    if (sessionUrl != null && !isHttpUrl(sessionUrl)) {
-      errors.push(`${label}.sessionUrl: must start with http:// or https://`);
-    }
-    if (feed.browserHeaders != null && typeof feed.browserHeaders !== 'boolean') {
-      errors.push(`${label}.browserHeaders: must be true or false`);
-    }
-
     const webhookEnv = feed.webhookEnv ?? defaults.webhookEnv;
     if (typeof webhookEnv !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(webhookEnv)) {
       errors.push(`${label}.webhookEnv: must be a valid environment variable name`);
     }
     if ('webhook' in feed || 'webhookUrl' in feed) {
       errors.push(`${label}: put the webhook URL in an environment variable / repo secret and name it via "webhookEnv" — never in this file`);
+    }
+
+    const parser = feed.parser ?? defaults.parser;
+    if (!VALID_PARSERS.has(parser)) {
+      errors.push(`${label}.parser: unknown parser ${JSON.stringify(parser)} (valid: ${[...VALID_PARSERS].join(', ')})`);
+    }
+    if (feed.parserOptions != null && (typeof feed.parserOptions !== 'object' || Array.isArray(feed.parserOptions))) {
+      errors.push(`${label}.parserOptions: must be an object`);
     }
 
     let filters;
@@ -224,8 +228,8 @@ export function validateConfig(raw) {
       avatarUrl: feed.avatarUrl ?? defaults.avatarUrl,
       threadId: feed.threadId ?? defaults.threadId,
       timeoutMs: feed.timeoutMs ?? defaults.timeoutMs,
-      sessionUrl,
-      browserHeaders: (feed.browserHeaders ?? defaults.browserHeaders) === true,
+      parser,
+      parserOptions: feed.parserOptions ?? {},
       color: 'color' in feed ? parseColor(feed.color, errors, `${label}.color`) : defaults.color,
       filterChain: [globalFilters, filters].filter(Boolean),
       notify: [...globalNotify, ...compileNotify(feed.notify, `${label}.notify`, errors, warnings)],
