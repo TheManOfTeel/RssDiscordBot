@@ -178,8 +178,7 @@ async function runFeed(feed, options, log) {
       result.note = '304';
       log(`  304 not modified`);
     } else {
-      var body = response.body ?? await response.text();
-      const parsed = parseFeed(body);
+      const parsed = parseFeed(response.body);
       state.etag = response.etag ?? null;
       state.lastModified = response.lastModified ?? null;
       result.fetched = parsed.items.length;

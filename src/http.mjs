@@ -45,7 +45,15 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(new Error(`timeout after ${timeoutMs}ms`)), timeoutMs);
     try {
-      const res = await fetchImpl(url, { headers, redirect: 'follow', signal: controller.signal });
+      const res = await fetchImpl(url, { headers, redirect: 'follow', signal: controller.signal })
+      .then(response => response.text())
+      .then((response) => {
+        console.log(response); // returns empty string
+        return dispatch({
+          type: "GET_CALL",
+          response: response
+        });
+      });
       if (res.status === 304) return { notModified: true };
       if (res.status === 429 || res.status >= 500) {
         // Transient by definition — retry. Anything else is our problem, not theirs.
