@@ -207,8 +207,13 @@ export async function postEmbeds(webhookUrl, embeds, {
     for (let attempt = 0; ; attempt++) {
       const res = await fetchImpl(endpoint.toString(), {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'user-agent': 'rss-discord-bot/1.0' },
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'rss-discord-bot/1.0',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(payload),
+        redirect: 'follow',
       });
       const resForInspect = await res.clone();
 
