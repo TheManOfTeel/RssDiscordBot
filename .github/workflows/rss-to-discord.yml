@@ -18,12 +18,10 @@ on:
         type: string
         default: ''
 
+# Unified at the top level to resolve engine initialization blocks
 permissions:
-  # Deliberately read, not write: the state commit pushes with the App installation token
-  # stored by checkout, so GITHUB_TOKEN needs no write scope. Keeping it read means a
-  # compromised step can't push with the ambient token, and it makes accidental removal of
-  # the app-token step fail loudly rather than silently reverting to github-actions[bot].
-  contents: read
+  contents: write
+  pull-requests: write
 
 concurrency:
   group: rss-to-discord
@@ -34,28 +32,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      # Mints a 1-hour installation token for the state-commit App. MUST run before checkout:
-      # checkout stores whatever token it is handed into .git/config as an auth extraheader,
-      # and the "Persist state" step's bare `git push` silently reuses that stored credential.
-      # The default (GITHUB_TOKEN) pushes as github-actions[bot], which cannot be named in a
-      # ruleset bypass list. An App installation can, so a protected default branch can let
-      # exactly this bot through and nobody else.
+      # Mints a 1-hour installation token for the state-commit App. MUST run before checkout.
       - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           client-id: ${{ secrets.BOT_APP_ID }}
           private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v6
         with:
           token: ${{ steps.app-token.outputs.token }}
+
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-          # No dependency install step: this project has zero dependencies on purpose.
+
       - name: Poll feeds
         env:
-          # One secret per target channel. Every webhookEnv named in feeds.json must be
-          # listed here — secrets are NOT injected automatically.
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           DISCORD_WEBHOOK_APPLE_NEWSROOM: ${{ secrets.DISCORD_WEBHOOK_APPLE_NEWSROOM }}
           DISCORD_WEBHOOK_APPLE_DEV_NEWS: ${{ secrets.DISCORD_WEBHOOK_APPLE_DEV_NEWS }}
@@ -63,8 +56,6 @@ jobs:
           DISCORD_WEBHOOK_APPLE_RELEASES_BETA: ${{ secrets.DISCORD_WEBHOOK_APPLE_RELEASES_BETA }}
           DISCORD_WEBHOOK_NFL_NEWS: ${{ secrets.DISCORD_WEBHOOK_NFL_NEWS }}
           DISCORD_WEBHOOK_CFB_NEWS: ${{ secrets.DISCORD_WEBHOOK_CFB_NEWS }}
-          # Via env, not interpolated into the script: a ${{ inputs.only }} inside `run:`
-          # is a shell-injection hole for anyone who can dispatch the workflow.
           DRY_RUN: ${{ inputs.dry_run }}
           SEED: ${{ inputs.seed }}
           ONLY: ${{ inputs.only }}
@@ -75,27 +66,21 @@ jobs:
           if [ "${DRY_RUN:-}" = 'true' ]; then args+=(--dry-run); fi
           if [ "${SEED:-}" = 'true' ]; then args+=(--seed); fi
           if [ -n "${ONLY:-}" ]; then args+=(--only "$ONLY"); fi
-          node src/runner.mjs ${args[@]+"${args[@]}"}
+          node src/runner.mjs "${args[@]+"${args[@]}"}"
+
       - name: Persist state
-        # always(): if a feed failed, the state for the feeds that succeeded must still be
-        # committed, or their posts get re-sent on the next run.
-        # On a schedule event `inputs.dry_run` is null, so !null is true and this runs.
         if: always() && !inputs.dry_run
         run: |
           set -euo pipefail
-          # Author is free-form and plays no part in authorization — the ruleset evaluates the
-          # pusher, which is the App installation whose token checkout stored. This address
-          # deliberately maps to no GitHub account: the previous 41898282+github-actions[bot]
-          # value would attribute commits to GitHub's own Actions bot, which is not what pushes.
           git config user.name 'rss-bot'
-          git config user.email 'rss-bot@users.noreply.github.com'
+          git config user.email 'rss-bot@://github.com'
           git add state/
           if git diff --quiet --cached; then
             echo 'no state changes'
             exit 0
           fi
           git commit -m 'chore(state): update feed cursors [skip ci]'
-          # Retry loop: a concurrent push (a human commit landing mid-run) must not fail the job.
+          
           for attempt in 1 2 3; do
             if git push; then
               exit 0
@@ -105,6 +90,3 @@ jobs:
           done
           echo 'could not push state after 3 attempts' >&2
           exit 1
-    permissions:
-      contents: write
-      pull-requests: write
