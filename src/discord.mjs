@@ -215,12 +215,11 @@ export async function postEmbeds(webhookUrl, embeds, {
         body: JSON.stringify(payload),
         redirect: 'follow',
       });
-      const resForInspect = await res.clone();
 
       if (res.status === 429) {
         let body;
         try {
-          body = await resForInspect.json();
+          body = await res.json();
         } catch {
           body = undefined;
         }
@@ -232,7 +231,7 @@ export async function postEmbeds(webhookUrl, embeds, {
       }
 
       if (res.status >= 500) {
-        if (attempt >= maxRetries) throw new DiscordError(res.status, await resForInspect.text().catch(() => ''));
+        if (attempt >= maxRetries) throw new DiscordError(res.status, await res.text().catch(() => ''));
         const wait = Math.min(1000 * 2 ** attempt, maxSleepMs);
         log(`  ${res.status} from Discord, waiting ${wait}ms (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(wait);
@@ -246,7 +245,7 @@ export async function postEmbeds(webhookUrl, embeds, {
         continue;
       }
 
-      if (!res.ok) throw new DiscordError(res.status, await resForInspect.text().catch(() => ''));
+      if (!res.ok) throw new DiscordError(res.status, await res.text().catch(() => ''));
 
       messages++;
       // Proactively yield when the bucket is exhausted rather than earning a 429.

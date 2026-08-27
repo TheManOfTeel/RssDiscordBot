@@ -47,22 +47,17 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
     const timer = setTimeout(() => controller.abort(new Error(`timeout after ${timeoutMs}ms`)), timeoutMs);
     try {
       const res = await fetchImpl(url, { headers, redirect: 'follow', signal: controller.signal });
-      var xmlText = await res.text();
       if (res.status === 304) return { notModified: true };
-      if (res.status === 202 || res.status === 429 || res.status >= 500) {
-        // 202 + empty body is a CDN soft block, not an answer. Retryable.
+      if (res.status === 429 || res.status >= 500) {
+        // Transient by definition — retry. Anything else is our problem, not theirs.
         lastError = new HttpError(res.status, res.statusText, url);
-        log(`  ${url} -> ${res.status}${xmlText?.length === 0 ? ' (empty body - soft block?)' : ''}, retrying`);
+        log(`  ${url} -> ${res.status}, retrying`);
         continue;
       }
       if (!res.ok) throw new HttpError(res.status, res.statusText, url);
-      if (!xmlText.trim()) {
-        lastError = new Error(`${url} -> ${res.status} with an empty body`);
-        continue;
-      }
       return {
         notModified: false,
-        body: xmlText,
+        body: await res.text(),
         etag: res.headers.get('etag'),
         lastModified: res.headers.get('last-modified'),
       };
