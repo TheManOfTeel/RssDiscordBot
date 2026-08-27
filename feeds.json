@@ -99,6 +99,55 @@
           "text": "Beta release:"
         }
       ]
+    },
+    {
+      "id": "nfl-news",
+      "name": "NFL News",
+      "url": "https://www.espn.com/espn/rss/nfl/news",
+      "webhookEnv": "DISCORD_WEBHOOK_NFL_NEWS",
+      "username": "NFL News",
+      "color": "#0B2265",
+      "maxPerRun": 20,
+      "descriptionChars": 4096,
+      "showDescription": false,
+      "filters": {
+        "fields": ["title"],
+        "exclude": ["\\bbe(t|ts|tting)?\\b"]
+      },
+      "notify": [
+        {
+          "roles": ["1542330701066801203"],
+          "text": "League news:",
+          "when": {
+            "fields": ["title", "description"],
+            "exclude": [ "\\b49ers\\b", "\\bBears\\b", "\\bBengals\\b", "\\bBills\\b", "\\bBroncos\\b", "\\bBrowns\\b", "\\bBuccaneers\\b", "\\bCardinals\\b", "\\bChargers\\b", "\\bChiefs\\b", "\\bColts\\b", "\\bCommanders\\b", "\\bCowboys\\b", "\\bDolphins\\b", "\\bEagles\\b", "\\bFalcons\\b", "\\bGiants\\b", "\\bJaguars\\b", "\\bJets\\b", "\\bLions\\b", "\\bPackers\\b", "\\bPanthers\\b", "\\bPatriots\\b", "\\bRaiders\\b", "\\bRams\\b", "\\bRavens\\b", "\\bSaints\\b", "\\bSeahawks\\b", "\\bSteelers\\b", "\\bTexans\\b", "\\bTitans\\b", "\\bVikings?\\b"]
+          }
+        },
+        {
+          "roles": ["1542335085280235632"],
+          "text": "Browns news:",
+          "when": {
+            "fields": ["title", "description"],
+            "include": ["\\bBrowns\\b"]
+          }
+        },
+        {
+          "roles": ["1542334746942644274"],
+          "text": "Giants news:",
+          "when": {
+            "fields": ["title", "description"],
+            "include": ["\\bGiants\\b"]
+          }
+        },
+        {
+          "roles": ["1542337543260086382"],
+          "text": "Lions news:",
+          "when": {
+            "fields": ["title", "description"],
+            "include": ["\\bLions\\b"]
+          }
+        }
+      ]
     }
   ]
 }
