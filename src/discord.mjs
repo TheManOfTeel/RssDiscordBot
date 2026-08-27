@@ -210,7 +210,7 @@ export async function postEmbeds(webhookUrl, embeds, {
         headers: { 'content-type': 'application/json', 'user-agent': 'rss-discord-bot/1.0' },
         body: JSON.stringify(payload),
       });
-      const resForInspect = res.clone();
+      const resForInspect = await res.clone();
 
       if (res.status === 429) {
         let body;
@@ -230,6 +230,13 @@ export async function postEmbeds(webhookUrl, embeds, {
         if (attempt >= maxRetries) throw new DiscordError(res.status, await resForInspect.text().catch(() => ''));
         const wait = Math.min(1000 * 2 ** attempt, maxSleepMs);
         log(`  ${res.status} from Discord, waiting ${wait}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await sleep(wait);
+        continue;
+      }
+
+      if (res.status === 202) {
+        const wait = Math.min(1000 * 2 ** attempt, maxSleepMs);
+        log(`  202 Accepted — no body, waiting ${wait}ms (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(wait);
         continue;
       }
