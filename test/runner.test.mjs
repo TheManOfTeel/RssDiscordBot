@@ -250,3 +250,47 @@ test('an unknown argument exits 2 instead of running', async () => {
   }
   assert.match(errors.join('\n'), /unknown argument/);
 });
+
+/** Atom, with the image attached the way Apple's newsroom feed does it. */
+const atom = (entries) => `<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><title>T</title>
+${entries.map((e) => `<entry><title>${e.title}</title><link href="${e.link}"/><id>${e.link}</id><updated>${e.date}</updated><content>${e.content ?? ''}</content><link href="${e.image}" rel="enclosure" type="image/jpeg"/></entry>`).join('\n')}
+</feed>`;
+
+const ENTRY_HW = { title: 'Testcorp introduces the testdevice', link: 'https://example.com/hw', date: '2026-08-04T10:00:00Z', image: 'https://example.com/hw.jpg' };
+const ENTRY_SW = { title: 'Testcorp updates its terms', link: 'https://example.com/sw', date: '2026-08-05T10:00:00Z', image: 'https://example.com/sw.jpg' };
+
+test('showImage "notified" attaches an image only to items that ping', async () => {
+  const config = {
+    feeds: [{
+      id: 'f',
+      url: FEED_URL,
+      showImage: 'notified',
+      notify: [{ roles: ['123456789012345678'], text: 'New hardware:', when: { fields: ['title'], include: ['testdevice'] } }],
+    }],
+  };
+  const file = await writeConfig(config);
+  routes[FEED_URL] = { body: atom([{ ...ENTRY_HW, title: 'seed only', link: 'https://example.com/seed' }]) };
+  assert.equal(await run(file), 0, 'first run seeds');
+
+  routes[FEED_URL] = { body: atom([ENTRY_HW, ENTRY_SW]) };
+  assert.equal(await run(file), 0);
+
+  assert.equal(posted.length, 2);
+  const hw = posted.find((e) => e.title.includes('testdevice'));
+  const sw = posted.find((e) => e.title.includes('terms'));
+  assert.deepEqual(hw.image, { url: 'https://example.com/hw.jpg' }, 'the pinging item carries its image');
+  assert.equal(sw.image, undefined, 'a silent item must not, even though the feed supplied one');
+});
+
+test('showImage true attaches images to every item, false to none', async () => {
+  for (const [showImage, expected] of [[true, 2], [false, 0]]) {
+    posted.length = 0;
+    const file = path.join(dir, `feeds-${String(showImage)}.json`);
+    await writeFile(file, JSON.stringify({ feeds: [{ id: `f-${showImage}`, url: FEED_URL, showImage }] }), 'utf8');
+    routes[FEED_URL] = { body: atom([{ ...ENTRY_HW, title: 'seed', link: 'https://example.com/seed' }]) };
+    await main(['--config', file, '--state-dir', path.join(dir, 'state'), ...[]]);
+    routes[FEED_URL] = { body: atom([ENTRY_HW, ENTRY_SW]) };
+    await main(['--config', file, '--state-dir', path.join(dir, 'state')]);
+    assert.equal(posted.filter((e) => e.image).length, expected, `showImage: ${showImage}`);
+  }
+});
