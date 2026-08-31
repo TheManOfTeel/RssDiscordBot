@@ -191,23 +191,22 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   const availableBodyChars = Math.max(0, LIMITS.CONTENT - pingOffset);
   // Target the smaller of the iOS mobile limit or available space
   const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
-  let rawSummary = summary ?? '';
+  let formattedSummary = summary ?? '';
   if (summarize) {
     // Automatically set summary length to roughly 20% of the original article length, minimum 1 sentence
-    const totalSentencesCount = (rawSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
+    const totalSentencesCount = (formattedSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
     const calculatedBounds = Math.max(1, Math.round(totalSentencesCount * 0.2));
-    rawSummary = algorithmicSummarize(rawSummary, calculatedBounds);
+    formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
   }
-  let clippedSummary = rawSummary;
   // Single-pass truncation with ellipsis
-  if (rawSummary.length > targetLength) {
-    clippedSummary = rawSummary.slice(0, Math.max(0, targetLength - 1)).trimEnd() + '…';
+  if (formattedSummary.length > targetLength) {
+    formattedSummary = formattedSummary.slice(0, Math.max(0, targetLength - 1)).trimEnd() + '…';
   }
-  // Join pings and clippedSummary cleanly without leading/trailing newlines
-  if (pings.length > 0 && clippedSummary.length > 0) {
-    return `${pings}\n${clippedSummary}`;
+  // Join pings and formattedSummary cleanly without leading/trailing newlines
+  if (pings.length > 0 && formattedSummary.length > 0) {
+    return `${pings}\n${formattedSummary}`;
   }
-  return clippedSummary || pings || undefined;
+  return formattedSummary || pings || undefined;
 }
 
 /** `parse: []` blocks everything, then the id allowlists re-open exactly what was asked for. */
@@ -220,11 +219,11 @@ export function allowedMentionsFor({ roles = [], users = [] } = {}) {
 
 /** Algorithmic approach to generate summary from input text */
 export function algorithmicSummarize(textString, sentenceCount = 2) {
-  if (!textString || textString.trim() === "") return "";
+  if (!textString || textString.trim() === '') return '';
   // Define common words to ignore (stop words) so they don't skew the scoring
   const stopWords = new Set([
-    "the", "a", "an", "and", "but", "or", "for", "nor", "on", "at", 
-    "to", "from", "by", "of", "in", "is", "it", "that", "this", "with", "was", "as"
+    'the', 'a', 'an', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 
+    'to', 'from', 'by', 'of', 'in', 'is', 'it', 'that', 'this', 'with', 'was', 'as'
   ]);
 
   // Clean the text and tokenize into individual words to calculate global frequency
@@ -271,7 +270,7 @@ export function algorithmicSummarize(textString, sentenceCount = 2) {
   const finalSummary = topSentences
     .sort((a, b) => a.index - b.index)
     .map(s => s.text)
-    .join(" ");
+    .join(' ');
   return finalSummary;
 }
 
