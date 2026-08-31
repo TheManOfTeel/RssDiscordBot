@@ -115,10 +115,13 @@ export function mentionsFor(item, notify, now) {
   const roles = new Set();
   const users = new Set();
   const texts = [];
-  for (const rule of notify) {
+  for (const rule of notify ?? []) {
     if (rule.when && !evaluate(item, rule.when, now).pass) continue;
-    for (const id of rule.roles) roles.add(id);
-    for (const id of rule.users) users.add(id);
+    
+    // Safely iterate over missing or empty arrays
+    for (const id of rule.roles ?? []) roles.add(id);
+    for (const id of rule.users ?? []) users.add(id);
+    
     if (rule.text) texts.push(rule.text);
   }
   if (roles.size === 0 && users.size === 0) return null;
