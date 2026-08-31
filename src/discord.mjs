@@ -180,7 +180,7 @@ const retryAfterMs = (headers, body) => {
  * mention has to be in the message's top-level `content`, and `allowed_mentions` has to
  * permit it, or it renders as a highlighted-but-silent mention.
  */
-export function mentionContent({ roles = [], users = [], text } = {}, summary = '') {
+export function mentionContent({ roles = [], users = [], text } = {}, summary = '', summarize = false) {
   const mentions = [
     ...(roles ?? []).map((id) => `<@&${id}>`),
     ...(users ?? []).map((id) => `<@${id}>`)
@@ -192,10 +192,12 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   // Target the smaller of the iOS mobile limit or available space
   const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
   let rawSummary = summary ?? '';
-  // Automatically set summary length to roughly 20% of the original article length, minimum 1 sentence
-  const totalSentencesCount = (rawSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
-  const calculatedBounds = Math.max(1, Math.round(totalSentencesCount * 0.2)); 
-  rawSummary = algorithmicSummarize(rawSummary, calculatedBounds);
+  if (summarize) {
+    // Automatically set summary length to roughly 20% of the original article length, minimum 1 sentence
+    const totalSentencesCount = (rawSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
+    const calculatedBounds = Math.max(1, Math.round(totalSentencesCount * 0.2));
+    rawSummary = algorithmicSummarize(rawSummary, calculatedBounds);
+  }
   let clippedSummary = rawSummary;
   // Single-pass truncation with ellipsis
   if (rawSummary.length > targetLength) {
