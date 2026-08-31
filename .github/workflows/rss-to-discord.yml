@@ -1,7 +1,8 @@
 name: RSS to Discord
 
 on:
-  # scheduling handled by cron-job.org since actions scheduler is too loose
+  # Scheduling handled by cron-job.org since actions scheduler is too loose.
+  # Current commented 30 minute interval is a guideline and may not be accurate with current scheduling.
   # schedule:
   #   - cron: '*/30 * * * *'
   workflow_dispatch:
