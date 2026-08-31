@@ -193,6 +193,7 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
   const rawSummary = summary ?? '';
   // Automatically set summary length to roughly 20% of the original article length, minimum 1 sentence
+  const totalSentencesCount = (rawSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
   const calculatedBounds = Math.max(1, Math.round(totalSentencesCount * 0.2)); 
   rawSummary = algorithmicSummarize(rawSummary, calculatedBounds);
   let clippedSummary = rawSummary;
