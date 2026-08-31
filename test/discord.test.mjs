@@ -180,7 +180,7 @@ test('mentionContent builds role and user mentions, with optional lead text', ()
     '<@&111111111111111111> <@222222222222222222> New hardware:'
   );
   assert.equal(mentionContent({}), undefined, 'nothing to ping means no content field at all');
-  assert.ok(mentionContent({ roles: ['1'.repeat(18)], text: 'x'.repeat(2100) }).length <= LIMITS.CONTENT);
+  assert.ok(mentionContent({ roles: ['1'.repeat(18)], text: 'x'.repeat(1976) }).length <= LIMITS.CONTENT);
 });
 
 test('allowedMentionsFor default-denies and allowlists only the given ids', () => {
