@@ -298,7 +298,7 @@ async function runFeed(feed, options, log) {
           if (group.mention) result.pinged += group.items.length;
           for (const item of group.items) {
             postedIds.push(item.id);
-            log(`  ${group.mention ? '🔔' : '→'} ${item.title?.slice(0, 90) ?? item.id}`);
+            log(`  ${group.mention ? '🔔' : '→'}${group.mention?.summarize ?? false ? '🤖' : ''} ${item.title?.slice(0, 90) ?? item.id}`);
           }
         }
         result.posted = postedIds.length;
