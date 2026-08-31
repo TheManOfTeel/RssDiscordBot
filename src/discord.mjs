@@ -181,36 +181,27 @@ const retryAfterMs = (headers, body) => {
  * permit it, or it renders as a highlighted-but-silent mention.
  */
 export function mentionContent({ roles = [], users = [], text } = {}, summary = '') {
-  // const mentions = [...roles.map((id) => `<@&${id}>`), ...users.map((id) => `<@${id}>`)];
-  // if (mentions.length === 0) return undefined;
-  // const pings = [...mentions, text].filter(Boolean).join(' ');
-  // const availableBodyChars = Math.max(0, LIMITS.CONTENT - pings.length - 1);
-  // // Cap the summary to an iOS/Mobile readable size (or available bounds)
-  // const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
-  // if (summary.length >= targetLength) summary = summary.slice(0, targetLength - 1) + '…';
-  // const clippedSummary = clip(summary ?? '', targetLength);
-  // return clippedSummary ? `${pings}\n${clippedSummary}` : pings;
   const mentions = [
-    ...roles.map((id) => `<@&${id}>`),
-    ...users.map((id) => `<@${id}>`)
+    ...(roles ?? []).map((id) => `<@&${id}>`),
+    ...(users ?? []).map((id) => `<@${id}>`)
   ];
-  if (mentions.length === 0) return undefined;
   const pings = [...mentions, text].filter(Boolean).join(' ');
-  // Reserve space for pings + newline (\n)
-  const availableBodyChars = Math.max(0, LIMITS.CONTENT - pings.length - 1);
+  // Reserve space for pings + newline (\n) if pings exist
+  const pingOffset = pings.length > 0 ? pings.length + 1 : 0;
+  const availableBodyChars = Math.max(0, LIMITS.CONTENT - pingOffset);
   // Target the smaller of the iOS mobile limit or available space
-  const targetLength = Math.min(
-    LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, 
-    availableBodyChars
-  );
+  const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
   const rawSummary = summary ?? '';
   let clippedSummary = rawSummary;
   // Single-pass truncation with ellipsis
   if (rawSummary.length > targetLength) {
-    // Retain targetLength total length including the 1-char ellipsis ('…')
     clippedSummary = rawSummary.slice(0, Math.max(0, targetLength - 1)).trimEnd() + '…';
   }
-  return clippedSummary.length > 0 ? `${pings}\n${clippedSummary}` : pings;
+  // Join pings and clippedSummary cleanly without leading/trailing newlines
+  if (pings.length > 0 && clippedSummary.length > 0) {
+    return `${pings}\n${clippedSummary}`;
+  }
+  return clippedSummary || pings || undefined;
 }
 
 /** `parse: []` blocks everything, then the id allowlists re-open exactly what was asked for. */
