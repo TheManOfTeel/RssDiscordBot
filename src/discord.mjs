@@ -32,6 +32,15 @@ export class DiscordError extends Error {
   }
 }
 
+export class EmbedSizeOverflowError extends Error {
+  constructor(embed, cost, max) {
+    super(`Embed size ${cost} exceeds limit ${max}: ${JSON.stringify(embed).slice(0, 500)}`);
+    this.embed = embed;
+    this.cost = cost;
+    this.max = max;
+  }
+}
+
 const sleepDefault = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Truncate to `max` characters, ellipsis included in the budget. */
@@ -85,17 +94,41 @@ export function sanitizeEmbed(embed) {
   return out;
 }
 
+function truncateEmbed(embed, maxChars) {
+  const currentCost = embedCharCount(embed);
+  if (currentCost <= maxChars) return embed;
+  const overflow = currentCost - maxChars;
+  const cloned = { ...embed };
+  if (cloned.description && cloned.description.length > overflow + 3) {
+    // Trim description with an ellipsis indicator (...)
+    cloned.description = cloned.description.slice(0, -(overflow + 3)) + '...';
+  } else {
+    // If description truncation is insufficient, slice fields array down
+    cloned.fields = cloned.fields?.slice(0, Math.max(0, (cloned.fields?.length || 0) - 1));
+  }
+  return cloned;
+}
+
 /** Split embeds into messages respecting both the count cap and the 6000-char cap. */
-export function batchEmbeds(embeds, batching = true, { perMessage = LIMITS.EMBEDS_PER_MESSAGE, totalChars = LIMITS.TOTAL_CHARS } = {}) {
+export function batchEmbeds(embeds, batching = true, { perMessage = LIMITS.EMBEDS_PER_MESSAGE, totalChars = LIMITS.TOTAL_CHARS, truncateOnOverflow = true } = {}) {
+  const sanitizedEmbeds = embeds.map(embed => {
+    const cost = embedCharCount(embed);
+    if (cost > totalChars) {
+      if (truncateOnOverflow) {
+        return truncateEmbed(embed, totalChars);
+      }
+      throw new EmbedSizeOverflowError(embed, cost, totalChars);
+    }
+    return embed;
+  });
+  if (!batching) {
+    return sanitizedEmbeds.map(embed => [embed]);
+  }
   const batches = [];
   let batch = [];
   let chars = 0;
-  for (const embed of embeds) {
+  for (const embed of sanitizedEmbeds) {
     const cost = embedCharCount(embed);
-    if (!batching) {
-      batches.push(batch);
-      continue;
-    }
     if (batch.length > 0 && (batch.length >= perMessage || chars + cost > totalChars)) {
       batches.push(batch);
       batch = [];
