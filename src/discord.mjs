@@ -66,7 +66,7 @@ export function embedCharCount(embed) {
 }
 
 /** Clamp every embed field to its documented maximum. */
-export function sanitiseEmbed(embed) {
+export function sanitizeEmbed(embed) {
   const out = compact({
     title: clip(embed.title, LIMITS.TITLE),
     url: embed.url,
@@ -92,12 +92,10 @@ export function batchEmbeds(embeds, batching = true, { perMessage = LIMITS.EMBED
   let chars = 0;
   for (const embed of embeds) {
     const cost = embedCharCount(embed);
-
     if (!batching) {
       batches.push([embed]);
       continue;
     }
-
     if (batch.length > 0 && (batch.length >= perMessage || chars + cost > totalChars)) {
       batches.push(batch);
       batch = [];
@@ -155,7 +153,6 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   const mentions = [...roles.map((id) => `<@&${id}>`), ...users.map((id) => `<@${id}>`)];
   if (mentions.length === 0) return undefined;
   var formattedContent = text ?? '' + (text && summary ? ' ' : '') + summary;
-  // return clip([mentions.join(' ')].filter(Boolean).join(' '), formattedContent, LIMITS.CONTENT);
   return clip([mentions.join(' '), formattedContent].filter(Boolean).join(' '), LIMITS.CONTENT);
 }
 
@@ -184,7 +181,7 @@ export async function postEmbeds(webhookUrl, embeds, {
 } = {}) {
   if (embeds.length === 0) return { messages: 0, embeds: 0 };
   const target = assertWebhookUrl(webhookUrl);
-  const batches = batchEmbeds(embeds.map(sanitiseEmbed), batching);
+  const batches = batchEmbeds(embeds.map(sanitizeEmbed), batching);
 
   const endpoint = new URL(target);
   endpoint.searchParams.set('wait', 'true'); // surface creation failures instead of fire-and-forget

@@ -9,7 +9,7 @@ import {
   LIMITS,
   mentionContent,
   postEmbeds,
-  sanitiseEmbed,
+  sanitizeEmbed,
 } from '../src/discord.mjs';
 
 const WEBHOOK = 'https://discord.com/api/webhooks/123456789/abcDEF-token_1';
@@ -43,8 +43,8 @@ test('clip respects the budget and returns undefined for empties', () => {
   assert.equal(clip(undefined, 10), undefined);
 });
 
-test('sanitiseEmbed clamps every documented limit and drops empty members', () => {
-  const embed = sanitiseEmbed({
+test('sanitizeEmbed clamps every documented limit and drops empty members', () => {
+  const embed = sanitizeEmbed({
     title: 'T'.repeat(400),
     description: 'D'.repeat(5000),
     author: { name: 'A'.repeat(400) },
