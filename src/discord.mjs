@@ -93,7 +93,7 @@ export function batchEmbeds(embeds, batching = true, { perMessage = LIMITS.EMBED
   for (const embed of embeds) {
     const cost = embedCharCount(embed);
     if (!batching) {
-      batches.push([embed]);
+      batches.push(batch);
       continue;
     }
     if (batch.length > 0 && (batch.length >= perMessage || chars + cost > totalChars)) {
