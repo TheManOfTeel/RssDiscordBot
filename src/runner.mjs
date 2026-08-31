@@ -116,6 +116,7 @@ export function mentionsFor(item, notify, now) {
   const users = new Set();
   const texts = [];
   let isBatched = true;
+  let isSummarized = true;
   for (const rule of notify ?? []) {
     if (rule.when && !evaluate(item, rule.when, now).pass) continue;
     for (const id of rule.roles ?? []) roles.add(id);
@@ -125,9 +126,13 @@ export function mentionsFor(item, notify, now) {
     if (rule.batching === false) {
       isBatched = false;
     }
+    if (rule.summarize === false) {
+      // If any matched rule explicitly disables summarization, resolve summarization to false
+      isSummarized = false;
+    }
   }
   if (roles.size === 0 && users.size === 0) return null;
-  return { roles: [...roles], users: [...users], text: texts[0], batching: isBatched };
+  return { roles: [...roles], users: [...users], text: texts[0], batching: isBatched, summarize: isSummarized };
 }
 
 /**
@@ -135,7 +140,7 @@ export function mentionsFor(item, notify, now) {
  * rules that union to the same targets in a different order still collapse.
  */
 const mentionKey = (mention) =>
-  mention === null ? '' : JSON.stringify([[...mention.roles].sort(), [...mention.users].sort(), mention.text ?? '', mention.batching ?? true]);
+  mention === null ? '' : JSON.stringify([[...mention.roles].sort(), [...mention.users].sort(), mention.text ?? '', mention.batching ?? true, mention.summarize ?? false]);
 
 /**
  * Split the queue into messages, batching RUNS OF ITEMS THAT SHARE A MENTION SET (up to the
@@ -270,16 +275,16 @@ async function runFeed(feed, options, log) {
           // Build top-level message content
           let messageContent = undefined;
           if (isBatched) {
-            // BATCHED: Top-level message content carries the role ping + combined titles summary
-            const summary = embeds.map((e) => e.title).join('; ');
-            messageContent = mentionContent(group.mention ?? {}, summary);
+            // BATCHED: Top-level message content carries the role ping + combined titles summary. These titles will get summarized for the message content.
+            const summary = embeds.map((e) => e.title).join('. ');
+            messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false);
           } else {
             // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
             const item = group.items[0];
             const itemBody = item.description || item.summary || item.title;
             
             // Ping role AND include item body directly in the top-level message content
-            messageContent = mentionContent(group.mention ?? {}, itemBody);
+            messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false);
           }
           await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embeds, {
             content: messageContent,

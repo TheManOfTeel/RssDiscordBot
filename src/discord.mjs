@@ -180,7 +180,7 @@ const retryAfterMs = (headers, body) => {
  * mention has to be in the message's top-level `content`, and `allowed_mentions` has to
  * permit it, or it renders as a highlighted-but-silent mention.
  */
-export function mentionContent({ roles = [], users = [], text } = {}, summary = '') {
+export function mentionContent({ roles = [], users = [], text } = {}, summary = '', summarize = false) {
   const mentions = [
     ...(roles ?? []).map((id) => `<@&${id}>`),
     ...(users ?? []).map((id) => `<@${id}>`)
@@ -191,7 +191,13 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   const availableBodyChars = Math.max(0, LIMITS.CONTENT - pingOffset);
   // Target the smaller of the iOS mobile limit or available space
   const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
-  const rawSummary = summary ?? '';
+  let rawSummary = summary ?? '';
+  if (summarize) {
+    // Automatically set summary length to roughly 20% of the original article length, minimum 1 sentence
+    const totalSentencesCount = (rawSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
+    const calculatedBounds = Math.max(1, Math.round(totalSentencesCount * 0.2));
+    rawSummary = algorithmicSummarize(rawSummary, calculatedBounds);
+  }
   let clippedSummary = rawSummary;
   // Single-pass truncation with ellipsis
   if (rawSummary.length > targetLength) {
@@ -212,6 +218,63 @@ export function allowedMentionsFor({ roles = [], users = [] } = {}) {
   return allowed;
 }
 
+/** Algorithmic approach to generate summary from input text */
+export function algorithmicSummarize(textString, sentenceCount = 2) {
+  if (!textString || textString.trim() === "") return "";
+  // Define common words to ignore (stop words) so they don't skew the scoring
+  const stopWords = new Set([
+    "the", "a", "an", "and", "but", "or", "for", "nor", "on", "at", 
+    "to", "from", "by", "of", "in", "is", "it", "that", "this", "with", "was", "as"
+  ]);
+
+  // Clean the text and tokenize into individual words to calculate global frequency
+  const words = textString.toLowerCase().match(/\b[a-z0-9']+\b/g) || [];
+  const wordFrequencies = {};
+  let maxFrequency = 0;
+  words.forEach(word => {
+    if (!stopWords.has(word)) {
+      wordFrequencies[word] = (wordFrequencies[word] || 0) + 1;
+      if (wordFrequencies[word] > maxFrequency) {
+        maxFrequency = wordFrequencies[word];
+      }
+    }
+  });
+  // Normalize frequencies between 0 and 1 so long articles don't break the math
+  if (maxFrequency > 0) {
+    for (const word in wordFrequencies) {
+      wordFrequencies[word] /= maxFrequency;
+    }
+  }
+
+  // Split the text into actual sentences
+  // Uses a basic regex split on punctuation followed by spaces
+  const sentences = textString.match(/[^.!?]+[.!?]+(\s|$)/g) || [textString];
+  const sentenceScores = [];
+  // 4. Score each sentence by adding up the normalized weights of its words
+  sentences.forEach((sentence, index) => {
+    const sentenceWords = sentence.toLowerCase().match(/\b[a-z0-9']+\b/g) || [];
+    let score = 0;
+    sentenceWords.forEach(word => {
+      if (wordFrequencies[word]) {
+        score += wordFrequencies[word];
+      }
+    });
+    // Save the original sentence text, its score, and its original order index
+    sentenceScores.push({ text: sentence.trim(), score, index });
+  });
+
+  // Sort sentences by score to find the most important ones
+  const topSentences = sentenceScores
+    .sort((a, b) => b.score - a.score)
+    .slice(0, sentenceCount);
+  // Re-sort the top sentences back into their original chronological order
+  const finalSummary = topSentences
+    .sort((a, b) => a.index - b.index)
+    .map(s => s.text)
+    .join(" ");
+  return finalSummary;
+}
+
 export async function postEmbeds(webhookUrl, embeds, {
   content,
   allowedMentions,
@@ -229,7 +292,6 @@ export async function postEmbeds(webhookUrl, embeds, {
   if (embeds.length === 0) return { messages: 0, embeds: 0 };
   const target = assertWebhookUrl(webhookUrl);
   const batches = batchEmbeds(embeds.map(sanitizeEmbed));
-
   const endpoint = new URL(target);
   endpoint.searchParams.set('wait', 'true'); // surface creation failures instead of fire-and-forget
   if (threadId) endpoint.searchParams.set('thread_id', String(threadId));
@@ -254,7 +316,7 @@ export async function postEmbeds(webhookUrl, embeds, {
       messages++;
       continue;
     }
-
+  
     if (index > 0) await sleep(minGapMs);
 
     for (let attempt = 0; ; attempt++) {
@@ -306,7 +368,7 @@ export async function postEmbeds(webhookUrl, embeds, {
       if (!res.ok) throw new DiscordError(res.status, await res.text().catch(() => ''));
 
       messages++;
-      // Proactively yield when the bucket is exhausted rather than earning a 429.
+      // Proactively yield when the bucket is exhausted rather than earning a 429
       if (res.headers.get('x-ratelimit-remaining') === '0') {
         const resetAfter = Number(res.headers.get('x-ratelimit-reset-after'));
         if (Number.isFinite(resetAfter) && resetAfter > 0) await sleep(Math.min(resetAfter * 1000 + 100, maxSleepMs));
