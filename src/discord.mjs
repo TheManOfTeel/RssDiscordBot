@@ -110,7 +110,7 @@ function truncateEmbed(embed, maxChars) {
 }
 
 /** Split embeds into messages respecting both the count cap and the 6000-char cap. */
-export function batchEmbeds(embeds, batching = true, { perMessage = LIMITS.EMBEDS_PER_MESSAGE, totalChars = LIMITS.TOTAL_CHARS, truncateOnOverflow = true } = {}) {
+export function batchEmbeds(embeds, { perMessage = LIMITS.EMBEDS_PER_MESSAGE, totalChars = LIMITS.TOTAL_CHARS, truncateOnOverflow = true } = {}) {
   const sanitizedEmbeds = embeds.map(embed => {
     const cost = embedCharCount(embed);
     if (cost > totalChars) {
@@ -121,9 +121,6 @@ export function batchEmbeds(embeds, batching = true, { perMessage = LIMITS.EMBED
     }
     return embed;
   });
-  if (!batching) {
-    return sanitizedEmbeds.map(embed => [embed]);
-  }
   const batches = [];
   let batch = [];
   let chars = 0;
@@ -209,12 +206,11 @@ export async function postEmbeds(webhookUrl, embeds, {
   minGapMs = 1300,
   maxSleepMs = 60_000,
   dryRun = false,
-  batching = true,
   log = () => {},
 } = {}) {
   if (embeds.length === 0) return { messages: 0, embeds: 0 };
   const target = assertWebhookUrl(webhookUrl);
-  const batches = batchEmbeds(embeds.map(sanitizeEmbed), batching);
+  const batches = batchEmbeds(embeds.map(sanitizeEmbed));
 
   const endpoint = new URL(target);
   endpoint.searchParams.set('wait', 'true'); // surface creation failures instead of fire-and-forget

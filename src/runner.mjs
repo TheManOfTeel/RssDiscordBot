@@ -115,14 +115,19 @@ export function mentionsFor(item, notify, now) {
   const roles = new Set();
   const users = new Set();
   const texts = [];
+  let isBatched = true;
   for (const rule of notify ?? []) {
     if (rule.when && !evaluate(item, rule.when, now).pass) continue;
     for (const id of rule.roles ?? []) roles.add(id);
     for (const id of rule.users ?? []) users.add(id);
     if (rule.text) texts.push(rule.text);
+    // If any matched rule explicitly disables batching, resolve batching to false
+    if (rule.batching === false) {
+      isBatched = false;
+    }
   }
-  if (roles.size === 0 && users.size === 0) return null;
-  return { roles: [...roles], users: [...users], text: texts[0] };
+  return { roles: [...roles], users: [...users], text: texts[0], batching: isBatched 
+  };
 }
 
 /**
@@ -130,7 +135,7 @@ export function mentionsFor(item, notify, now) {
  * rules that union to the same targets in a different order still collapse.
  */
 const mentionKey = (mention) =>
-  mention === null ? '' : JSON.stringify([[...mention.roles].sort(), [...mention.users].sort(), mention.text ?? '']);
+  mention === null ? '' : JSON.stringify([[...mention.roles].sort(), [...mention.users].sort(), mention.text ?? '', mention.batching ?? true]);
 
 /**
  * Split the queue into messages, batching RUNS OF ITEMS THAT SHARE A MENTION SET (up to the
@@ -148,13 +153,27 @@ export function groupForDelivery(queue, notify, now, chunk = CHUNK) {
   let bufferKey = null;
   let bufferMention = null;
   const flush = () => {
-    if (buffer.length > 0) groups.push({ items: buffer, mention: bufferMention });
+    if (buffer.length > 0) {
+      groups.push({ items: buffer, mention: bufferMention });
+    }
     buffer = [];
     bufferKey = null;
     bufferMention = null;
   };
   for (const item of queue) {
-    const mention = notify.length > 0 ? mentionsFor(item, notify, now) : null;
+    const mention = (notify && notify.length > 0) ? mentionsFor(item, notify, now) : null;
+    // Check if batching is explicitly false on the resolved mention,
+    // or inspect notify rules directly if mention is null
+    const isBatched = mention
+      ? mention.batching
+      : (notify ?? []).every(rule => rule.batching !== false);
+    if (!isBatched) {
+      // Flush existing buffered items first to maintain chronological delivery order
+      flush();
+      groups.push({ items: [item], mention });
+      continue;
+    }
+    // BATCHED PATH: Buffer until key changes or chunk size is reached
     const key = mentionKey(mention);
     if (buffer.length > 0 && key !== bufferKey) flush();
     bufferKey = key;
@@ -253,7 +272,6 @@ async function runFeed(feed, options, log) {
             avatarUrl: feed.avatarUrl,
             threadId: feed.threadId,
             dryRun: options.dryRun,
-            batching: feed.notify.batching,
             log,
           });
           if (group.mention) result.pinged += group.items.length;
