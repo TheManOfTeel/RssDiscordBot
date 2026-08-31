@@ -271,7 +271,7 @@ async function runFeed(feed, options, log) {
           let messageContent = undefined;
           if (isBatched) {
             // BATCHED: Top-level message content carries the role ping + combined titles summary
-            const summary = embeds.map((e) => e.title).join('; ');
+            const summary = embeds.map((e) => e.title).join('. ');
             messageContent = mentionContent(group.mention ?? {}, summary);
           } else {
             // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
