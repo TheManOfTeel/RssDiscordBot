@@ -191,7 +191,7 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   const availableBodyChars = Math.max(0, LIMITS.CONTENT - pingOffset);
   // Target the smaller of the iOS mobile limit or available space
   const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
-  const rawSummary = summary ?? '';
+  let rawSummary = summary ?? '';
   // Automatically set summary length to roughly 20% of the original article length, minimum 1 sentence
   const totalSentencesCount = (rawSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
   const calculatedBounds = Math.max(1, Math.round(totalSentencesCount * 0.2)); 
