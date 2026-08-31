@@ -22,7 +22,6 @@
       "notify": [
         {
           "roles": ["1539011756297555998"],
-          "text": "New hardware:",
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -49,7 +48,6 @@
       "notify": [
         {
           "roles": ["1539012206782455868"],
-          "text": "New event:",
           "when": {
             "fields": ["title"],
             "include": ["\\bWWDC\\d*\\b", "\\bApple Event\\b"],
@@ -58,7 +56,6 @@
         },
         {
           "roles": ["1539012206782455868"],
-          "text": "New event:",
           "when": {
             "fields": ["summary"],
             "include": ["\\bJoin us for a special Apple Event\\b"]
@@ -66,7 +63,6 @@
         },
         {
           "roles": ["1539012206782455868"],
-          "text": "Attention:",
           "when": {
             "fields": ["title", "summary"],
             "include": [
@@ -101,8 +97,7 @@
       },
       "notify": [
         {
-          "roles": ["1539012329553797182"],
-          "text": "Public release:"
+          "roles": ["1539012329553797182"]
         }
       ]
     },
@@ -123,8 +118,7 @@
       },
       "notify": [
         {
-          "roles": ["1539012420125593620"],
-          "text": "Beta release:"
+          "roles": ["1539012420125593620"]
         }
       ]
     },
@@ -150,7 +144,6 @@
       "notify": [
         {
           "roles": ["1542330701066801203"],
-          "text": "League news:",
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -159,7 +152,6 @@
         },
         {
           "roles": ["1542335085280235632"],
-          "text": "Browns news:",
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -168,7 +160,6 @@
         },
         {
           "roles": ["1542334746942644274"],
-          "text": "Giants news:",
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -177,7 +168,6 @@
         },
         {
           "roles": ["1542337543260086382"],
-          "text": "Lions news:",
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -208,7 +198,6 @@
       "notify": [
         {
           "roles": ["1542594778854592622"],
-          "text": "NCAA news:",
           "when": {
             "fields": ["categories"],
             "include": ["^league:NCAA Football$"],
@@ -217,7 +206,6 @@
         },
         {
           "roles": ["1542594897641734155"],
-          "text": "Ohio State news:",
           "when": {
             "fields": ["title", "summary"],
             "include": ["\\bOhio State\\b|\\bBuckeyes\\b"]
@@ -225,7 +213,6 @@
         },
         {
           "roles": ["1542594987412160615"],
-          "text": "Army news:",
           "when": {
             "fields": ["title", "summary"],
             "include": ["\\bArmy\\b|\\bBlack Knights\\b"]
