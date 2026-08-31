@@ -221,14 +221,13 @@ export function allowedMentionsFor({ roles = [], users = [] } = {}) {
 /** Algorithmic approach to generate summary from input text */
 function algorithmicSummarize(textString, sentenceCount = 2) {
   if (!textString || textString.trim() === "") return "";
-
-  // 1. Define common words to ignore (stop words) so they don't skew the scoring
+  // Define common words to ignore (stop words) so they don't skew the scoring.
   const stopWords = new Set([
     "the", "a", "an", "and", "but", "or", "for", "nor", "on", "at", 
     "to", "from", "by", "of", "in", "is", "it", "that", "this", "with", "was", "as"
   ]);
 
-  // 2. Clean the text and tokenize into individual words to calculate global frequency
+  // Clean the text and tokenize into individual words to calculate global frequency.
   const words = textString.toLowerCase().match(/\b[a-z0-9']+\b/g) || [];
   const wordFrequencies = {};
   let maxFrequency = 0;
@@ -240,18 +239,18 @@ function algorithmicSummarize(textString, sentenceCount = 2) {
       }
     }
   });
-  // Normalize frequencies between 0 and 1 so long articles don't break the math
+  // Normalize frequencies between 0 and 1 so long articles don't break the math.
   if (maxFrequency > 0) {
     for (const word in wordFrequencies) {
       wordFrequencies[word] /= maxFrequency;
     }
   }
 
-  // 3. Split the text into actual sentences
-  // Uses a basic regex split on punctuation followed by spaces
+  // Split the text into actual sentences
+  // Uses a basic regex split on punctuation followed by spaces.
   const sentences = textString.match(/[^.!?]+[.!?]+(\s|$)/g) || [textString];
   const sentenceScores = [];
-  // 4. Score each sentence by adding up the normalized weights of its words
+  // 4. Score each sentence by adding up the normalized weights of its words.
   sentences.forEach((sentence, index) => {
     const sentenceWords = sentence.toLowerCase().match(/\b[a-z0-9']+\b/g) || [];
     let score = 0;
@@ -260,16 +259,15 @@ function algorithmicSummarize(textString, sentenceCount = 2) {
         score += wordFrequencies[word];
       }
     });
-    // Save the original sentence text, its score, and its original order index
+    // Save the original sentence text, its score, and its original order index.
     sentenceScores.push({ text: sentence.trim(), score, index });
   });
 
-  // 5. Sort sentences by score to find the most important ones
+  // Sort sentences by score to find the most important ones.
   const topSentences = sentenceScores
     .sort((a, b) => b.score - a.score)
     .slice(0, sentenceCount);
-
-  // 6. Re-sort the top sentences back into their original chronological order
+  // Re-sort the top sentences back into their original chronological order.
   const finalSummary = topSentences
     .sort((a, b) => a.index - b.index)
     .map(s => s.text)
