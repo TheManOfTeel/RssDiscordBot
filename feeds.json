@@ -22,6 +22,7 @@
       "notify": [
         {
           "roles": ["1539011756297555998"],
+          "batching": false,
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -48,6 +49,7 @@
       "notify": [
         {
           "roles": ["1539012206782455868"],
+          "batching": false,
           "when": {
             "fields": ["title"],
             "include": ["\\bWWDC\\d*\\b", "\\bApple Event\\b"],
@@ -56,6 +58,7 @@
         },
         {
           "roles": ["1539012206782455868"],
+          "batching": false,
           "when": {
             "fields": ["summary"],
             "include": ["\\bJoin us for a special Apple Event\\b"]
@@ -63,6 +66,7 @@
         },
         {
           "roles": ["1539012206782455868"],
+          "batching": false,
           "when": {
             "fields": ["title", "summary"],
             "include": [
@@ -144,6 +148,7 @@
       "notify": [
         {
           "roles": ["1542330701066801203"],
+          "batching": false,
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -152,6 +157,7 @@
         },
         {
           "roles": ["1542335085280235632"],
+          "batching": false,
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -160,6 +166,7 @@
         },
         {
           "roles": ["1542334746942644274"],
+          "batching": false,
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -168,6 +175,7 @@
         },
         {
           "roles": ["1542337543260086382"],
+          "batching": false,
           "when": {
             "fields": ["title", "summary"],
             "flags": "m",
@@ -198,6 +206,7 @@
       "notify": [
         {
           "roles": ["1542594778854592622"],
+          "batching": false,
           "when": {
             "fields": ["categories"],
             "include": ["^league:NCAA Football$"],
@@ -206,6 +215,7 @@
         },
         {
           "roles": ["1542594897641734155"],
+          "batching": false,
           "when": {
             "fields": ["title", "summary"],
             "include": ["\\bOhio State\\b|\\bBuckeyes\\b"]
@@ -213,6 +223,7 @@
         },
         {
           "roles": ["1542594987412160615"],
+          "batching": false,
           "when": {
             "fields": ["title", "summary"],
             "include": ["\\bArmy\\b|\\bBlack Knights\\b"]

@@ -28,12 +28,12 @@ const item = (over = {}) => ({
 
 test('a rule with no when block pings on every item', () => {
   const notify = compile([{ roles: [ROLE_A] }]);
-  assert.deepEqual(mentionsFor(item(), notify, NOW), { roles: [ROLE_A], users: [], text: undefined });
+  assert.deepEqual(mentionsFor(item(), notify, NOW), { roles: [ROLE_A], users: [], text: undefined, batching: true });
 });
 
 test('a rule with a when block pings only on matching items', () => {
   const notify = compile([{ roles: [ROLE_A], text: 'New hardware:', when: { include: ['\\biphone\\b'], fields: ['title'] } }]);
-  assert.deepEqual(mentionsFor(item(), notify, NOW), { roles: [ROLE_A], users: [], text: 'New hardware:' });
+  assert.deepEqual(mentionsFor(item(), notify, NOW), { roles: [ROLE_A], users: [], text: 'New hardware:', batching: true });
   assert.equal(mentionsFor(item({ title: 'Apple announces Q3 earnings' }), notify, NOW), null);
 });
 
@@ -42,7 +42,7 @@ test('overlapping rules union their targets and dedupe', () => {
     { roles: [ROLE_A], when: { include: ['iphone'], fields: ['title'] } },
     { roles: [ROLE_A, ROLE_B], users: [USER], when: { include: ['apple'], fields: ['title'] } },
   ]);
-  assert.deepEqual(mentionsFor(item(), notify, NOW), { roles: [ROLE_A, ROLE_B], users: [USER], text: undefined });
+  assert.deepEqual(mentionsFor(item(), notify, NOW), { roles: [ROLE_A, ROLE_B], users: [USER], text: undefined, batching: true });
 });
 
 test('exclude works inside a ping rule', () => {

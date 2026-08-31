@@ -115,14 +115,19 @@ export function mentionsFor(item, notify, now) {
   const roles = new Set();
   const users = new Set();
   const texts = [];
+  let isBatched = true;
   for (const rule of notify ?? []) {
     if (rule.when && !evaluate(item, rule.when, now).pass) continue;
     for (const id of rule.roles ?? []) roles.add(id);
     for (const id of rule.users ?? []) users.add(id);
     if (rule.text) texts.push(rule.text);
+    // If any matched rule explicitly disables batching, resolve batching to false
+    if (rule.batching === false) {
+      isBatched = false;
+    }
   }
   if (roles.size === 0 && users.size === 0) return null;
-  return { roles: [...roles], users: [...users], text: texts[0] };
+  return { roles: [...roles], users: [...users], text: texts[0], batching: isBatched };
 }
 
 /**
@@ -130,7 +135,7 @@ export function mentionsFor(item, notify, now) {
  * rules that union to the same targets in a different order still collapse.
  */
 const mentionKey = (mention) =>
-  mention === null ? '' : JSON.stringify([[...mention.roles].sort(), [...mention.users].sort(), mention.text ?? '']);
+  mention === null ? '' : JSON.stringify([[...mention.roles].sort(), [...mention.users].sort(), mention.text ?? '', mention.batching ?? true]);
 
 /**
  * Split the queue into messages, batching RUNS OF ITEMS THAT SHARE A MENTION SET (up to the
@@ -148,13 +153,27 @@ export function groupForDelivery(queue, notify, now, chunk = CHUNK) {
   let bufferKey = null;
   let bufferMention = null;
   const flush = () => {
-    if (buffer.length > 0) groups.push({ items: buffer, mention: bufferMention });
+    if (buffer.length > 0) {
+      groups.push({ items: buffer, mention: bufferMention });
+    }
     buffer = [];
     bufferKey = null;
     bufferMention = null;
   };
-  for (const item of queue) {
-    const mention = notify.length > 0 ? mentionsFor(item, notify, now) : null;
+  // Filter out null, undefined, or invalid items up front
+  const validQueue = (queue ?? []).filter(Boolean);
+  for (const item of validQueue) {
+    const mention = (notify && notify.length > 0) ? mentionsFor(item, notify, now) : null;
+    const isBatched = mention 
+      ? mention.batching 
+      : (notify ?? []).every(rule => rule.batching !== false);
+    if (!isBatched) {
+      // Flush existing buffered items first to maintain chronological delivery order
+      flush();
+      groups.push({ items: [item], mention });
+      continue;
+    }
+    // BATCHED PATH: Buffer until key changes or chunk size is reached
     const key = mentionKey(mention);
     if (buffer.length > 0 && key !== bufferKey) flush();
     bufferKey = key;
@@ -244,16 +263,33 @@ async function runFeed(feed, options, log) {
         // One postEmbeds call per group so `postedIds` is only credited after a message
         // actually lands. A crash mid-run therefore re-sends at most one group.
         for (const group of groupForDelivery(queue, feed.notify, now)) {
-          var embed = group.items.map((item) => buildEmbed(item, feed, group.mention !== null));
-          var summary = embed.map((e) => e.title).join('; ');
-          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embed, {
-            content: group.mention ? mentionContent(group.mention, summary) : undefined,
+          // Map items to embeds
+          const embeds = group.items.map((item) => buildEmbed(item, feed, group.mention !== null));
+          // Determine if this group is batched or single-item
+          const isBatched = group.items.length > 1;
+          // Build top-level message content
+          let messageContent = undefined;
+          if (group.mention) {
+            if (isBatched) {
+              // BATCHED: Top-level message content carries the role ping + combined titles summary
+              const summary = embeds.map((e) => e.title).join('; ');
+              messageContent = mentionContent(group.mention, summary);
+            } else {
+              // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
+              const item = group.items[0];
+              const itemBody = item.description || item.summary || item.title;
+              
+              // Ping role AND include item body directly in the top-level message content
+              messageContent = mentionContent(group.mention, itemBody);
+            }
+          }
+          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embeds, {
+            content: messageContent,
             allowedMentions: group.mention ? allowedMentionsFor(group.mention) : undefined,
             username: feed.username,
             avatarUrl: feed.avatarUrl,
             threadId: feed.threadId,
             dryRun: options.dryRun,
-            batching: feed.notify.batching,
             log,
           });
           if (group.mention) result.pinged += group.items.length;
