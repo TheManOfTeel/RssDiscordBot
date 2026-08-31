@@ -126,8 +126,8 @@ export function mentionsFor(item, notify, now) {
       isBatched = false;
     }
   }
-  return { roles: [...roles], users: [...users], text: texts[0], batching: isBatched 
-  };
+  if (roles.size === 0 && users.size === 0) return null;
+  return { roles: [...roles], users: [...users], text: texts[0], batching: isBatched };
 }
 
 /**
@@ -160,12 +160,12 @@ export function groupForDelivery(queue, notify, now, chunk = CHUNK) {
     bufferKey = null;
     bufferMention = null;
   };
-  for (const item of queue) {
+  // Filter out null, undefined, or invalid items up front
+  const validQueue = (queue ?? []).filter(Boolean);
+  for (const item of validQueue) {
     const mention = (notify && notify.length > 0) ? mentionsFor(item, notify, now) : null;
-    // Check if batching is explicitly false on the resolved mention,
-    // or inspect notify rules directly if mention is null
-    const isBatched = mention
-      ? mention.batching
+    const isBatched = mention 
+      ? mention.batching 
       : (notify ?? []).every(rule => rule.batching !== false);
     if (!isBatched) {
       // Flush existing buffered items first to maintain chronological delivery order
@@ -263,10 +263,28 @@ async function runFeed(feed, options, log) {
         // One postEmbeds call per group so `postedIds` is only credited after a message
         // actually lands. A crash mid-run therefore re-sends at most one group.
         for (const group of groupForDelivery(queue, feed.notify, now)) {
-          var embed = group.items.map((item) => buildEmbed(item, feed, group.mention !== null));
-          var summary = embed.map((e) => e.title).join('; ');
-          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embed, {
-            content: group.mention ? mentionContent(group.mention, summary) : undefined,
+          // Map items to embeds
+          const embeds = group.items.map((item) => buildEmbed(item, feed, group.mention !== null));
+          // Determine if this group is batched or single-item
+          const isBatched = group.items.length > 1;
+          // Build top-level message content
+          let messageContent = undefined;
+          if (group.mention) {
+            if (isBatched) {
+              // BATCHED: Top-level message content carries the role ping + combined titles summary
+              const summary = embeds.map((e) => e.title).join('; ');
+              messageContent = mentionContent(group.mention, summary);
+            } else {
+              // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
+              const item = group.items[0];
+              const itemBody = item.description || item.summary || item.title;
+              
+              // Ping role AND include item body directly in the top-level message content
+              messageContent = mentionContent(group.mention, itemBody);
+            }
+          }
+          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embeds, {
+            content: messageContent,
             allowedMentions: group.mention ? allowedMentionsFor(group.mention) : undefined,
             username: feed.username,
             avatarUrl: feed.avatarUrl,
