@@ -22,6 +22,7 @@ export const LIMITS = {
   FIELD_NAME: 256,
   FIELD_VALUE: 1024,
   CONTENT: 2000,
+  IOS_FRIENDLY_SUMMARY_LIMIT: 400, // Optimal length for mobile push + channel preview
 };
 
 export class DiscordError extends Error {
@@ -180,10 +181,36 @@ const retryAfterMs = (headers, body) => {
  * permit it, or it renders as a highlighted-but-silent mention.
  */
 export function mentionContent({ roles = [], users = [], text } = {}, summary = '') {
-  const mentions = [...roles.map((id) => `<@&${id}>`), ...users.map((id) => `<@${id}>`)];
+  // const mentions = [...roles.map((id) => `<@&${id}>`), ...users.map((id) => `<@${id}>`)];
+  // if (mentions.length === 0) return undefined;
+  // const pings = [...mentions, text].filter(Boolean).join(' ');
+  // const availableBodyChars = Math.max(0, LIMITS.CONTENT - pings.length - 1);
+  // // Cap the summary to an iOS/Mobile readable size (or available bounds)
+  // const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
+  // if (summary.length >= targetLength) summary = summary.slice(0, targetLength - 1) + '…';
+  // const clippedSummary = clip(summary ?? '', targetLength);
+  // return clippedSummary ? `${pings}\n${clippedSummary}` : pings;
+  const mentions = [
+    ...roles.map((id) => `<@&${id}>`),
+    ...users.map((id) => `<@${id}>`)
+  ];
   if (mentions.length === 0) return undefined;
-  var formattedContent = text ?? '' + (text && summary ? ' ' : '') + summary;
-  return clip([mentions.join(' '), formattedContent].filter(Boolean).join(' '), LIMITS.CONTENT);
+  const pings = [...mentions, text].filter(Boolean).join(' ');
+  // Reserve space for pings + newline (\n)
+  const availableBodyChars = Math.max(0, LIMITS.CONTENT - pings.length - 1);
+  // Target the smaller of the iOS mobile limit or available space
+  const targetLength = Math.min(
+    LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, 
+    availableBodyChars
+  );
+  const rawSummary = summary ?? '';
+  let clippedSummary = rawSummary;
+  // Single-pass truncation with ellipsis
+  if (rawSummary.length > targetLength) {
+    // Retain targetLength total length including the 1-char ellipsis ('…')
+    clippedSummary = rawSummary.slice(0, Math.max(0, targetLength - 1)).trimEnd() + '…';
+  }
+  return clippedSummary.length > 0 ? `${pings}\n${clippedSummary}` : pings;
 }
 
 /** `parse: []` blocks everything, then the id allowlists re-open exactly what was asked for. */
