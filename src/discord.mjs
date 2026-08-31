@@ -86,12 +86,18 @@ export function sanitiseEmbed(embed) {
 }
 
 /** Split embeds into messages respecting both the count cap and the 6000-char cap. */
-export function batchEmbeds(embeds, { perMessage = LIMITS.EMBEDS_PER_MESSAGE, totalChars = LIMITS.TOTAL_CHARS } = {}) {
+export function batchEmbeds(embeds, batching = true, { perMessage = LIMITS.EMBEDS_PER_MESSAGE, totalChars = LIMITS.TOTAL_CHARS } = {}) {
   const batches = [];
   let batch = [];
   let chars = 0;
   for (const embed of embeds) {
     const cost = embedCharCount(embed);
+
+    if (!batching) {
+      batches.push([embed]);
+      continue;
+    }
+
     if (batch.length > 0 && (batch.length >= perMessage || chars + cost > totalChars)) {
       batches.push(batch);
       batch = [];
@@ -145,10 +151,12 @@ const retryAfterMs = (headers, body) => {
  * mention has to be in the message's top-level `content`, and `allowed_mentions` has to
  * permit it, or it renders as a highlighted-but-silent mention.
  */
-export function mentionContent({ roles = [], users = [], text } = {}) {
+export function mentionContent({ roles = [], users = [], text } = {}, summary = '') {
   const mentions = [...roles.map((id) => `<@&${id}>`), ...users.map((id) => `<@${id}>`)];
   if (mentions.length === 0) return undefined;
-  return clip([text, mentions.join(' ')].filter(Boolean).join(' '), LIMITS.CONTENT);
+  var formattedContent = text ?? '' + (text && summary ? ' ' : '') + summary;
+  // return clip([mentions.join(' ')].filter(Boolean).join(' '), formattedContent, LIMITS.CONTENT);
+  return clip([mentions.join(' '), formattedContent].filter(Boolean).join(' '), LIMITS.CONTENT);
 }
 
 /** `parse: []` blocks everything, then the id allowlists re-open exactly what was asked for. */
@@ -171,11 +179,12 @@ export async function postEmbeds(webhookUrl, embeds, {
   minGapMs = 1300,
   maxSleepMs = 60_000,
   dryRun = false,
+  batching = true,
   log = () => {},
 } = {}) {
   if (embeds.length === 0) return { messages: 0, embeds: 0 };
   const target = assertWebhookUrl(webhookUrl);
-  const batches = batchEmbeds(embeds.map(sanitiseEmbed));
+  const batches = batchEmbeds(embeds.map(sanitiseEmbed), batching);
 
   const endpoint = new URL(target);
   endpoint.searchParams.set('wait', 'true'); // surface creation failures instead of fire-and-forget

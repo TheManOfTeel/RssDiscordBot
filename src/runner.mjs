@@ -247,13 +247,17 @@ async function runFeed(feed, options, log) {
         // One postEmbeds call per group so `postedIds` is only credited after a message
         // actually lands. A crash mid-run therefore re-sends at most one group.
         for (const group of groupForDelivery(queue, feed.notify, now)) {
-          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, group.items.map((item) => buildEmbed(item, feed, group.mention !== null)), {
-            content: group.mention ? mentionContent(group.mention) : undefined,
+          var embed = group.items.map((item) => buildEmbed(item, feed, group.mention !== null));
+          var summary = embed.map((e) => e.title).join(', ');
+
+          await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embed, {
+            content: group.mention ? mentionContent(group.mention, summary) : undefined,
             allowedMentions: group.mention ? allowedMentionsFor(group.mention) : undefined,
             username: feed.username,
             avatarUrl: feed.avatarUrl,
             threadId: feed.threadId,
             dryRun: options.dryRun,
+            batching: feed.notify.batching,
             log,
           });
           if (group.mention) result.pinged += group.items.length;

@@ -108,6 +108,7 @@ export function compileNotify(rawNotify, label, errors, warnings = []) {
       }
     }
     if (rule.text != null && typeof rule.text !== 'string') errors.push(`${at}.text: must be a string`);
+    if (rule.batching != null && typeof rule.batching !== 'boolean') errors.push(`${at}.batching: must be a boolean`);
 
     let when = null;
     if (rule.when != null) {
@@ -121,7 +122,7 @@ export function compileNotify(rawNotify, label, errors, warnings = []) {
       }
     }
 
-    rules.push({ roles: [...roles], users: [...users], text: rule.text ?? undefined, when });
+    rules.push({ roles: [...roles], users: [...users], text: rule.text ?? undefined, batching: rule.batching ?? true, when });
   });
   return rules;
 }

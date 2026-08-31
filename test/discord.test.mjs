@@ -177,7 +177,7 @@ test('mentionContent builds role and user mentions, with optional lead text', ()
   assert.equal(mentionContent({ users: ['123456789012345678'] }), '<@123456789012345678>');
   assert.equal(
     mentionContent({ roles: ['111111111111111111'], users: ['222222222222222222'], text: 'New hardware:' }),
-    'New hardware: <@&111111111111111111> <@222222222222222222>'
+    '<@&111111111111111111> <@222222222222222222> New hardware:'
   );
   assert.equal(mentionContent({}), undefined, 'nothing to ping means no content field at all');
   assert.ok(mentionContent({ roles: ['1'.repeat(18)], text: 'x'.repeat(2100) }).length <= LIMITS.CONTENT);
@@ -202,7 +202,7 @@ test('a ping goes in content, never in the embed, and is allowlisted', async () 
     allowedMentions: allowedMentionsFor(mention),
   });
   const body = calls[0].body;
-  assert.equal(body.content, 'New hardware: <@&123456789012345678>');
+  assert.equal(body.content, '<@&123456789012345678> New hardware:');
   assert.deepEqual(body.allowed_mentions, { parse: [], roles: ['123456789012345678'] });
   assert.equal(JSON.stringify(body.embeds).includes('<@&'), false, 'embeds carry no mention markup');
 });
