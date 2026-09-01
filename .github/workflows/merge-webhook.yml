@@ -1,3 +1,13 @@
+name: Post Updates to Discord
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+
 jobs:
   notify-merge:
     # 1. PR must be merged (not closed without merging)
