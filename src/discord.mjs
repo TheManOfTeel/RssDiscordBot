@@ -250,6 +250,29 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   let targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
   let formattedSummary = summary ?? '';
 
+  const lines = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  const singleItemTitleBody = lines.length === 2 && lines[0] && lines[1];
+
+  if (singleItemTitleBody) {
+    const [title, ...bodyLines] = lines;
+    const body = bodyLines.join('\n');
+    let finalBody = body;
+    const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + title.length + 1 : title.length + 1));
+
+    if (summarize) {
+      const sentenceCount = splitSentences(body).length;
+      const summaryCount = sentenceCount <= 1 ? 1 : Math.min(sentenceCount, 4);
+      finalBody = algorithmicSummarize(body, summaryCount);
+    }
+
+    if (finalBody.length > bodyTarget) {
+      finalBody = finalBody.slice(0, Math.max(0, bodyTarget - 1)).trimEnd() + '…';
+    }
+
+    const output = `${pings ? `${pings}\n` : ''}${title}${finalBody ? `\n${finalBody}` : ''}`.trim();
+    return output || undefined;
+  }
+
   const rows = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   const versionish = /((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:beta|rc|public beta|preview|seed)(?:\s*\d+)?)?/i;
   const isVersionFirstRelease = rows.length > 0 && rows.every((line) => new RegExp(`^${versionish.source}(?:\\s*(?:-|:)\\s*.*)?$`, 'i').test(line));
@@ -263,16 +286,12 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
 
   if (summarize && !formattedSummary.match(versionish)) {
     const totalSentencesCount = splitSentences(formattedSummary).length;
-    // Respect headline batch size: for a small bundle like 3–4 titles, the whole bundle is
-    // already a readable summary; don't force a score-based cut that drops one item.
     const calculatedBounds = totalSentencesCount <= 1 ? 1 : Math.min(totalSentencesCount, 4);
     formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
   }
-  // Single-pass truncation with ellipsis
   if (formattedSummary.length > targetLength) {
     formattedSummary = formattedSummary.slice(0, Math.max(0, targetLength - 1)).trimEnd() + '…';
   }
-  // Join pings and formattedSummary cleanly without leading/trailing newlines
   if (pings.length > 0 && formattedSummary.length > 0) {
     return `${pings}\n${formattedSummary}`;
   }
