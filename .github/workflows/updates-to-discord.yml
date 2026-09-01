@@ -1,0 +1,73 @@
+name: Post Updates to Discord
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notify-merge:
+    # 1. PR must be merged (not closed without merging)
+    # 2. PR author is NOT a bot (excludes your app token bot, dependabot, etc.)
+    if: >-
+      github.event.pull_request.merged == true &&
+      !endsWith(github.event.pull_request.user.login, '[bot]') &&
+      github.event.pull_request.user.login != 'rss-bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Embed Notification
+        env:
+          DISCORD_WEBHOOK_UPDATES: ${{ secrets.DISCORD_WEBHOOK_UPDATES_DEV_NEWS }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_AUTHOR_AVATAR: ${{ github.event.pull_request.user.avatar_url }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          MERGED_BY: ${{ github.actor }}
+          REPO_NAME: ${{ github.repository }}
+        run: |
+          # Sanitize body text for valid JSON escaping
+          CLEAN_BODY=$(echo "$PR_BODY" | jq -aR .)
+
+          PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [
+              {
+                "title": "🔀 Pull Request Merged: #${PR_NUMBER}",
+                "url": "${PR_URL}",
+                "description": "**${PR_TITLE}**\n\n${CLEAN_BODY:1:-1}",
+                "color": 8359053,
+                "author": {
+                  "name": "${PR_AUTHOR}",
+                  "icon_url": "${PR_AUTHOR_AVATAR}"
+                },
+                "fields": [
+                  {
+                    "name": "Repository",
+                    "value": "[${REPO_NAME}](https://github.com/${REPO_NAME})",
+                    "inline": true
+                  },
+                  {
+                    "name": "Merged By",
+                    "value": "${MERGED_BY}",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "GitHub Actions • Release Updates"
+                },
+                "timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+              }
+            ]
+          }
+          EOF
+          )
+
+          curl -H "Content-Type: application/json" \
+              -X POST \
+              -d "$PAYLOAD" \
+              "$DISCORD_WEBHOOK_UPDATES"
