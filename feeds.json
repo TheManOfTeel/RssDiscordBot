@@ -129,8 +129,7 @@
     {
       "id": "nfl-news",
       "name": "NFL News",
-      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=50",
-      "parser": "espn-json",
+      "url": "https://www.cbssports.com/rss/headlines/nfl/",
       "webhookEnv": "DISCORD_WEBHOOK_NFL_NEWS",
       "username": "NFL News",
       "color": "#0B2265",
@@ -187,8 +186,7 @@
     {
       "id": "cfb-news",
       "name": "College Football News",
-      "url": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/news?limit=50",
-      "parser": "espn-json",
+      "url": "https://www.cbssports.com/rss/headlines/college-football/",
       "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
       "username": "CFB News",
       "color": "#8C1515",
