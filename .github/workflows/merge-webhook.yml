@@ -1,90 +1,63 @@
-name: Post Updates to Discord
-
-on:
-  pull_request:
-    types: [closed]
-
-permissions:
-  contents: read
-
 jobs:
-  announce-merge:
+  notify-merge:
+    # 1. PR must be merged (not closed without merging)
+    # 2. PR author is NOT a bot (excludes your app token bot, dependabot, etc.)
     if: >-
       github.event.pull_request.merged == true &&
-      github.event.pull_request.user.login != 'rss-bot' &&
-      github.event.pull_request.merged_by != null &&
-      github.event.pull_request.merged_by.login != 'rss-bot'
+      !endsWith(github.event.pull_request.user.login, '[bot]') &&
+      github.event.pull_request.user.login != 'rss-bot'
     runs-on: ubuntu-latest
     steps:
-      - name: Get merged commit message
-        id: commit
+      - name: Send Discord Embed Notification
         env:
-          GH_TOKEN: ${{ github.token }}
-          SHA: ${{ github.event.pull_request.merge_commit_sha }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${SHA:-}" ] || [ "${SHA}" = "null" ]; then
-            echo "message=Merge PR #${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          message="$(curl -fsSL \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/commits/${SHA}" \
-            | python3 -c 'import json,sys; data=json.load(sys.stdin); msg=data.get("commit", {}).get("message", ""); print(msg.splitlines()[0] if msg else "")' )"
-
-          if [ -z "$message" ]; then
-            message="Merge PR #${{ github.event.pull_request.number }}"
-          fi
-
-          printf 'message=%s\n' "$message" >> "$GITHUB_OUTPUT"
-
-      - name: Post merge notification to Discord
-        env:
-          DISCORD_WEBHOOK_UPDATES: ${{ secrets.DISCORD_WEBHOOK_UPDATES }}
+          DISCORD_WEBHOOK_UPDATES: ${{ secrets.DISCORD_WEBHOOK_UPDATES_DEV_NEWS }}
           PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-          MERGED_BY: ${{ github.event.pull_request.merged_by.login }}
-          MESSAGE: ${{ steps.commit.outputs.message }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_AUTHOR_AVATAR: ${{ github.event.pull_request.user.avatar_url }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          MERGED_BY: ${{ github.actor }}
+          REPO_NAME: ${{ github.repository }}
         run: |
-          set -euo pipefail
+          # Sanitize body text for valid JSON escaping
+          CLEAN_BODY=$(echo "$PR_BODY" | jq -aR .)
 
-          if [ -z "${DISCORD_WEBHOOK_UPDATES:-}" ]; then
-            echo "DISCORD_WEBHOOK_UPDATES secret is not set; skipping notification."
-            exit 0
-          fi
-
-          python3 - "$DISCORD_WEBHOOK_UPDATES" <<'PY'
-          import json
-          import os
-          import sys
-          import urllib.request
-
-          webhook = sys.argv[1]
-          title = os.environ.get('PR_TITLE', 'Merged PR')
-          message = os.environ.get('MESSAGE', 'Merged successfully').replace('\r', '').replace('\n', ' ')
-          repo = os.environ.get('REPO', '')
-          pr_number = os.environ.get('PR_NUMBER', '')
-          merged_by = os.environ.get('MERGED_BY', 'unknown')
-
-          payload = {
-              "content": (
-                  f"✅ Merge: **{title}**\n"
-                  f"> {message}\n\n"
-                  f"{repo} • #{pr_number} • merged by {merged_by}"
-              )
+          PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [
+              {
+                "title": "🔀 Pull Request Merged: #${PR_NUMBER}",
+                "url": "${PR_URL}",
+                "description": "**${PR_TITLE}**\n\n${CLEAN_BODY:1:-1}",
+                "color": 8359053,
+                "author": {
+                  "name": "${PR_AUTHOR}",
+                  "icon_url": "${PR_AUTHOR_AVATAR}"
+                },
+                "fields": [
+                  {
+                    "name": "Repository",
+                    "value": "[${REPO_NAME}](https://github.com/${REPO_NAME})",
+                    "inline": true
+                  },
+                  {
+                    "name": "Merged By",
+                    "value": "${MERGED_BY}",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "GitHub Actions • Release Updates"
+                },
+                "timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+              }
+            ]
           }
-
-          req = urllib.request.Request(
-              webhook,
-              data=json.dumps(payload).encode('utf-8'),
-              headers={"Content-Type": "application/json"},
-              method="POST",
+          EOF
           )
 
-          with urllib.request.urlopen(req, timeout=30) as response:
-              response.read()
-          PY
+          curl -H "Content-Type: application/json" \
+              -X POST \
+              -d "$PAYLOAD" \
+              "$DISCORD_WEBHOOK_UPDATES"
