@@ -192,7 +192,7 @@ test('single-item content keeps the title on its own line and summarizes only th
   const summary = 'Apple unveils a new MacBook\nThe new laptop features a faster chip, longer battery life, and a redesigned keyboard.';
   const result = mentionContent({ roles: ['123456789012345678'] }, summary, true);
 
-  assert.ok(result.startsWith('<@&123456789012345678>\nApple unveils a new MacBook'), 'the title should remain on its own line directly under the ping');
+  assert.ok(result.startsWith('<@&123456789012345678> Apple unveils a new MacBook'), 'the title should remain on its own line directly under the ping');
   assert.ok(!result.includes('Apple unveils a new MacBook\nApple unveils a new MacBook'), 'the title should not be duplicated in the summarized body');
   assert.ok(result.includes('faster chip') || result.includes('battery life') || result.includes('redesigned keyboard'), 'the body should still include body content after summarization');
 });

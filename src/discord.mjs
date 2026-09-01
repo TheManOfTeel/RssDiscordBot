@@ -269,7 +269,7 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
       finalBody = finalBody.slice(0, Math.max(0, bodyTarget - 1)).trimEnd() + '…';
     }
 
-    const output = `${pings ? `${pings}\n` : ''}${title}${finalBody ? `\n${finalBody}` : ''}`.trim();
+    const output = `${pings ? `${pings}` : ''} ${title}${finalBody ? `\n${finalBody}` : ''}`.trim();
     return output || undefined;
   }
 

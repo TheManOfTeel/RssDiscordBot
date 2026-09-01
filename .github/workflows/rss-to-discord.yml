@@ -58,6 +58,7 @@ jobs:
           DISCORD_WEBHOOK_APPLE_RELEASES_BETA: ${{ secrets.DISCORD_WEBHOOK_APPLE_RELEASES_BETA }}
           DISCORD_WEBHOOK_NFL_NEWS: ${{ secrets.DISCORD_WEBHOOK_NFL_NEWS }}
           DISCORD_WEBHOOK_CFB_NEWS: ${{ secrets.DISCORD_WEBHOOK_CFB_NEWS }}
+          DISCORD_WEBHOOK_DEV_NEWS: ${{ secrets.DISCORD_WEBHOOK_DEV_NEWS }}
           DRY_RUN: ${{ inputs.dry_run }}
           SEED: ${{ inputs.seed }}
           ONLY: ${{ inputs.only }}
