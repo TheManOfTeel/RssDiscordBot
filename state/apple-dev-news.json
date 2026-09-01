@@ -2,6 +2,8 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://developer.apple.com/news/?id=w5ngl9k2",
+    "https://developer.apple.com/news/?id=o5spbekm",
     "https://developer.apple.com/news/?id=artln8br",
     "https://developer.apple.com/news/?id=s6spdug0",
     "https://developer.apple.com/news/?id=1ptvdtcm",
@@ -147,6 +149,6 @@
   ],
   "etag": null,
   "lastModified": "",
-  "lastRun": "2026-09-01T19:00:16.917Z",
-  "lastSuccess": "2026-09-01T19:00:16.917Z"
+  "lastRun": "2026-09-01T19:30:22.533Z",
+  "lastSuccess": "2026-09-01T19:30:22.533Z"
 }
