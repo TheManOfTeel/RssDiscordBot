@@ -247,8 +247,7 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   // Reserve space for pings + newline (\n) if pings exist
   const pingOffset = pings.length > 0 ? pings.length + 1 : 0;
   const availableBodyChars = Math.max(0, LIMITS.CONTENT - pingOffset);
-  // Target the smaller of the iOS mobile limit or available space
-  const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
+  let targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
   let formattedSummary = summary ?? '';
 
   const rows = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
@@ -262,13 +261,15 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   }
 
   if (summarize && !formattedSummary.match(/(?:\d+\.){2,}\d+|\d+\.\d+/)) {
-    // Preserve short headline batches: a list of 3–4 title-like sentences is already a
-    // readable summary and should not be compressed down to a single sentence.
     const totalSentencesCount = (formattedSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
-    const calculatedBounds = totalSentencesCount <= 4
-      ? totalSentencesCount
-      : Math.max(2, Math.min(totalSentencesCount, Math.round(totalSentencesCount * 0.2)));
-    formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
+    if (totalSentencesCount >= 4) {
+      // Respect the batch size: multiple headlines are already a readable summary, and the
+      // iOS-friendly 400-char cap should not force them down to a single winner.
+      targetLength = Math.min(availableBodyChars, Math.max(targetLength, totalSentencesCount * 90));
+    } else {
+      const calculatedBounds = Math.max(2, Math.min(totalSentencesCount, Math.round(totalSentencesCount * 0.2)));
+      formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
+    }
   }
   // Single-pass truncation with ellipsis
   if (formattedSummary.length > targetLength) {
