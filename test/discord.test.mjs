@@ -188,6 +188,18 @@ test('OS release summaries are grouped by version and platform', () => {
   assert.equal(mentionContent({}, summary), '26.6.2: iOS, iPadOS\n26.6.1: macOS, watchOS\n26.6.0: tvOS');
 });
 
+test('short multi-item Apple Dev title batches keep more than one sentence', () => {
+  const summary = [
+    'Updated Apple Developer Program License Agreement now available.',
+    'Updates to age ratings for the Republic of Korea.',
+    'Changes for apps in the European Union.',
+    'Update: New domain for Sign in with Apple.',
+  ].join(' ');
+  const result = mentionContent({ roles: ['123456789012345678'] }, summary, true);
+  const sentenceCount = (result.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
+  assert.ok(sentenceCount >= 2, 'short title lists should not collapse to a single sentence');
+});
+
 test('Apple-style mixed platform/version summaries are grouped by version', () => {
   const summary = 'iOS 18.7.9 (22H355). iPadOS 17.7.11 (21H461). iOS 16.7.16 (20H392). iPadOS 16.7.16 (20H392). iOS 15.8.8 (19H422). iPadOS 15.8.8 (19H422). tvOS 26.6 (23L773). watchOS 26.6 (23U67). iOS 26.6.1 (23G83). iPadOS 26.6.1 (23G83)';
   assert.equal(
