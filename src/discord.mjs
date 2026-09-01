@@ -95,16 +95,20 @@ export function sanitizeEmbed(embed) {
   return out;
 }
 
+/**
+ * Truncate an embed to fit the 6000-character budget.
+ * Tries to trim the description first, then drops fields if needed.
+ */
 function truncateEmbed(embed, maxChars) {
   const currentCost = embedCharCount(embed);
   if (currentCost <= maxChars) return embed;
   const overflow = currentCost - maxChars;
   const cloned = { ...embed };
   if (cloned.description && cloned.description.length > overflow + 3) {
-    // Trim description with an ellipsis indicator (...)
+    // Trim description with ellipsis (...)
     cloned.description = cloned.description.slice(0, -(overflow + 3)) + '...';
   } else {
-    // If description truncation is insufficient, slice fields array down
+    // If description trim is insufficient, drop fields
     cloned.fields = cloned.fields?.slice(0, Math.max(0, (cloned.fields?.length || 0) - 1));
   }
   return cloned;
@@ -160,6 +164,10 @@ export function assertWebhookUrl(raw) {
   return url.toString();
 }
 
+/**
+ * Parse retry-after response header (or body fallback) to milliseconds.
+ * Discord returns this after a 429 rate-limit response.
+ */
 const retryAfterMs = (headers, body) => {
   const fromBody = Number(body?.retry_after);
   if (Number.isFinite(fromBody) && fromBody >= 0) return Math.ceil(fromBody * 1000);
@@ -169,16 +177,66 @@ const retryAfterMs = (headers, body) => {
 };
 
 /**
- * POST embeds to a webhook, batched, rate-limit aware.
- *
- * @returns {Promise<{messages: number, embeds: number}>}
+ * Group version-first release summaries (e.g., "1.0.0: iOS, iPadOS") by version,
+ * deduplicating platforms.
+ * Returns null if the format doesn't match (not a version-first list).
  */
+function formatVersionGroups(versionRows) {
+  const ordered = [];
+  const index = new Map();
+  for (const row of versionRows) {
+    const match = row.match(/^((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:-|:)\s*([^\n]+))?$/);
+    if (!match) return null;
+    const [, version, platformsText = ''] = match;
+    const platformList = (platformsText || '')
+      .split(/\s*(?:,|\band\b)\s*/i)
+      .map((platform) => platform.trim())
+      .filter(Boolean);
+    if (!index.has(version)) {
+      index.set(version, ordered.length);
+      ordered.push({ version, platforms: [] });
+    }
+    const entry = ordered[index.get(version)];
+    for (const platform of platformList) {
+      if (!entry.platforms.includes(platform)) entry.platforms.push(platform);
+    }
+  }
+  return ordered.map(({ version, platforms }) => `${version}: ${platforms.join(', ')}`).join('\n');
+}
+
+/**
+ * Group mixed platform/version release summaries (e.g., "iOS 1.0.0 iPadOS 1.0.0")
+ * into version-grouped lines. Returns null if no platform/version pairs are found.
+ */
+function formatMixedPlatformVersions(text) {
+  const matches = [...text.matchAll(/\b([A-Za-z]+(?:OS|OSX))\s+((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*\([^)]*\))?/g)];
+  if (matches.length === 0) return null;
+
+  const ordered = [];
+  const index = new Map();
+  for (const match of matches) {
+    const [, platform, version] = match;
+    if (!index.has(version)) {
+      index.set(version, ordered.length);
+      ordered.push({ version, platforms: [] });
+    }
+    const entry = ordered[index.get(version)];
+    if (!entry.platforms.includes(platform)) entry.platforms.push(platform);
+  }
+  return ordered.map(({ version, platforms }) => `${version}: ${platforms.join(', ')}`).join('\n');
+}
+
 /**
  * Build the `content` string that actually pings.
  *
  * Mentions inside an embed are inert text — Discord never notifies from embed fields. The
  * mention has to be in the message's top-level `content`, and `allowed_mentions` has to
  * permit it, or it renders as a highlighted-but-silent mention.
+ *
+ * @param {object} options - { roles, users, text } for mention data; summary is the embed content
+ * @param {string} summary - Feed item summary, possibly an OS release formatted string
+ * @param {boolean} summarize - Whether to apply algorithmic summarization (TF-IDF sentence scoring)
+ * @returns {string|undefined} Ping mention(s) optionally followed by formatted content
  */
 export function mentionContent({ roles = [], users = [], text } = {}, summary = '', summarize = false) {
   const mentions = [
@@ -192,7 +250,18 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   // Target the smaller of the iOS mobile limit or available space
   const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
   let formattedSummary = summary ?? '';
-  if (summarize) {
+
+  const rows = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  const isVersionFirstRelease = rows.length > 0 && rows.every((line) => /^((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:-|:)\s*.*)?$/.test(line));
+  if (isVersionFirstRelease) {
+    const grouped = formatVersionGroups(rows);
+    if (grouped) formattedSummary = grouped;
+  } else {
+    const grouped = formatMixedPlatformVersions(formattedSummary);
+    if (grouped) formattedSummary = grouped;
+  }
+
+  if (summarize && !formattedSummary.match(/(?:\d+\.){2,}\d+|\d+\.\d+/)) {
     // Automatically set summary length to roughly 20% of the original article length, minimum 1 sentence
     const totalSentencesCount = (formattedSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
     const calculatedBounds = Math.max(1, Math.round(totalSentencesCount * 0.2));
@@ -209,7 +278,16 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   return formattedSummary || pings || undefined;
 }
 
-/** `parse: []` blocks everything, then the id allowlists re-open exactly what was asked for. */
+/**
+ * Build Discord's `allowed_mentions` policy.
+ *
+ * By default, `parse: []` blocks all mention types. Only explicit IDs in the `roles` or
+ * `users` arrays are then allowlisted. This prevents untrusted feed content from pinging
+ * via @everyone or @here.
+ *
+ * @param {object} options - { roles, users } to allowlist
+ * @returns {object} Discord allowed_mentions structure
+ */
 export function allowedMentionsFor({ roles = [], users = [] } = {}) {
   const allowed = { parse: [] };
   if (roles.length > 0) allowed.roles = roles;
@@ -217,8 +295,17 @@ export function allowedMentionsFor({ roles = [], users = [] } = {}) {
   return allowed;
 }
 
-/** Algorithmic approach to generate summary from input text */
-export function algorithmicSummarize(textString, sentenceCount = 2) {
+/**
+ * Algorithmically summarize text using TF-IDF-like sentence scoring.
+ *
+ * Extracts the N most important sentences by word frequency, then returns them
+ * in chronological order. Stop words (common articles, prepositions) are ignored.
+ *
+ * @param {string} textString - Input text to summarize
+ * @param {number} sentenceCount - Number of top sentences to return (default 2)
+ * @returns {string} Summarized text (N sentences in original order)
+ */
+function algorithmicSummarize(textString, sentenceCount = 2) {
   if (!textString || textString.trim() === '') return '';
   // Define common words to ignore (stop words) so they don't skew the scoring
   const stopWords = new Set([
@@ -274,6 +361,18 @@ export function algorithmicSummarize(textString, sentenceCount = 2) {
   return finalSummary;
 }
 
+/**
+ * POST embeds to a Discord webhook, batched, with rate-limit awareness.
+ *
+ * Splits embeds into messages respecting both the per-message embed cap (10)
+ * and the total character budget (6000 per message). Handles 429 rate limits
+ * with exponential backoff.
+ *
+ * @param {string} webhookUrl - Discord webhook URL
+ * @param {object[]} embeds - Array of embed objects to post
+ * @param {object} options - Configuration including retry, gap, and logging options
+ * @returns {Promise<{messages: number, embeds: number}>} Count of posted messages and embeds
+ */
 export async function postEmbeds(webhookUrl, embeds, {
   content,
   allowedMentions,
@@ -292,21 +391,19 @@ export async function postEmbeds(webhookUrl, embeds, {
   const target = assertWebhookUrl(webhookUrl);
   const batches = batchEmbeds(embeds.map(sanitizeEmbed));
   const endpoint = new URL(target);
-  endpoint.searchParams.set('wait', 'true'); // surface creation failures instead of fire-and-forget
+  // Wait=true surfaces creation failures instead of fire-and-forget
+  endpoint.searchParams.set('wait', 'true');
   if (threadId) endpoint.searchParams.set('thread_id', String(threadId));
 
   let messages = 0;
   for (const [index, batch] of batches.entries()) {
     const payload = compact({
-      // Only the first message carries the mention: a batch that had to be split by the
-      // character budget must not ping twice.
+      // Only the first message carries the mention; splitting by character budget must not ping twice.
       content: index === 0 ? content : undefined,
       username: clip(username, 80),
       avatar_url: avatarUrl,
       embeds: batch,
-      // Feed content is untrusted input. Default-deny: without this, a title containing
-      // @everyone or a role mention would ping the channel. Explicit ids are allowlisted
-      // by the caller and nothing else can slip through.
+      // Untrusted feed content cannot ping. Default-deny with explicit allowlist only.
       allowed_mentions: allowedMentions ?? { parse: [] },
     });
 
@@ -315,7 +412,7 @@ export async function postEmbeds(webhookUrl, embeds, {
       messages++;
       continue;
     }
-  
+
     if (index > 0) await sleep(minGapMs);
 
     for (let attempt = 0; ; attempt++) {
@@ -352,10 +449,8 @@ export async function postEmbeds(webhookUrl, embeds, {
         continue;
       }
 
-      // Discord answers a webhook POST with 204, or 200 when wait=true, so a 202 here is
-      // unexpected rather than routine. Retry it, but the exhaustion check is mandatory: the
-      // loop is `for (attempt = 0; ; attempt++)` with no bound, so a branch that continues
-      // unconditionally spins until the job's timeout-minutes kills the whole run.
+      // 202 Accepted is unexpected (we use wait=true for 200). Still retry with backoff;
+      // the exhaustion check prevents infinite loops in case of a broken endpoint.
       if (res.status === 202) {
         if (attempt >= maxRetries) throw new DiscordError(202, 'accepted with no body, retries exhausted');
         const wait = Math.min(1000 * 2 ** attempt, maxSleepMs);
@@ -367,7 +462,7 @@ export async function postEmbeds(webhookUrl, embeds, {
       if (!res.ok) throw new DiscordError(res.status, await res.text().catch(() => ''));
 
       messages++;
-      // Proactively yield when the bucket is exhausted rather than earning a 429
+      // Proactively yield when the rate-limit bucket is exhausted
       if (res.headers.get('x-ratelimit-remaining') === '0') {
         const resetAfter = Number(res.headers.get('x-ratelimit-reset-after'));
         if (Number.isFinite(resetAfter) && resetAfter > 0) await sleep(Math.min(resetAfter * 1000 + 100, maxSleepMs));

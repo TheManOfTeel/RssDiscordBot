@@ -8,6 +8,14 @@ export class FilterConfigError extends Error {}
 const DEFAULT_FIELDS = ['title', 'summary', 'categories'];
 const VALID_FIELDS = new Set(['title', 'summary', 'content', 'author', 'categories', 'link', 'id']);
 
+/**
+ * Compile a list of regex patterns into RegExp objects.
+ * Throws FilterConfigError if any pattern is invalid.
+ *
+ * @param {string|string[]|null} patterns - Regex pattern(s) to compile
+ * @param {object} options - { label, flags } for error reporting and regex flags
+ * @returns {RegExp[]} Compiled regex objects
+ */
 function compileList(patterns, { label, flags }) {
   if (patterns == null) return [];
   const list = Array.isArray(patterns) ? patterns : [patterns];
@@ -24,9 +32,11 @@ function compileList(patterns, { label, flags }) {
 }
 
 /**
- * @param {object} raw filter block from config
- * @returns {{include: RegExp[], exclude: RegExp[], fields: string[], requireAll: boolean,
- *            maxAgeHours?: number, requireLink: boolean}}
+ * Compile a filter rule block from config into a normalized filter object.
+ *
+ * @param {object} raw - Filter block (include, exclude, fields, requireAll, maxAgeHours, requireLink)
+ * @param {string} label - Label for error messages
+ * @returns {{include: RegExp[], exclude: RegExp[], fields: string[], requireAll: boolean, maxAgeHours?: number, requireLink: boolean}}
  */
 export function compileFilters(raw = {}, label = 'filters') {
   // 'i' so patterns are case-insensitive; 'm' so ^ and $ anchor per line, which is what
@@ -64,13 +74,20 @@ export function compileFilters(raw = {}, label = 'filters') {
   };
 }
 
-/** Flatten the configured fields of an item into one searchable blob. */
+/**
+ * Flatten the configured fields of an item into one searchable text blob.
+ * Arrays are joined with newlines so regex anchors (^ and $) work per-element.
+ *
+ * @param {object} item - Feed item to search
+ * @param {string[]} fields - Field names to include in the searchable text
+ * @returns {string} Newline-separated concatenation of field values
+ */
 export function haystack(item, fields) {
   const parts = [];
   for (const field of fields) {
     const value = item[field];
-    // Newline-separated, not space-separated: with the default `m` flag that makes
-    // /^releases$/ match one whole category instead of never matching.
+    // Arrays are joined with newlines (not spaces) so that with the 'm' flag,
+    // /^releases$/ matches one whole category, not never.
     if (Array.isArray(value)) parts.push(value.join('\n'));
     else if (value != null) parts.push(String(value));
   }
@@ -78,8 +95,13 @@ export function haystack(item, fields) {
 }
 
 /**
- * Decide whether an item should be posted.
- * @returns {{pass: boolean, reason?: string}} reason is set only when rejected, for logging.
+ * Decide whether an item passes the filter rules.
+ * Include defaults to "match all" if empty; exclude always wins over include.
+ *
+ * @param {object} item - Feed item to evaluate
+ * @param {object} filters - Compiled filter object from compileFilters()
+ * @param {number} now - Current timestamp in ms (default: Date.now())
+ * @returns {{pass: boolean, reason?: string}} reason is present only when rejected
  */
 export function evaluate(item, filters, now = Date.now()) {
   if (filters.requireLink && !item.link) return { pass: false, reason: 'no link' };
@@ -92,7 +114,7 @@ export function evaluate(item, filters, now = Date.now()) {
 
   const text = haystack(item, filters.fields);
 
-  // Exclude wins over include, always.
+  // Exclude always wins over include
   for (const rx of filters.exclude) {
     rx.lastIndex = 0;
     if (rx.test(text)) return { pass: false, reason: `excluded by /${rx.source}/` };

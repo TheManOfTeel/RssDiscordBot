@@ -19,9 +19,11 @@ export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const sleepDefault = sleep;
 
 /**
- * Node's fetch reports every transport failure as the useless string "fetch failed" and
- * hides the real reason (ENOTFOUND, ECONNREFUSED, certificate error) in `cause`. In a
- * scheduled job the log line is all you get, so unwrap it.
+ * Unwrap Node's fetch error cause.
+ * Transport failures like ECONNREFUSED are hidden in the cause; this extracts them.
+ *
+ * @param {Error} err - Error object
+ * @returns {string} Human-readable error message
  */
 export function describeError(err) {
   const cause = err?.cause;
@@ -30,6 +32,11 @@ export function describeError(err) {
 }
 
 /**
+ * Fetch a feed with conditional GET (ETag/Last-Modified).
+ * A 304 response returns { notModified: true } without fetching the body.
+ *
+ * @param {string} url - Feed URL
+ * @param {object} options - { etag, lastModified, timeoutMs, retries, fetchImpl, sleep, log }
  * @returns {Promise<{notModified: boolean, body?: string, etag?: string|null, lastModified?: string|null}>}
  */
 export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, retries = 2, fetchImpl = fetch, sleep: sleepImpl = sleepDefault, log = () => {} } = {}) {

@@ -13,23 +13,51 @@ import path from 'node:path';
 export const STATE_VERSION = 1;
 export const DEFAULT_SEEN_CAP = 500;
 
-/** Feed ids become filenames, so constrain them hard. */
+/**
+ * Convert a feed id into a safe filename.
+ * Replaces unsafe characters, collapses dots, and trims edges.
+ *
+ * @param {string} id - Feed ID
+ * @returns {string} Safe filename
+ * @throws {Error} If the id produces an empty filename
+ */
 export function safeStateName(id) {
   const cleaned = String(id)
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, '-')
-    .replace(/\.{2,}/g, '.') // no ".." components, even though "/" is already gone
+    // No ".." components (/ is already stripped)
+    .replace(/\.{2,}/g, '.')
     .replace(/^[.-]+|[.-]+$/g, '');
   if (!cleaned) throw new Error(`feed id ${JSON.stringify(id)} is not usable as a filename`);
   return cleaned;
 }
 
+/**
+ * Compute the state file path for a feed.
+ *
+ * @param {string} stateDir - State directory path
+ * @param {string} id - Feed ID
+ * @returns {string} Full path to state JSON file
+ */
 export const statePath = (stateDir, id) => path.join(stateDir, `${safeStateName(id)}.json`);
 
+/**
+ * Create an empty state object with all required fields.
+ *
+ * @returns {object} Empty state
+ */
 function emptyState() {
   return { version: STATE_VERSION, initialized: false, seen: [], etag: null, lastModified: null, lastRun: null, lastSuccess: null };
 }
 
+/**
+ * Load a feed's state from disk, or return empty state if missing.
+ * Corrupt files are reset instead of causing an error.
+ *
+ * @param {string} stateDir - State directory
+ * @param {string} id - Feed ID
+ * @returns {Promise<object>} State object with version, initialized, seen[], etag, etc.
+ */
 export async function loadState(stateDir, id) {
   try {
     const parsed = JSON.parse(await readFile(statePath(stateDir, id), 'utf8'));
@@ -41,8 +69,8 @@ export async function loadState(stateDir, id) {
     };
   } catch (err) {
     if (err.code === 'ENOENT') return emptyState();
-    // A corrupt state file must not wedge the feed forever. Reset, but say so loudly:
-    // the next run will re-seed and skip a batch rather than spam the channel.
+    // Corrupt state files are reset (logged via corruptedAt timestamp)
+    // Next run will re-seed and skip a batch rather than spam
     if (err instanceof SyntaxError) {
       const reset = emptyState();
       reset.corruptedAt = new Date().toISOString();
@@ -52,20 +80,30 @@ export async function loadState(stateDir, id) {
   }
 }
 
+/**
+ * Persist state to disk atomically (write temp, then rename).
+ *
+ * @param {string} stateDir - State directory
+ * @param {string} id - Feed ID
+ * @param {object} state - State object to save
+ */
 export async function saveState(stateDir, id, state) {
   await mkdir(stateDir, { recursive: true });
   const file = statePath(stateDir, id);
   const tmp = `${file}.tmp`;
-  // Write-then-rename: a killed run (Actions timeout, cancellation) can't leave a half file.
+  // Write-then-rename ensures partial writes can't corrupt state on job kill
   await writeFile(tmp, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
   await rename(tmp, file);
 }
 
 /**
- * Merge this fetch's ids into the seen list, newest-first, capped.
+ * Merge current feed IDs into the seen list, newest-first, respecting the cap.
+ * Never evicts an ID still present in the feed (avoids re-posting on every run).
  *
- * The cap never evicts an id that is still present in the feed — otherwise a feed with
- * more items than the cap would re-post its tail on every run, forever.
+ * @param {string[]} currentIds - IDs from this fetch
+ * @param {string[]} previousSeen - Previously seen IDs
+ * @param {number} cap - Maximum list size (default DEFAULT_SEEN_CAP)
+ * @returns {string[]} Merged and deduplicated ID list
  */
 export function mergeSeen(currentIds, previousSeen, cap = DEFAULT_SEEN_CAP) {
   const effectiveCap = Math.max(cap, currentIds.length);

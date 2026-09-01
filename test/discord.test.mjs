@@ -183,6 +183,19 @@ test('mentionContent builds role and user mentions, with optional lead text', ()
   assert.ok(mentionContent({ roles: ['1'.repeat(18)], text: 'x'.repeat(1976) }).length <= LIMITS.CONTENT);
 });
 
+test('OS release summaries are grouped by version and platform', () => {
+  const summary = '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS\n26.6.0 - tvOS';
+  assert.equal(mentionContent({}, summary), '26.6.2: iOS, iPadOS\n26.6.1: macOS, watchOS\n26.6.0: tvOS');
+});
+
+test('Apple-style mixed platform/version summaries are grouped by version', () => {
+  const summary = 'iOS 18.7.9 (22H355). iPadOS 17.7.11 (21H461). iOS 16.7.16 (20H392). iPadOS 16.7.16 (20H392). iOS 15.8.8 (19H422). iPadOS 15.8.8 (19H422). tvOS 26.6 (23L773). watchOS 26.6 (23U67). iOS 26.6.1 (23G83). iPadOS 26.6.1 (23G83)';
+  assert.equal(
+    mentionContent({}, summary),
+    '18.7.9: iOS\n17.7.11: iPadOS\n16.7.16: iOS, iPadOS\n15.8.8: iOS, iPadOS\n26.6: tvOS, watchOS\n26.6.1: iOS, iPadOS'
+  );
+});
+
 test('allowedMentionsFor default-denies and allowlists only the given ids', () => {
   assert.deepEqual(allowedMentionsFor({}), { parse: [] });
   assert.deepEqual(allowedMentionsFor({ roles: ['9'.repeat(18)] }), { parse: [], roles: ['9'.repeat(18)] });

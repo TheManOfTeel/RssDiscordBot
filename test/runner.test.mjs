@@ -9,7 +9,8 @@ import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, test } from 'node:test';
-import { main, parseArgs } from '../src/runner.mjs';
+import { compileFilters } from '../src/filter.mjs';
+import { groupForDelivery, main, mentionsFor, parseArgs } from '../src/runner.mjs';
 import { loadState } from '../src/state.mjs';
 
 const WEBHOOK = 'https://discord.com/api/webhooks/123456789/test-token';
@@ -293,4 +294,27 @@ test('showImage true attaches images to every item, false to none', async () => 
     await main(['--config', file, '--state-dir', path.join(dir, 'state')]);
     assert.equal(posted.filter((e) => e.image).length, expected, `showImage: ${showImage}`);
   }
+});
+
+test('mentionsFor unions matching rules and batching overrides are respected', () => {
+  const now = Date.now();
+  const item = { title: 'iOS release is live', summary: 'major update', link: 'https://example.com/ios' };
+  const notify = [
+    { roles: ['1'.repeat(18)], users: ['2'.repeat(18)], text: 'Team A', batching: false, when: compileFilters({ fields: ['title'], include: ['iOS'] }) },
+    { roles: ['2'.repeat(18)], text: 'Team B', summarize: false, when: compileFilters({ fields: ['summary'], include: ['major'] }) },
+    { roles: ['3'.repeat(18)], text: 'Team C', when: compileFilters({ fields: ['title'], include: ['live'] }) },
+  ];
+
+  const mention = mentionsFor(item, notify, now);
+  assert.equal(mention.batching, false);
+  assert.equal(mention.summarize, false);
+  assert.deepEqual([...mention.roles].sort(), ['1'.repeat(18), '2'.repeat(18), '3'.repeat(18)].sort());
+  assert.deepEqual([...mention.users].sort(), ['2'.repeat(18)].sort());
+  assert.equal(mention.text, 'Team A');
+
+  const nextItem = { title: 'other update', summary: 'extra', link: 'https://example.com/other' };
+  const groups = groupForDelivery([item, nextItem], notify, now);
+  assert.equal(groups.length, 2);
+  assert.equal(groups[0].items[0].link, 'https://example.com/ios');
+  assert.equal(groups[1].items[0].link, 'https://example.com/other');
 });
