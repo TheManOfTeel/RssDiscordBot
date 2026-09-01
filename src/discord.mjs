@@ -263,14 +263,10 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
 
   if (summarize && !formattedSummary.match(versionish)) {
     const totalSentencesCount = (formattedSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
-    if (totalSentencesCount >= 4) {
-      // Respect the batch size: multiple headlines are already a readable summary, and the
-      // iOS-friendly 400-char cap should not force them down to a single winner.
-      targetLength = Math.min(availableBodyChars, Math.max(targetLength, totalSentencesCount * 90));
-    } else {
-      const calculatedBounds = Math.max(2, Math.min(totalSentencesCount, Math.round(totalSentencesCount * 0.2)));
-      formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
-    }
+    // Respect headline batch size: for a small bundle like 3–4 titles, the whole bundle is
+    // already a readable summary; don't force a score-based cut that drops one item.
+    const calculatedBounds = totalSentencesCount <= 1 ? 1 : Math.min(totalSentencesCount, 4);
+    formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
   }
   // Single-pass truncation with ellipsis
   if (formattedSummary.length > targetLength) {
