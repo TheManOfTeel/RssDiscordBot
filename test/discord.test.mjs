@@ -188,6 +188,15 @@ test('OS release summaries are grouped by version and platform', () => {
   assert.equal(mentionContent({}, summary), '26.6.2: iOS, iPadOS\n26.6.1: macOS, watchOS\n26.6.0: tvOS');
 });
 
+test('single-item content keeps the title on its own line and summarizes only the body', () => {
+  const summary = 'Apple unveils a new MacBook\nThe new laptop features a faster chip, longer battery life, and a redesigned keyboard.';
+  const result = mentionContent({ roles: ['123456789012345678'] }, summary, true);
+
+  assert.ok(result.startsWith('<@&123456789012345678>\nApple unveils a new MacBook'), 'the title should remain on its own line directly under the ping');
+  assert.ok(!result.includes('Apple unveils a new MacBook\nApple unveils a new MacBook'), 'the title should not be duplicated in the summarized body');
+  assert.ok(result.includes('faster chip') || result.includes('battery life') || result.includes('redesigned keyboard'), 'the body should still include body content after summarization');
+});
+
 test('short multi-item Apple Dev title batches keep more than one sentence', () => {
   const summary = [
     'Updated Apple Developer Program License Agreement now available.',
