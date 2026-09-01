@@ -139,9 +139,9 @@
       "filters": {
         "fields": ["title", "summary", "categories"],
         "exclude": [
-          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bFanDuel\\b|\\bparlay|\\bmoneyline|\\bpoint spread\\b|\\bwager",
+          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\blockbuster odds\\b",
           "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
-          "^league:Fantasy NFL$|^league:Sports Betting$|^topic:news . sports betting$"
+          "^league:Fantasy NFL$|^league:Sports Betting$|^topic:news . sports betting$|^topic:news . best bets$|^topic:news . player props$"
         ]
       },
       "notify": [
@@ -196,9 +196,9 @@
       "filters": {
         "fields": ["title", "summary", "categories"],
         "exclude": [
-          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bFanDuel\\b|\\bparlay|\\bmoneyline|\\bpoint spread\\b|\\bwager",
+          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\bblockbuster odds\\b",
           "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
-          "^league:Sports Betting$|^topic:news . sports betting$"
+          "^league:Sports Betting$|^topic:news . sports betting$|^topic:news . best bets$|^topic:news . player props$"
         ]
       },
       "notify": [

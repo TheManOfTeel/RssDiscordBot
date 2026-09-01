@@ -262,7 +262,7 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   }
 
   if (summarize && !formattedSummary.match(versionish)) {
-    const totalSentencesCount = (formattedSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
+    const totalSentencesCount = splitSentences(formattedSummary).length;
     // Respect headline batch size: for a small bundle like 3–4 titles, the whole bundle is
     // already a readable summary; don't force a score-based cut that drops one item.
     const calculatedBounds = totalSentencesCount <= 1 ? 1 : Math.min(totalSentencesCount, 4);
@@ -306,6 +306,41 @@ export function allowedMentionsFor({ roles = [], users = [] } = {}) {
  * @param {number} sentenceCount - Number of top sentences to return (default 2)
  * @returns {string} Summarized text (N sentences in original order)
  */
+function splitSentences(textString) {
+  const sentences = [];
+  let current = '';
+
+  for (let i = 0; i < textString.length; i++) {
+    const char = textString[i];
+    current += char;
+
+    if (!/[.!?]/.test(char)) continue;
+
+    const nextText = textString.slice(i + 1);
+    const nextNonSpace = nextText.match(/\S/);
+    const prevWord = current.trim().split(/\s+/).pop() || '';
+    const prevWordBase = prevWord.replace(/[.]+$/, '').trim();
+    const isOrdinalAbbrev = /^(?:No|Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|vs|etc)$/i.test(prevWordBase);
+    const nextStartsWithDigit = /^\d/.test(nextText.trimStart() || '');
+
+    if (isOrdinalAbbrev && nextStartsWithDigit) {
+      continue;
+    }
+
+    if (!nextNonSpace || /[A-Z0-9"'\)]/.test(nextNonSpace[0])) {
+      const sentence = current.trim();
+      if (sentence) sentences.push(sentence);
+      current = '';
+    }
+  }
+
+  if (current.trim()) {
+    sentences.push(current.trim());
+  }
+
+  return sentences.filter(Boolean);
+}
+
 function algorithmicSummarize(textString, sentenceCount = 2) {
   if (!textString || textString.trim() === '') return '';
   // Define common words to ignore (stop words) so they don't skew the scoring
@@ -333,9 +368,7 @@ function algorithmicSummarize(textString, sentenceCount = 2) {
     }
   }
 
-  // Split the text into actual sentences
-  // Uses a basic regex split on punctuation followed by spaces
-  const sentences = textString.match(/[^.!?]+[.!?]+(\s|$)/g) || [textString];
+  const sentences = splitSentences(textString);
   const sentenceScores = [];
   // 4. Score each sentence by adding up the normalized weights of its words
   sentences.forEach((sentence, index) => {

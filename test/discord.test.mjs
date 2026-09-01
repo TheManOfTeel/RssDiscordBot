@@ -215,6 +215,16 @@ test('beta and RC release summaries keep their prerelease label', () => {
   );
 });
 
+test('summary splitting keeps ordinal abbreviations like "No." intact', () => {
+  const summary = [
+    'The Dolphins land Arch Manning at No. 1, Ohio State star Jeremiah Smith heads to the Cardinals and the Jets hold three first-round picks in a loaded 2027 draft projection.',
+    'A second headline follows with a completely different angle.'
+  ].join(' ');
+  const result = mentionContent({}, summary, true);
+  assert.ok(result.includes('No. 1'), 'the ordinal abbreviation should remain attached to the number');
+  assert.ok(result.includes('The Dolphins land Arch Manning at No. 1'), 'the summary should retain the full ordinal phrase');
+});
+
 test('Apple-style mixed platform/version summaries are grouped by version', () => {
   const summary = 'iOS 18.7.9 (22H355). iPadOS 17.7.11 (21H461). iOS 16.7.16 (20H392). iPadOS 16.7.16 (20H392). iOS 15.8.8 (19H422). iPadOS 15.8.8 (19H422). tvOS 26.6 (23L773). watchOS 26.6 (23U67). iOS 26.6.1 (23G83). iPadOS 26.6.1 (23G83)';
   assert.equal(

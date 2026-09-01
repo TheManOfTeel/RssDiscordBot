@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { test } from 'node:test';
 import { compileFilters, evaluate, FilterConfigError, haystack } from '../src/filter.mjs';
 
@@ -92,4 +93,14 @@ test('explicit flags override the im default', () => {
   const caseSensitive = compileFilters({ include: ['TypeScript'], fields: ['title'], flags: '' });
   assert.equal(evaluate(item(), caseSensitive, NOW).pass, true);
   assert.equal(evaluate(item({ title: 'announcing typescript 6' }), caseSensitive, NOW).pass, false);
+});
+
+test('CBS NFL and CFB feeds block sports betting language', () => {
+  const feeds = JSON.parse(fs.readFileSync(new URL('../feeds.json', import.meta.url), 'utf8')).feeds;
+  const nfl = feeds.find((feed) => feed.id === 'nfl-news');
+  const cfb = feeds.find((feed) => feed.id === 'cfb-news');
+  const patterns = [nfl.filters.exclude.join('\n'), cfb.filters.exclude.join('\n')].join('\n');
+
+  assert.match(patterns, /best bets|player props|odds|sportsbook/i);
+  assert.match(patterns, /betting/i);
 });
