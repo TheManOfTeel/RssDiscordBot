@@ -14,7 +14,7 @@
       "url": "https://www.apple.com/ca/newsroom/rss-feed.rss",
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_NEWSROOM",
       "username": "Apple Newsroom",
-      "color": "#333333",
+      "color": "#1D1D1F",
       "maxPerRun": 5,
       "descriptionChars": 4096,
       "showAuthor": false,
@@ -90,7 +90,7 @@
       "url": "https://developer.apple.com/news/releases/rss/releases.rss",
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES",
       "username": "Apple Releases",
-      "color": "#34c759",
+      "color": "#30D158",
       "maxPerRun": 15,
       "descriptionChars": 300,
       "showDescription": false,
@@ -111,7 +111,7 @@
       "url": "https://developer.apple.com/news/releases/rss/releases.rss",
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES_BETA",
       "username": "Apple Releases (beta)",
-      "color": "#ff9f0a",
+      "color": "#FF9F0A",
       "maxPerRun": 20,
       "descriptionChars": 300,
       "showDescription": false,
@@ -228,6 +228,78 @@
           }
         }
       ]
+    },
+    {
+      "id": "github-engineering-blog",
+      "name": "GitHub Engineering Blog",
+      "url": "https://github.blog/category/engineering/feed/",
+      "enable": false,
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
+      "username": "GitHub Engineering Blog",
+      "color": "#6E5494",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": false
+    },
+    {
+      "id": "aws-blog",
+      "name": "AWS Blog",
+      "url": "https://aws.amazon.com/blogs/aws/feed/",
+      "enable": false,
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
+      "username": "AWS Blog",
+      "color": "#FF9900",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": false
+    },
+    {
+      "id": "cloudflare-blog",
+      "name": "Cloudflare Blog",
+      "url": "https://blog.cloudflare.com/rss/",
+      "enable": false,
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
+      "username": "Cloudflare Blog",
+      "color": "#F48120",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": false
+    },
+    {
+      "id": "dotnet-blog",
+      "name": "DotNet Blog",
+      "url": "https://devblogs.microsoft.com/dotnet/feed/",
+      "enable": false,
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
+      "username": "DotNet Blog",
+      "color": "#512BD4",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": false
+    },
+    {
+      "id": "cisa-advisories",
+      "name": "CISA Advisories",
+      "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+      "enable": false,
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
+      "username": "CISA Advisories",
+      "color": "#D32F2F",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": false
+    },
+    {
+      "id": "github-sec-advisories",
+      "name": "GitHub Security Advisories",
+      "url": "https://github.com/advisories.atom",
+      "enable": false,
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
+      "username": "GitHub Security Advisories",
+      "color": "#6E5494",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": false
     }
   ]
 }
