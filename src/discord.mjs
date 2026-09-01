@@ -262,9 +262,12 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   }
 
   if (summarize && !formattedSummary.match(/(?:\d+\.){2,}\d+|\d+\.\d+/)) {
-    // Automatically set summary length to roughly 20% of the original article length, minimum 1 sentence
+    // Keep short lists readable: 20% summarization is fine for long articles, but a
+    // 2–4 sentence headline batch should not collapse to a single sentence.
     const totalSentencesCount = (formattedSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
-    const calculatedBounds = Math.max(1, Math.round(totalSentencesCount * 0.2));
+    const calculatedBounds = totalSentencesCount <= 2
+      ? totalSentencesCount
+      : Math.max(2, Math.min(totalSentencesCount, Math.round(totalSentencesCount * 0.2)));
     formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
   }
   // Single-pass truncation with ellipsis
