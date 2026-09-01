@@ -42,7 +42,15 @@ const DEFAULTS = {
  */
 const VALID_PARSERS = new Set(['feed', 'espn-json']);
 
-/** "#5865F2" | "5865F2" | 5793266 -> integer, which is what the embed API wants. */
+/**
+ * Parse a color value into an integer.
+ * Accepts hex strings ("#5865F2" or "5865F2") or integers.
+ *
+ * @param {any} value - Color value to parse
+ * @param {string[]} errors - Error array to append to
+ * @param {string} label - Field label for error messages
+ * @returns {number|undefined} Integer color or undefined if invalid
+ */
 export function parseColor(value, errors, label) {
   if (value == null) return undefined;
   if (Number.isInteger(value)) return value >= 0 && value <= 0xffffff ? value : (errors.push(`${label}: color out of range`), undefined);
@@ -65,10 +73,14 @@ const SNOWFLAKE = /^\d{17,20}$/;
 const PLACEHOLDER_ID = /^0+$/;
 
 /**
- * Compile `notify` rules: which roles/users to ping, and on which items.
+ * Compile notify rules from config.
+ * A rule with no `when` block pings on every item.
  *
- * A rule with no `when` block pings on every item of the feed. A rule with one reuses the
- * whole filter language, so ping conditions and delivery conditions behave identically.
+ * @param {any} rawNotify - Raw notify array from config
+ * @param {string} label - Field label for error messages
+ * @param {string[]} errors - Error array to append to
+ * @param {string[]} warnings - Warning array to append to
+ * @returns {object[]} Compiled notify rules
  */
 export function compileNotify(rawNotify, label, errors, warnings = []) {
   if (rawNotify == null) return [];
@@ -114,8 +126,8 @@ export function compileNotify(rawNotify, label, errors, warnings = []) {
     let when = null;
     if (rule.when != null) {
       try {
-        // requireLink defaults false here: the item already cleared the feed's own filters,
-        // so a ping rule should not silently re-litigate that.
+        // requireLink defaults to false here: items already cleared the feed's filters,
+        // so a ping rule should not re-check that condition.
         when = compileFilters({ requireLink: false, ...rule.when }, `${at}.when`);
       } catch (err) {
         if (err instanceof FilterConfigError) errors.push(err.message);
@@ -128,6 +140,15 @@ export function compileNotify(rawNotify, label, errors, warnings = []) {
   return rules;
 }
 
+/**
+ * Validate a positive integer within bounds.
+ *
+ * @param {any} value - Value to validate
+ * @param {string} label - Field label for error messages
+ * @param {string[]} errors - Error array to append to
+ * @param {object} options - { min, max } bounds
+ * @returns {number|undefined} Valid integer or undefined
+ */
 function positiveInt(value, label, errors, { min = 1, max = Number.MAX_SAFE_INTEGER } = {}) {
   if (!Number.isInteger(value) || value < min || value > max) {
     errors.push(`${label}: expected an integer between ${min} and ${max}, got ${JSON.stringify(value)}`);
@@ -136,6 +157,14 @@ function positiveInt(value, label, errors, { min = 1, max = Number.MAX_SAFE_INTE
   return value;
 }
 
+/**
+ * Validate a parsed config object.
+ * Collects all errors before throwing, so all issues are reported at once.
+ *
+ * @param {any} raw - Parsed config object
+ * @returns {object} Validated config { feeds, warnings }
+ * @throws {ConfigError} On validation failure (includes all collected errors)
+ */
 export function validateConfig(raw) {
   const errors = [];
   const warnings = [];
@@ -147,8 +176,7 @@ export function validateConfig(raw) {
   const defaults = { ...DEFAULTS, ...rawDefaults };
   defaults.color = parseColor(rawDefaults.color, errors, 'defaults.color');
 
-  // A filter block on `defaults` applies to every feed IN ADDITION to that feed's own
-  // block (both must pass) — that is how you express a global blocklist.
+  // Global filter block applies to every feed IN ADDITION to that feed's own filters
   let globalFilters;
   try {
     globalFilters = rawDefaults.filters ? compileFilters(rawDefaults.filters, 'defaults.filters') : undefined;
@@ -174,8 +202,7 @@ export function validateConfig(raw) {
     if (typeof feed.id !== 'string' || feed.id.trim() === '') errors.push(`${label}.id: required, non-empty string`);
     else {
       try {
-        // Two different ids that sanitise to the same filename would silently share one
-        // state file, and each run would treat the other feed's items as already seen.
+        // Sanitizing the id to a filename; must be unique to avoid state file collisions
         const stateName = safeStateName(feed.id);
         const owner = stateNames.get(stateName);
         if (owner != null && owner !== feed.id) {
@@ -250,6 +277,13 @@ export function validateConfig(raw) {
   return { feeds, warnings };
 }
 
+/**
+ * Load and validate the config from a JSON file.
+ *
+ * @param {string} file - Path to config file (typically feeds.json)
+ * @returns {Promise<object>} Validated config { feeds, warnings }
+ * @throws {ConfigError} On file not found or invalid JSON/config
+ */
 export async function loadConfig(file) {
   let text;
   try {

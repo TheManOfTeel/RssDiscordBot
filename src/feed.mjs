@@ -23,9 +23,21 @@ import {
 
 export class FeedFormatError extends Error {}
 
+/**
+ * Test whether a string is an HTTP(S) URL.
+ *
+ * @param {any} value - Value to test
+ * @returns {boolean} True if it's a valid http:// or https:// URL
+ */
 const isHttpUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 
-/** RFC 822 (RSS) and ISO 8601 (Atom) both parse in V8. Anything else becomes undefined. */
+/**
+ * Convert RFC 822 or ISO 8601 dates to ISO 8601.
+ * Rejects absurd values (year < 1990 or > 2200).
+ *
+ * @param {any} raw - Date string to parse
+ * @returns {string|undefined} ISO 8601 string or undefined if invalid
+ */
 function toIsoDate(raw) {
   if (!raw) return undefined;
   const ms = Date.parse(String(raw).trim());
@@ -36,6 +48,14 @@ function toIsoDate(raw) {
   return new Date(ms).toISOString();
 }
 
+/**
+ * Derive or generate a unique, stable ID for an item.
+ * Prefers id candidates over a SHA256 hash of fallback parts.
+ *
+ * @param {any[]} candidates - Potential ID values (guid, permalink, etc.)
+ * @param {string[]} fallbackParts - Content parts to hash if no candidate works
+ * @returns {string} Stable ID
+ */
 function deriveId(candidates, fallbackParts) {
   for (const candidate of candidates) {
     const value = (candidate ?? '').trim();
@@ -44,7 +64,13 @@ function deriveId(candidates, fallbackParts) {
   return `sha256:${createHash('sha256').update(fallbackParts.join('\u0000')).digest('hex').slice(0, 32)}`;
 }
 
-/** Atom: prefer rel="alternate", then a bare <link href>, ignoring enclosures/self. */
+/**
+ * Extract link from an Atom entry.
+ * Prefers rel="alternate", then a bare <link href>, ignoring enclosures and self.
+ *
+ * @param {object} entry - Atom entry element
+ * @returns {string} Link URL or empty string
+ */
 function atomLink(entry) {
   const links = childrenNamed(entry, 'link');
   const byRel = (rel) => links.find((l) => (attr(l, 'rel') ?? 'alternate').toLowerCase() === rel && attr(l, 'href'));
@@ -52,6 +78,13 @@ function atomLink(entry) {
   return chosen ? attr(chosen, 'href').trim() : '';
 }
 
+/**
+ * Extract the best image URL from an item.
+ * Checks enclosures, Atom enclosure links, and media elements.
+ *
+ * @param {object} node - Feed item element
+ * @returns {string|undefined} Image URL or undefined
+ */
 function imageOf(node) {
   const enclosure = childrenNamed(node, 'enclosure').find((e) => isHttpUrl(attr(e, 'url')));
   if (enclosure) {
@@ -69,6 +102,7 @@ function imageOf(node) {
   );
   if (atomEnclosure) return attr(atomEnclosure, 'href').trim();
 
+  // Check media:thumbnail and media:content
   for (const local of ['thumbnail', 'content']) {
     const media = childrenNamed(node, local).find((m) => isHttpUrl(attr(m, 'url')));
     if (media) {
@@ -82,9 +116,15 @@ function imageOf(node) {
   return undefined;
 }
 
+/**
+ * Extract author from an item.
+ * Checks dc:creator, <author> (RSS), and <author><name> (Atom).
+ *
+ * @param {object} node - Feed item element
+ * @returns {string|undefined} Author name or undefined
+ */
 function authorOf(node) {
-  // dc:creator (RSS), <author> (RSS, an email address by spec but usually a name),
-  // <author><name> (Atom).
+  // dc:creator (RSS), <author> (RSS email/name), <author><name> (Atom)
   const direct = textIn(node, 'creator');
   if (direct) return direct;
   const author = pick(node, 'author');
@@ -95,6 +135,13 @@ function authorOf(node) {
   return text || undefined;
 }
 
+/**
+ * Extract categories from an item.
+ * Builds a dedup-friendly format: both bare value and "type:value" (if type exists).
+ *
+ * @param {object} node - Feed item element
+ * @returns {string[]} Category array
+ */
 function categoriesOf(node) {
   const out = [];
   for (const cat of childrenNamed(node, 'category')) {

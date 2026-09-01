@@ -38,10 +38,12 @@ const MEDIA_TYPE = 'media';
 const isHttpUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 
 /**
- * Build the request URL for a sport's news. Kept here so callers don't hand-assemble query
- * strings and quietly exceed the cap.
+ * Build the ESPN site-API news URL.
+ * Clamps the limit to ESPN's server-side cap (50).
  *
- * @param {string} sportPath e.g. 'football/nfl' or 'football/college-football'
+ * @param {string} sportPath - Sport path (e.g., 'football/nfl')
+ * @param {number} limit - Requested article count (default MAX_LIMIT)
+ * @returns {string} Full ESPN API URL
  */
 export function espnNewsUrl(sportPath, limit = MAX_LIMIT) {
   const clamped = Math.min(Math.max(1, Number(limit) || MAX_LIMIT), MAX_LIMIT);

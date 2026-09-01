@@ -23,15 +23,22 @@ const CHUNK = 10; // embeds per Discord message
 const DRY_RUN_WEBHOOK = 'https://discord.com/api/webhooks/0/dry-run-no-secret-needed';
 
 /**
- * Body -> normalised feed. Every parser returns the same { format, title, link, items[] }, so
- * nothing downstream of here knows whether the source was XML or JSON. Keyed by the feed's
- * "parser" config value; config.mjs rejects anything not in this table.
+ * Parser registry: body type to parsing function.
+ * Every parser returns the same { format, title, link, items[] } shape,
+ * so downstream code is format-agnostic.
  */
 export const PARSERS = {
   feed: (body) => parseFeed(body),
   'espn-json': (body, feed) => parseEspnNews(body, feed.parserOptions),
 };
 
+/**
+ * Parse command-line arguments into an options object.
+ *
+ * @param {string[]} argv - Command-line arguments (typically process.argv.slice(2))
+ * @returns {object} Parsed options
+ * @throws {Error} On unknown or invalid arguments
+ */
 export function parseArgs(argv) {
   const options = {
     config: 'feeds.json',
@@ -90,10 +97,12 @@ const HELP = `rss-discord-bot
   (default DISCORD_WEBHOOK). It is never read from the config file.`;
 
 /**
- * @param {boolean} notified whether this item matched a notify rule. Only consulted when the
- *   feed sets `"showImage": "notified"`, which attaches an image to the items that ping and
- *   nothing else — so a feed whose only notify rule is "new hardware" gets images on hardware
- *   posts without restating the condition as a second regex that could drift out of sync.
+ * Build a Discord embed from a feed item.
+ *
+ * @param {object} item - Feed item with title, link, summary, author, image, isoDate
+ * @param {object} feed - Feed config with showDescription, showImage, etc.
+ * @param {boolean} notified - Whether this item matched a notify rule (for showImage="notified")
+ * @returns {object} Discord embed object
  */
 function buildEmbed(item, feed, notified = false) {
   return {
@@ -110,7 +119,16 @@ function buildEmbed(item, feed, notified = false) {
   };
 }
 
-/** Union of every notify rule this item satisfies, or null if it should arrive silently. */
+/**
+ * Union the mention targets (roles, users, text) for every notify rule matching this item.
+ * Returns null if no rules match (silent delivery).
+ * Resolves batching/summarization: if ANY matched rule disables them, they're disabled globally.
+ *
+ * @param {object} item - Feed item to check against notify rules
+ * @param {object[]} notify - Array of compiled notify rules (with "when" filter objects)
+ * @param {number} now - Current timestamp for filter evaluation
+ * @returns {{roles: string[], users: string[], text: string|undefined, batching: boolean, summarize: boolean}|null}
+ */
 export function mentionsFor(item, notify, now) {
   const roles = new Set();
   const users = new Set();
@@ -122,12 +140,11 @@ export function mentionsFor(item, notify, now) {
     for (const id of rule.roles ?? []) roles.add(id);
     for (const id of rule.users ?? []) users.add(id);
     if (rule.text) texts.push(rule.text);
-    // If any matched rule explicitly disables batching, resolve batching to false
-    if (rule.batching === false) {
+  // Invalidate matches: if any rule disables batching/summarization, that rule wins
+  if (rule.batching === false) {
       isBatched = false;
     }
     if (rule.summarize === false) {
-      // If any matched rule explicitly disables summarization, resolve summarization to false
       isSummarized = false;
     }
   }
@@ -136,21 +153,26 @@ export function mentionsFor(item, notify, now) {
 }
 
 /**
- * Identity of a mention set, for deciding what may share a message. Ids are sorted so two
- * rules that union to the same targets in a different order still collapse.
+ * Compute a hash of a mention set for grouping detection.
+ * Two mention sets with the same roles/users (in any order) and text produce the same key.
+ *
+ * @param {object|null} mention - Mention set or null
+ * @returns {string} Hash key
  */
 const mentionKey = (mention) =>
   mention === null ? '' : JSON.stringify([[...mention.roles].sort(), [...mention.users].sort(), mention.text ?? '', mention.batching ?? true, mention.summarize ?? false]);
 
 /**
- * Split the queue into messages, batching RUNS OF ITEMS THAT SHARE A MENTION SET (up to the
- * 10-embed limit). Consecutive items that all ping the same role travel as one message with
- * one mention, so an 8-platform beta drop is one notification rather than eight.
+ * Group items into messages, respecting mention set grouping and the embed chunk size.
  *
- * The grouping is by identical mention, not merely "pings something": a role must never be
- * pinged for a message whose other embeds don't concern it. So an item pinging @ios-betas
- * cannot share with one pinging @mac-betas, and neither can share with a silent item.
- * Order is preserved throughout.
+ * Consecutive items with identical mention sets are batched together (up to chunk size).
+ * Items with `batching: false` always ship alone. Order is preserved.
+ *
+ * @param {object[]} queue - Feed items to group
+ * @param {object[]} notify - Notify rules (for computing mention sets)
+ * @param {number} now - Current timestamp
+ * @param {number} chunk - Max items per batch (default CHUNK=10)
+ * @returns {object[]} Array of { items, mention } groups
  */
 export function groupForDelivery(queue, notify, now, chunk = CHUNK) {
   const groups = [];
@@ -165,20 +187,20 @@ export function groupForDelivery(queue, notify, now, chunk = CHUNK) {
     bufferKey = null;
     bufferMention = null;
   };
-  // Filter out null, undefined, or invalid items up front
   const validQueue = (queue ?? []).filter(Boolean);
   for (const item of validQueue) {
     const mention = (notify && notify.length > 0) ? mentionsFor(item, notify, now) : null;
-    const isBatched = mention 
-      ? mention.batching 
+    // Honor batching: false by either explicit rule or default
+    const isBatched = mention
+      ? mention.batching
       : (notify ?? []).every(rule => rule.batching !== false);
     if (!isBatched) {
-      // Flush existing buffered items first to maintain chronological delivery order
+      // Non-batched items ship alone
       flush();
       groups.push({ items: [item], mention });
       continue;
     }
-    // BATCHED PATH: Buffer until key changes or chunk size is reached
+    // Buffered path: accumulate until key changes or chunk is full
     const key = mentionKey(mention);
     if (buffer.length > 0 && key !== bufferKey) flush();
     bufferKey = key;
@@ -190,7 +212,13 @@ export function groupForDelivery(queue, notify, now, chunk = CHUNK) {
   return groups;
 }
 
-/** Oldest first, so the channel reads chronologically. Undated feeds are assumed newest-first. */
+/**
+ * Sort items chronologically (oldest first) for readable channel ordering.
+ * Undated items are assumed newest-first (so reverse order).
+ *
+ * @param {object[]} items - Feed items
+ * @returns {object[]} Sorted items
+ */
 function chronological(items) {
   const dated = items.filter((i) => i.isoDate);
   if (dated.length === items.length) {
@@ -199,6 +227,15 @@ function chronological(items) {
   return [...items].reverse();
 }
 
+/**
+ * Poll one feed: fetch, filter, group, and post new items.
+ * Updates state regardless of success (so posts aren't repeated).
+ *
+ * @param {object} feed - Feed config object
+ * @param {object} options - CLI options (stateDir, dryRun, verbose, etc.)
+ * @param {function} log - Logger function
+ * @returns {Promise<object>} Result object { id, status, fetched, fresh, filtered, posted, pinged, skipped, note }
+ */
 async function runFeed(feed, options, log) {
   const result = { id: feed.id, status: 'ok', fetched: 0, fresh: 0, filtered: 0, posted: 0, pinged: 0, skipped: 0, note: '' };
   const state = await loadState(options.stateDir, feed.id);
@@ -240,7 +277,7 @@ async function runFeed(feed, options, log) {
         const now = Date.now();
         const passing = [];
         for (const item of fresh) {
-          // Every block in the chain must pass: defaults.filters (global) then feeds[].filters.
+          // Each filter block in the chain must pass (global + feed-level)
           let verdict = { pass: true };
           for (const filters of feed.filterChain) {
             verdict = evaluate(item, filters, now);

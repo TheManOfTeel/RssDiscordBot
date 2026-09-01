@@ -40,7 +40,13 @@ const NAMED_ENTITIES = new Map(
 
 const ENTITY_RE = /&(#[0-9]+|#[xX][0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]{0,31});/g;
 
-/** Decode XML/HTML character references. Unknown entities are left verbatim. */
+/**
+ * Decode XML and HTML character references into actual characters.
+ * Unknown entities are left verbatim. Case-sensitive for known entities.
+ *
+ * @param {string} input - Text with character references
+ * @returns {string} Decoded text
+ */
 export function decodeEntities(input) {
   const s = String(input);
   if (!s.includes('&')) return s;
@@ -67,7 +73,13 @@ const localName = (raw) => {
   return (colon === -1 ? raw : raw.slice(colon + 1)).toLowerCase();
 };
 
-/** Index of the '>' that closes the tag opening at `start`, ignoring '>' inside quotes. */
+/**
+ * Find the closing '>' of a tag, respecting quotes.
+ *
+ * @param {string} src - Source text
+ * @param {number} start - Index of '<'
+ * @returns {number} Index of '>'
+ */
 function findTagEnd(src, start) {
   let quote = null;
   for (let i = start + 1; i < src.length; i++) {
