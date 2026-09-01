@@ -1,4 +1,6 @@
 /**
+ * CURRENTLY UNUSED: ESPN's articles are too unfocused and push pop culture news that is not applicable.
+ * Playing whack-a-mole with the filter rules is not worth it, so this is disabled and left here for reference.
  * ESPN site-API adapter: JSON news feeds normalised to the same item shape as feed.mjs.
  *
  * Exists because ESPN's RSS is unreachable from GitHub-hosted runners. Measured from a
