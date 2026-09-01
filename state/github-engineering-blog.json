@@ -1,1 +1,20 @@
-{"version":1,"initialized":true,"seen":[]}
+{
+  "version": 1,
+  "initialized": true,
+  "seen": [
+    "https://github.blog/?p=98354",
+    "https://github.blog/?p=97992",
+    "https://github.blog/?p=97894",
+    "https://github.blog/?p=97648",
+    "https://github.blog/?p=97770",
+    "https://github.blog/?p=97604",
+    "https://github.blog/?p=97467",
+    "https://github.blog/?p=97282",
+    "https://github.blog/?p=96052",
+    "https://github.blog/?p=95074"
+  ],
+  "etag": "W/\"9801689121f9936b8074db841f80543d\"",
+  "lastModified": "Tue, 01 Sep 2026 20:37:54 GMT",
+  "lastRun": "2026-09-01T21:00:26.474Z",
+  "lastSuccess": "2026-09-01T21:00:26.474Z"
+}

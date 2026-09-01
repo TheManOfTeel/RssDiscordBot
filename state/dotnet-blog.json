@@ -1,1 +1,20 @@
-{"version":1,"initialized":true,"seen":[]}
+{
+  "version": 1,
+  "initialized": true,
+  "seen": [
+    "https://devblogs.microsoft.com/dotnet/?p=60678",
+    "https://devblogs.microsoft.com/dotnet/?p=60656",
+    "https://devblogs.microsoft.com/dotnet/?p=60645",
+    "https://devblogs.microsoft.com/dotnet/?p=60647",
+    "https://devblogs.microsoft.com/dotnet/?p=60600",
+    "https://devblogs.microsoft.com/dotnet/?p=60565",
+    "https://devblogs.microsoft.com/dotnet/dotnet-11-preview-7/",
+    "https://devblogs.microsoft.com/dotnet/?p=60569",
+    "https://devblogs.microsoft.com/dotnet/?p=60537",
+    "https://devblogs.microsoft.com/dotnet/?p=60526"
+  ],
+  "etag": "W/\"a6e0ec0e949eb854adceddfe0326a4ad\"",
+  "lastModified": "Tue, 01 Sep 2026 17:49:29 GMT",
+  "lastRun": "2026-09-01T21:00:28.390Z",
+  "lastSuccess": "2026-09-01T21:00:28.390Z"
+}
