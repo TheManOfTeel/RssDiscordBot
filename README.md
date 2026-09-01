@@ -1,4 +1,4 @@
-# RSS → Discord Bot
+# RSS → Discord Bot ![Cron job status](https://api.cron-job.org/jobs/8340106/fd899f9ee657c924/status-3.svg) [![RSS to Discord](https://github.com/TheManOfTeel/RssDiscordBot/actions/workflows/rss-to-discord.yml/badge.svg)](https://github.com/TheManOfTeel/RssDiscordBot/actions/workflows/rss-to-discord.yml)
 
 A lightweight RSS/Atom and ESPN JSON feed relay that posts new items to Discord via webhooks. It runs on GitHub Actions or locally, persists per-feed state in the repo, and enforces Discord embed limits before posting.
 
