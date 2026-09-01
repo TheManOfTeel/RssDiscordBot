@@ -200,6 +200,21 @@ test('short multi-item Apple Dev title batches keep more than one sentence', () 
   assert.ok(sentenceCount >= 3, 'short title lists should keep most of their headlines instead of collapsing to a single sentence');
 });
 
+test('larger headline batches keep their size instead of being squeezed to 20%', () => {
+  const summary = Array.from({ length: 5 }, (_, i) => `Apple headline ${i + 1} about Macs, iPhones, and AI.`).join(' ');
+  const result = mentionContent({ roles: ['123456789012345678'] }, summary, true);
+  const sentenceCount = (result.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
+  assert.ok(sentenceCount >= 4, 'larger batches should respect their headline count rather than dropping to a 20% subset');
+});
+
+test('beta and RC release summaries keep their prerelease label', () => {
+  const summary = 'iOS 26.2 beta 3 (23C5044f). macOS 26.2 beta 2 (25C5033e). watchOS 26.2 RC (23S5040c)';
+  assert.equal(
+    mentionContent({}, summary),
+    '26.2 beta 3: iOS\n26.2 beta 2: macOS\n26.2 RC: watchOS'
+  );
+});
+
 test('Apple-style mixed platform/version summaries are grouped by version', () => {
   const summary = 'iOS 18.7.9 (22H355). iPadOS 17.7.11 (21H461). iOS 16.7.16 (20H392). iPadOS 16.7.16 (20H392). iOS 15.8.8 (19H422). iPadOS 15.8.8 (19H422). tvOS 26.6 (23L773). watchOS 26.6 (23U67). iOS 26.6.1 (23G83). iPadOS 26.6.1 (23G83)';
   assert.equal(

@@ -185,9 +185,9 @@ function formatVersionGroups(versionRows) {
   const ordered = [];
   const index = new Map();
   for (const row of versionRows) {
-    const match = row.match(/^((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:-|:)\s*([^\n]+))?$/);
+    const match = row.match(/^(((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:beta|rc|public beta|preview|seed)(?:\s*\d+)?)?)(?:\s*(?:-|:)\s*([^\n]+))?$/i);
     if (!match) return null;
-    const [, version, platformsText = ''] = match;
+    const [, version, , platformsText = ''] = match;
     const platformList = (platformsText || '')
       .split(/\s*(?:,|\band\b)\s*/i)
       .map((platform) => platform.trim())
@@ -209,7 +209,7 @@ function formatVersionGroups(versionRows) {
  * into version-grouped lines. Returns null if no platform/version pairs are found.
  */
 function formatMixedPlatformVersions(text) {
-  const matches = [...text.matchAll(/\b([A-Za-z]+(?:OS|OSX))\s+((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*\([^)]*\))?/g)];
+  const matches = [...text.matchAll(/\b([A-Za-z]+(?:OS|OSX))\s+(((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:beta|rc|public beta|preview|seed)(?:\s*\d+)?)?)(?:\s*\([^)]*\))?/gi)];
   if (matches.length === 0) return null;
 
   const ordered = [];
@@ -247,12 +247,12 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   // Reserve space for pings + newline (\n) if pings exist
   const pingOffset = pings.length > 0 ? pings.length + 1 : 0;
   const availableBodyChars = Math.max(0, LIMITS.CONTENT - pingOffset);
-  // Target the smaller of the iOS mobile limit or available space
-  const targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
+  let targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
   let formattedSummary = summary ?? '';
 
   const rows = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
-  const isVersionFirstRelease = rows.length > 0 && rows.every((line) => /^((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:-|:)\s*.*)?$/.test(line));
+  const versionish = /((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:beta|rc|public beta|preview|seed)(?:\s*\d+)?)?/i;
+  const isVersionFirstRelease = rows.length > 0 && rows.every((line) => new RegExp(`^${versionish.source}(?:\\s*(?:-|:)\\s*.*)?$`, 'i').test(line));
   if (isVersionFirstRelease) {
     const grouped = formatVersionGroups(rows);
     if (grouped) formattedSummary = grouped;
@@ -261,14 +261,16 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
     if (grouped) formattedSummary = grouped;
   }
 
-  if (summarize && !formattedSummary.match(/(?:\d+\.){2,}\d+|\d+\.\d+/)) {
-    // Preserve short headline batches: a list of 3–4 title-like sentences is already a
-    // readable summary and should not be compressed down to a single sentence.
+  if (summarize && !formattedSummary.match(versionish)) {
     const totalSentencesCount = (formattedSummary.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
-    const calculatedBounds = totalSentencesCount <= 4
-      ? totalSentencesCount
-      : Math.max(2, Math.min(totalSentencesCount, Math.round(totalSentencesCount * 0.2)));
-    formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
+    if (totalSentencesCount >= 4) {
+      // Respect the batch size: multiple headlines are already a readable summary, and the
+      // iOS-friendly 400-char cap should not force them down to a single winner.
+      targetLength = Math.min(availableBodyChars, Math.max(targetLength, totalSentencesCount * 90));
+    } else {
+      const calculatedBounds = Math.max(2, Math.min(totalSentencesCount, Math.round(totalSentencesCount * 0.2)));
+      formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
+    }
   }
   // Single-pass truncation with ellipsis
   if (formattedSummary.length > targetLength) {
