@@ -283,17 +283,6 @@
       "maxPerRun": 20,
       "descriptionChars": 300,
       "showDescription": false
-    },
-    {
-      "id": "github-sec-advisories",
-      "name": "GitHub Security Advisories",
-      "url": "https://github.com/advisories.atom",
-      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
-      "username": "GitHub Security Advisories",
-      "color": "#6E5494",
-      "maxPerRun": 20,
-      "descriptionChars": 300,
-      "showDescription": false
     }
   ]
 }
