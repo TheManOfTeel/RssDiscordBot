@@ -197,7 +197,7 @@ test('short multi-item Apple Dev title batches keep more than one sentence', () 
   ].join(' ');
   const result = mentionContent({ roles: ['123456789012345678'] }, summary, true);
   const sentenceCount = (result.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
-  assert.ok(sentenceCount >= 2, 'short title lists should not collapse to a single sentence');
+  assert.ok(sentenceCount >= 3, 'short title lists should keep most of their headlines instead of collapsing to a single sentence');
 });
 
 test('Apple-style mixed platform/version summaries are grouped by version', () => {
