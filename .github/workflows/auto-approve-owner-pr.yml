@@ -1,0 +1,14 @@
+name: Auto-approve Owner's Pull Requests
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual runs
+
+# Unified at the top level to resolve engine initialization blocks
+permissions:
+      pull-requests: write
+
+jobs:
+  auto-approve:
+    uses: TheManOfTeel/SharedWorkflows/.github/workflows/auto-approve-owner-pr.yml@v1.0.0

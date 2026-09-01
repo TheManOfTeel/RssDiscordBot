@@ -1,0 +1,235 @@
+{
+  "defaults": {
+    "webhookEnv": "DISCORD_WEBHOOK",
+    "maxPerRun": 5,
+    "seenCap": 500,
+    "descriptionChars": 400,
+    "showImage": false,
+    "username": "Feeds"
+  },
+  "feeds": [
+    {
+      "id": "apple-newsroom",
+      "name": "Apple Newsroom",
+      "url": "https://www.apple.com/ca/newsroom/rss-feed.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_APPLE_NEWSROOM",
+      "username": "Apple Newsroom",
+      "color": "#333333",
+      "maxPerRun": 5,
+      "descriptionChars": 4096,
+      "showAuthor": false,
+      "showImage": "notified",
+      "notify": [
+        {
+          "roles": ["1539011756297555998"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "flags": "m",
+            "include": [
+              "\\b(iPhone|iPad|MacBook|Mac|Apple Watch|AirPods|Vision Pro|HomePod|AirTag|Studio Display|Pro Display|Magic (Keyboard|Mouse|Trackpad))\\b",
+              "\\b[AMSHRW]\\d{1,2}( (Pro|Max|Ultra))?\\b",
+              "\\b(available to order|available (beginning|starting)|pre-?order|starting at)\\b",
+              "\\bApple (introduces|unveils|debuts|reveals) (the |a |an )?(new |all-new )?[A-Z]"
+            ],
+            "exclude": ["\\bApple Intelligence\\b|\\bSiri\\b|\\bacross services\\b"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "apple-dev-news",
+      "name": "Apple Developer",
+      "url": "https://developer.apple.com/news/rss/news.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_APPLE_DEV_NEWS",
+      "username": "Apple Dev News",
+      "color": "#0071e3",
+      "maxPerRun": 10,
+      "descriptionChars": 4096,
+      "notify": [
+        {
+          "roles": ["1539012206782455868"],
+          "batching": false,
+          "when": {
+            "fields": ["title"],
+            "include": ["\\bWWDC\\d*\\b", "\\bApple Event\\b"],
+            "exclude": ["^Today @ ", "\\bsurvey\\b"]
+          }
+        },
+        {
+          "roles": ["1539012206782455868"],
+          "batching": false,
+          "when": {
+            "fields": ["summary"],
+            "include": ["\\bJoin us for a special Apple Event\\b"]
+          }
+        },
+        {
+          "roles": ["1539012206782455868"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "include": [
+              "\\b(deadline|last day|expir\\w+|action required|must|require[sd]?|requirements?|need to)\\b",
+              "\\b(deprecat\\w+|sunset\\w*|discontinu\\w+|no longer|will be removed|upcoming)\\b",
+              "\\b(app review guidelines|license agreement|agreements?|age ratings?|trader status|SDK)\\b",
+              "\\b(tax|price)s? (and (tax|price)s? )?updates?\\b",
+              "\\b(certificate|domain|endpoint|server connections?|algorithm|TLS|cipher|security|vulnerab\\w+|outage\\w*)\\b"
+            ],
+            "exclude": [
+              "\\bhello developer\\b|\\bbehind the design\\b|\\bdesign kits?\\b|\\bQ&amp;A\\b|\\bswift student challenge\\b",
+              ": how |: inside |: in pursuit|\\bhow (this|these) \\w+ (team|studio)\\b"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "apple-releases",
+      "name": "Apple Releases",
+      "url": "https://developer.apple.com/news/releases/rss/releases.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES",
+      "username": "Apple Releases",
+      "color": "#34c759",
+      "maxPerRun": 15,
+      "descriptionChars": 300,
+      "showDescription": false,
+      "filters": {
+        "fields": ["title"],
+        "include": ["\\w*OS\\b|AirPods"],
+        "exclude": ["\\bbetas?\\b|\\brelease candidate\\b|\\brc\\b|\\bpreview\\b|\\bseed\\b"]
+      },
+      "notify": [
+        {
+          "roles": ["1539012329553797182"]
+        }
+      ]
+    },
+    {
+      "id": "apple-releases-beta",
+      "name": "Apple Releases — Betas",
+      "url": "https://developer.apple.com/news/releases/rss/releases.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES_BETA",
+      "username": "Apple Releases (beta)",
+      "color": "#ff9f0a",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": false,
+      "filters": {
+        "fields": ["title"],
+        "requireAll": true,
+        "include": ["\\w*OS\\b|AirPods", "\\bbetas?\\b|\\brelease candidate\\b|\\brc\\b|\\bpreview\\b|\\bseed\\b"]
+      },
+      "notify": [
+        {
+          "roles": ["1539012420125593620"]
+        }
+      ]
+    },
+    {
+      "id": "nfl-news",
+      "name": "NFL News",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=50",
+      "parser": "espn-json",
+      "webhookEnv": "DISCORD_WEBHOOK_NFL_NEWS",
+      "username": "NFL News",
+      "color": "#0B2265",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": true,
+      "filters": {
+        "fields": ["title", "summary", "categories"],
+        "exclude": [
+          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bFanDuel\\b|\\bparlay|\\bmoneyline|\\bpoint spread\\b|\\bwager",
+          "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
+          "^league:Fantasy NFL$|^league:Sports Betting$|^topic:news . sports betting$"
+        ]
+      },
+      "notify": [
+        {
+          "roles": ["1542330701066801203"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "flags": "m",
+            "exclude": [ "\\b49ers\\b", "\\bBears\\b", "\\bBengals\\b", "\\bBills\\b", "\\bBroncos\\b", "\\bBrowns\\b", "\\bBuccaneers\\b", "\\bCardinals\\b", "\\bChargers\\b", "\\bChiefs\\b", "\\bColts\\b", "\\bCommanders\\b", "\\bCowboys\\b", "\\bDolphins\\b", "\\bEagles\\b", "\\bFalcons\\b", "\\bGiants\\b", "\\bJaguars\\b", "\\bJets\\b", "\\bLions\\b", "\\bPackers\\b", "\\bPanthers\\b", "\\bPatriots\\b", "\\bRaiders\\b", "\\bRams\\b", "\\bRavens\\b", "\\bSaints\\b", "\\bSeahawks\\b", "\\bSteelers\\b", "\\bTexans\\b", "\\bTitans\\b", "\\bVikings?\\b"]
+          }
+        },
+        {
+          "roles": ["1542335085280235632"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "flags": "m",
+            "include": ["\\bBrowns\\b"]
+          }
+        },
+        {
+          "roles": ["1542334746942644274"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "flags": "m",
+            "include": ["\\bGiants\\b"]
+          }
+        },
+        {
+          "roles": ["1542337543260086382"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "flags": "m",
+            "include": ["\\bLions\\b"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "cfb-news",
+      "name": "College Football News",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/news?limit=50",
+      "parser": "espn-json",
+      "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
+      "username": "CFB News",
+      "color": "#8C1515",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": true,
+      "filters": {
+        "fields": ["title", "summary", "categories"],
+        "exclude": [
+          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bFanDuel\\b|\\bparlay|\\bmoneyline|\\bpoint spread\\b|\\bwager",
+          "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
+          "^league:Sports Betting$|^topic:news . sports betting$"
+        ]
+      },
+      "notify": [
+        {
+          "roles": ["1542594778854592622"],
+          "summarize": true,
+          "when": {
+            "fields": ["categories"],
+            "include": ["^league:NCAA Football$"],
+            "exclude": ["^team:"]
+          }
+        },
+        {
+          "roles": ["1542594897641734155"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "include": ["\\bOhio State\\b|\\bBuckeyes\\b"]
+          }
+        },
+        {
+          "roles": ["1542594987412160615"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "include": ["\\bArmy\\b|\\bBlack Knights\\b"]
+          }
+        }
+      ]
+    }
+  ]
+}

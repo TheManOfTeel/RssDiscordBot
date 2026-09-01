@@ -1,0 +1,94 @@
+name: RSS to Discord
+
+on:
+  # Scheduling handled by cron-job.org since actions scheduler is too loose.
+  # Current commented 30 minute interval is a guideline and may not be accurate with current scheduling.
+  # schedule:
+  #   - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Fetch and filter but post nothing'
+        type: boolean
+        default: false
+      seed:
+        description: 'Re-seed state (record current ids, post nothing)'
+        type: boolean
+        default: false
+      only:
+        description: 'Comma-separated feed ids (blank = all)'
+        type: string
+        default: ''
+
+# Unified at the top level to resolve engine initialization blocks
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: rss-to-discord
+  cancel-in-progress: false # never let two runs race the state files
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Mints a 1-hour installation token for the state-commit App. MUST run before checkout.
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Poll feeds
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_WEBHOOK_APPLE_NEWSROOM: ${{ secrets.DISCORD_WEBHOOK_APPLE_NEWSROOM }}
+          DISCORD_WEBHOOK_APPLE_DEV_NEWS: ${{ secrets.DISCORD_WEBHOOK_APPLE_DEV_NEWS }}
+          DISCORD_WEBHOOK_APPLE_RELEASES: ${{ secrets.DISCORD_WEBHOOK_APPLE_RELEASES }}
+          DISCORD_WEBHOOK_APPLE_RELEASES_BETA: ${{ secrets.DISCORD_WEBHOOK_APPLE_RELEASES_BETA }}
+          DISCORD_WEBHOOK_NFL_NEWS: ${{ secrets.DISCORD_WEBHOOK_NFL_NEWS }}
+          DISCORD_WEBHOOK_CFB_NEWS: ${{ secrets.DISCORD_WEBHOOK_CFB_NEWS }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          SEED: ${{ inputs.seed }}
+          ONLY: ${{ inputs.only }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [ "${DRY_RUN:-}" = 'true' ]; then args+=(--dry-run); fi
+          if [ "${SEED:-}" = 'true' ]; then args+=(--seed); fi
+          if [ -n "${ONLY:-}" ]; then args+=(--only "$ONLY"); fi
+          node src/runner.mjs "${args[@]+"${args[@]}"}"
+
+      - name: Persist state
+        if: always() && !inputs.dry_run
+        run: |
+          set -euo pipefail
+          git config user.name 'rss-bot'
+          git config user.email 'rss-bot@://github.com'
+          git add state/
+          if git diff --quiet --cached; then
+            echo 'no state changes'
+            exit 0
+          fi
+          git commit -m 'chore(state): update feed cursors [skip ci]'
+          
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "push failed, rebasing (attempt $attempt)"
+            git pull --rebase --autostash
+          done
+          echo 'could not push state after 3 attempts' >&2
+          exit 1

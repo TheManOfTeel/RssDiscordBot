@@ -1,0 +1,13 @@
+name: PR Tests
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    uses: TheManOfTeel/SharedWorkflows/.github/workflows/node-ci.yml@v1.0.0
+    with:
+      cache: ''
+      install-command: npm install --no-fund --no-audit
