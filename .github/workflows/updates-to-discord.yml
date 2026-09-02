@@ -30,44 +30,44 @@ jobs:
           MERGED_BY: ${{ github.actor }}
           REPO_NAME: ${{ github.repository }}
         run: |
-          # Sanitize body text for valid JSON escaping
-          CLEAN_BODY=$(echo "$PR_BODY" | jq -aR .)
+          set -euo pipefail
 
-          PAYLOAD=$(cat <<EOF
-          {
-            "embeds": [
-              {
-                "title": "🔀 Pull Request Merged: #${PR_NUMBER}",
-                "url": "${PR_URL}",
-                "description": "**${PR_TITLE}**\n\n${CLEAN_BODY:1:-1}",
-                "color": 8359053,
-                "author": {
-                  "name": "${PR_AUTHOR}",
-                  "icon_url": "${PR_AUTHOR_AVATAR}"
+          if [ -z "${DISCORD_WEBHOOK_UPDATES:-}" ]; then
+            echo "Error: DISCORD_WEBHOOK_UPDATES secret is missing." >&2
+            exit 1
+          fi
+
+          # Let jq safely handle title/body string concatenation and character escaping natively
+          PAYLOAD=$(jq -n \
+            --arg number "$PR_NUMBER" \
+            --arg title "$PR_TITLE" \
+            --arg body "${PR_BODY:-}" \
+            --arg url "$PR_URL" \
+            --arg author_name "$PR_AUTHOR" \
+            --arg author_icon "$PR_AUTHOR_AVATAR" \
+            --arg repo "$REPO_NAME" \
+            --arg merged_by "$MERGED_BY" \
+            --arg timestamp "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            '{
+              embeds: [{
+                title: ("🔀 Pull Request Merged: #" + $number),
+                url: $url,
+                description: ("**" + $title + "**\n\n" + $body),
+                color: 8359053,
+                author: {
+                  name: $author_name,
+                  icon_url: $author_icon
                 },
-                "fields": [
-                  {
-                    "name": "Repository",
-                    "value": "[${REPO_NAME}](https://github.com/${REPO_NAME})",
-                    "inline": true
-                  },
-                  {
-                    "name": "Merged By",
-                    "value": "${MERGED_BY}",
-                    "inline": true
-                  }
+                fields: [
+                  { name: "Repository", value: ("[" + $repo + "](https://github.com/" + $repo + ")"), inline: true },
+                  { name: "Merged By", value: $merged_by, inline: true }
                 ],
-                "footer": {
-                  "text": "GitHub Actions • Release Updates"
-                },
-                "timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-              }
-            ]
-          }
-          EOF
-          )
+                footer: { text: "GitHub Actions • RSS Bot Pipeline" },
+                timestamp: $timestamp
+              }]
+            }')
 
-          curl -H "Content-Type: application/json" \
-              -X POST \
+          curl -sS -X POST \
+              -H "Content-Type: application/json" \
               -d "$PAYLOAD" \
               "$DISCORD_WEBHOOK_UPDATES"
