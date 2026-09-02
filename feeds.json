@@ -185,7 +185,7 @@
     },
     {
       "id": "cfb-news",
-      "name": "CFB News",
+      "name": "College Football News",
       "url": "https://www.cbssports.com/rss/headlines/college-football/",
       "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
       "username": "CFB News",
