@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://github.blog/?p=98586",
     "https://github.blog/?p=98354",
     "https://github.blog/?p=97992",
     "https://github.blog/?p=97894",
@@ -13,8 +14,8 @@
     "https://github.blog/?p=96052",
     "https://github.blog/?p=95074"
   ],
-  "etag": "W/\"5419dbb8c0560a59c3e58f4662b6eba8\"",
-  "lastModified": "Wed, 02 Sep 2026 01:40:22 GMT",
-  "lastRun": "2026-09-02T18:00:17.245Z",
-  "lastSuccess": "2026-09-02T18:00:17.245Z"
+  "etag": "W/\"04b701c79434b40a8c75912d14439b47\"",
+  "lastModified": "Wed, 02 Sep 2026 17:47:12 GMT",
+  "lastRun": "2026-09-02T18:30:19.237Z",
+  "lastSuccess": "2026-09-02T18:30:19.237Z"
 }
