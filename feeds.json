@@ -185,10 +185,10 @@
     },
     {
       "id": "cfb-news",
-      "name": "NCAA Football News",
+      "name": "CFB News",
       "url": "https://www.cbssports.com/rss/headlines/college-football/",
       "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
-      "username": "NCAAF News",
+      "username": "CFB News",
       "color": "#8C1515",
       "maxPerRun": 20,
       "descriptionChars": 300,
