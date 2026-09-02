@@ -49,6 +49,7 @@ jobs:
             --arg merged_by "$MERGED_BY" \
             --arg timestamp "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
             '{
+              username: "GitHub Updates",
               embeds: [{
                 title: ("🔀 Pull Request Merged: #" + $number),
                 url: $url,
