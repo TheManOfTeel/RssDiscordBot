@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://developer.apple.com/news/releases/?id=09082026c",
     "https://developer.apple.com/news/releases/?id=09082026a",
     "https://developer.apple.com/news/releases/?id=09082026b",
     "https://developer.apple.com/news/releases/?id=08312026a",
@@ -60,6 +61,6 @@
   ],
   "etag": null,
   "lastModified": "",
-  "lastRun": "2026-09-08T21:30:18.845Z",
-  "lastSuccess": "2026-09-08T21:30:18.845Z"
+  "lastRun": "2026-09-08T22:00:18.248Z",
+  "lastSuccess": "2026-09-08T22:00:18.248Z"
 }
