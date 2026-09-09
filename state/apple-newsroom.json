@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/apple-unveils-iphone-duo/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-unveils-apple-watch-ultra-4/",
     "https://www.apple.com/ca/newsroom/2026/09/introducing-apple-watch-series-12-with-the-all-new-health-sensing-system/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/",
@@ -29,7 +30,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Wed, 09 Sep 2026 18:48:26 GMT",
-  "lastRun": "2026-09-09T19:30:20.191Z",
-  "lastSuccess": "2026-09-09T19:30:20.191Z"
+  "lastModified": "Wed, 09 Sep 2026 19:38:39 GMT",
+  "lastRun": "2026-09-09T20:00:19.812Z",
+  "lastSuccess": "2026-09-09T20:00:19.812Z"
 }
