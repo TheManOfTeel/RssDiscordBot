@@ -2,6 +2,8 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/apple-unveils-apple-watch-ultra-4/",
+    "https://www.apple.com/ca/newsroom/2026/09/introducing-apple-watch-series-12-with-the-all-new-health-sensing-system/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
     "https://www.apple.com/ca/newsroom/2026/09/the-internets-favorite-cat-comes-to-apple-arcade-with-pusheens-place/",
@@ -27,7 +29,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Wed, 09 Sep 2026 17:45:29 GMT",
-  "lastRun": "2026-09-09T18:30:15.574Z",
-  "lastSuccess": "2026-09-09T18:30:15.574Z"
+  "lastModified": "Wed, 09 Sep 2026 18:46:36 GMT",
+  "lastRun": "2026-09-09T19:00:17.184Z",
+  "lastSuccess": "2026-09-09T19:00:17.184Z"
 }
