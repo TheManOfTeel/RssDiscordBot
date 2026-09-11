@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-unveils-iphone-duo/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-unveils-apple-watch-ultra-4/",
     "https://www.apple.com/ca/newsroom/2026/09/introducing-apple-watch-series-12-with-the-all-new-health-sensing-system/",
@@ -30,7 +31,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Thu, 10 Sep 2026 13:06:55 GMT",
-  "lastRun": "2026-09-11T16:00:18.020Z",
-  "lastSuccess": "2026-09-11T16:00:18.020Z"
+  "lastModified": "Fri, 11 Sep 2026 16:05:18 GMT",
+  "lastRun": "2026-09-11T16:15:14.302Z",
+  "lastSuccess": "2026-09-11T16:15:14.302Z"
 }
