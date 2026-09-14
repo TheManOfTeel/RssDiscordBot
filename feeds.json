@@ -232,7 +232,7 @@
     {
       "id": "olympics-news",
       "name": "Olympics News",
-      "url": "https://crssnt.com/preview?id=1wqyFNZpO9rVBC4ZLS0BJFVMOOW0zTM3azVGXFkmDXnY&name=olympics.com",
+      "url": "https://www.feedspot.com/infiniterss.php?_src=feed_title&followfeedid=5315039&q=site:",
       "webhookEnv": "DISCORD_WEBHOOK_OLYMPICS_NEWS",
       "username": "Olympics News",
       "color": "#E50914",
