@@ -230,6 +230,31 @@
       ]
     },
     {
+      "id": "olympics-news",
+      "name": "Olympics News",
+      "url": "https://crssnt.com/preview?id=1wqyFNZpO9rVBC4ZLS0BJFVMOOW0zTM3azVGXFkmDXnY&name=olympics.com",
+      "webhookEnv": "DISCORD_WEBHOOK_OLYMPICS_NEWS",
+      "username": "Olympics News",
+      "color": "#E50914",
+      "maxPerRun": 20,
+      "descriptionChars": 300,
+      "showDescription": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "exclude": ["\\bParalympics\\b"]
+      },
+      "notify": [
+        {
+        "roles": ["1549147253384417290"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "include": ["\\bUSA\\b|\\bUnites States\\b"]
+          }
+        }
+      ]
+    },
+    {
       "id": "github-engineering-blog",
       "name": "GitHub Engineering Blog",
       "url": "https://github.blog/category/engineering/feed/",
