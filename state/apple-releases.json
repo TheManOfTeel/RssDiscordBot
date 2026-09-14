@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://developer.apple.com/news/releases/?id=09142026i",
     "https://developer.apple.com/news/releases/?id=09142026h",
     "https://developer.apple.com/news/releases/?id=09142026a",
     "https://developer.apple.com/news/releases/?id=09142026b",
@@ -10,7 +11,6 @@
     "https://developer.apple.com/news/releases/?id=09142026e",
     "https://developer.apple.com/news/releases/?id=09142026f",
     "https://developer.apple.com/news/releases/?id=09112026a",
-    "https://developer.apple.com/news/releases/?id=09092026i",
     "https://developer.apple.com/news/releases/?id=09092026g",
     "https://developer.apple.com/news/releases/?id=09082026c",
     "https://developer.apple.com/news/releases/?id=09082026a",
@@ -55,6 +55,7 @@
     "https://developer.apple.com/news/releases/?id=04012026c",
     "https://developer.apple.com/news/releases/?id=02262026b",
     "https://developer.apple.com/news/releases/?id=02202026b",
+    "https://developer.apple.com/news/releases/?id=09092026i",
     "https://developer.apple.com/news/releases/?id=09092026h",
     "https://developer.apple.com/news/releases/?id=09092026a",
     "https://developer.apple.com/news/releases/?id=09092026b",
@@ -80,6 +81,6 @@
   ],
   "etag": null,
   "lastModified": "",
-  "lastRun": "2026-09-14T18:45:12.357Z",
-  "lastSuccess": "2026-09-14T18:45:12.357Z"
+  "lastRun": "2026-09-14T19:00:17.122Z",
+  "lastSuccess": "2026-09-14T19:00:17.122Z"
 }
