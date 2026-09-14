@@ -232,7 +232,7 @@
     {
       "id": "olympics-news",
       "name": "Olympics News",
-      "url": "https://www.feedspot.com/infiniterss.php?_src=feed_title&followfeedid=5315039&q=site:",
+      "url": "https://www.cbssports.com/rss/headlines/olympics/",
       "webhookEnv": "DISCORD_WEBHOOK_OLYMPICS_NEWS",
       "username": "Olympics News",
       "color": "#E50914",
