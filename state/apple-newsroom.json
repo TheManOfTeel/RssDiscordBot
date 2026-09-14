@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
     "https://www.apple.com/ca/newsroom/2026/09/apples-new-child-safety-features-now-available/",
     "https://www.apple.com/ca/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-unveils-iphone-duo/",
@@ -32,7 +33,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Mon, 14 Sep 2026 17:15:07 GMT",
-  "lastRun": "2026-09-14T17:15:14.582Z",
-  "lastSuccess": "2026-09-14T17:15:14.582Z"
+  "lastModified": "Mon, 14 Sep 2026 17:27:07 GMT",
+  "lastRun": "2026-09-14T17:30:14.844Z",
+  "lastSuccess": "2026-09-14T17:30:14.844Z"
 }
