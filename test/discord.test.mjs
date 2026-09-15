@@ -167,9 +167,15 @@ test('waits when the rate-limit bucket is exhausted', async () => {
 test('inserts a gap between messages to stay under the per-channel cap', async () => {
   const slept = [];
   const { calls, fetchImpl } = recorder([okResponse()]);
+  // The stubbed sleep must drive the clock the pacer reads, or the gap it charges is
+  // 1300 minus however long the real wall clock happened to advance — 1300 on a fast
+  // machine, 1299 on a slower CI runner.
+  let clock = 0;
+  const sleep = async (ms) => { slept.push(ms); clock += ms; };
   await postEmbeds(WEBHOOK, Array.from({ length: 21 }, (_, i) => ({ title: `t${i}` })), {
     fetchImpl,
-    sleep: async (ms) => slept.push(ms),
+    sleep,
+    now: () => clock,
     minGapMs: 1300,
   });
   assert.equal(calls.length, 3);
