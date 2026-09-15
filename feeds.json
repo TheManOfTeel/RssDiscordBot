@@ -11,6 +11,7 @@
     {
       "id": "apple-newsroom",
       "name": "Apple Newsroom",
+      "enabled": true,
       "url": "https://www.apple.com/ca/newsroom/rss-feed.rss",
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_NEWSROOM",
       "username": "Apple Newsroom",
@@ -58,6 +59,7 @@
     {
       "id": "apple-dev-news",
       "name": "Apple Developer",
+      "enabled": true,
       "url": "https://developer.apple.com/news/rss/news.rss",
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_DEV_NEWS",
       "username": "Apple Dev News",
@@ -105,6 +107,7 @@
     {
       "id": "apple-releases",
       "name": "Apple Releases",
+      "enabled": true,
       "url": "https://developer.apple.com/news/releases/rss/releases.rss",
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES",
       "username": "Apple Releases",
@@ -126,6 +129,7 @@
     {
       "id": "apple-releases-beta",
       "name": "Apple Releases — Betas",
+      "enabled": true,
       "url": "https://developer.apple.com/news/releases/rss/releases.rss",
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES_BETA",
       "username": "Apple Releases (beta)",
@@ -147,6 +151,7 @@
     {
       "id": "nfl-news",
       "name": "NFL News",
+      "enabled": true,
       "url": "https://www.cbssports.com/rss/headlines/nfl/",
       "webhookEnv": "DISCORD_WEBHOOK_NFL_NEWS",
       "username": "NFL News",
@@ -204,6 +209,7 @@
     {
       "id": "cfb-news",
       "name": "College Football News",
+      "enabled": true,
       "url": "https://www.cbssports.com/rss/headlines/college-football/",
       "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
       "username": "CFB News",
@@ -250,6 +256,7 @@
     {
       "id": "olympics-news",
       "name": "Olympics News",
+      "enabled": true,
       "url": "https://www.cbssports.com/rss/headlines/olympics/",
       "webhookEnv": "DISCORD_WEBHOOK_OLYMPICS_NEWS",
       "username": "Olympics News",
@@ -275,6 +282,7 @@
     {
       "id": "github-engineering-blog",
       "name": "GitHub Engineering Blog",
+      "enabled": true,
       "url": "https://github.blog/category/engineering/feed/",
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "GitHub Engineering Blog",
@@ -286,6 +294,7 @@
     {
       "id": "aws-blog",
       "name": "AWS Blog",
+      "enabled": true,
       "url": "https://aws.amazon.com/blogs/aws/feed/",
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "AWS Blog",
@@ -297,8 +306,8 @@
     {
       "id": "cloudflare-blog",
       "name": "Cloudflare Blog",
+      "enabled": false,
       "url": "https://blog.cloudflare.com/rss/",
-      "disabled": true,
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "Cloudflare Blog",
       "color": "#F48120",
@@ -309,6 +318,7 @@
     {
       "id": "dotnet-blog",
       "name": ".Net Blog",
+      "enabled": true,
       "url": "https://devblogs.microsoft.com/dotnet/feed/",
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": ".Net Blog",
@@ -320,6 +330,7 @@
     {
       "id": "cisa-advisories",
       "name": "CISA Advisories",
+      "enabled": true,
       "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "CISA Advisories",
