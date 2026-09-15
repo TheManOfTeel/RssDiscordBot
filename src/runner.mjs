@@ -244,6 +244,9 @@ async function runFeed(feed, options, log) {
   const postedIds = [];
   let currentIds = [];
   let failure;
+  // Captured before the fetch overwrites them: a delivery failure must not advance these.
+  const priorEtag = state.etag;
+  const priorLastModified = state.lastModified;
 
   try {
     const response = await fetchFeed(feed.url, {
@@ -350,6 +353,10 @@ async function runFeed(feed, options, log) {
   if (!options.dryRun) {
     state.lastRun = new Date().toISOString();
     if (failure) {
+      // Must not advance the conditional-GET markers: the next run would 304 and silently
+      // skip the items that never got delivered.
+      state.etag = priorEtag;
+      state.lastModified = priorLastModified;
       // Only what actually landed becomes seen; everything else retries next run.
       state.seen = mergeSeen(postedIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
       if (postedIds.length > 0) state.initialized = true;

@@ -15,7 +15,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_NEWSROOM",
       "username": "Apple Newsroom",
       "color": "#1D1D1F",
-      "maxPerRun": 5,
+      "maxPerRun": 20,
       "descriptionChars": 4096,
       "showAuthor": false,
       "showImage": "notified",
@@ -24,15 +24,33 @@
           "roles": ["1539011756297555998"],
           "summarize": true,
           "when": {
-            "fields": ["title", "summary"],
-            "flags": "m",
+            "fields": ["title"],
             "include": [
-              "\\b(iPhone|iPad|MacBook|Mac|Apple Watch|AirPods|Vision Pro|HomePod|AirTag|Studio Display|Pro Display|Magic (Keyboard|Mouse|Trackpad))\\b",
-              "\\b[AMSHRW]\\d{1,2}( (Pro|Max|Ultra))?\\b",
-              "\\b(available to order|available (beginning|starting)|pre-?order|starting at)\\b",
-              "\\bApple (introduces|unveils|debuts|reveals) (the |a |an )?(new |all-new )?[A-Z]"
+              "\\b(iPhone|iPad|iMac|MacBook|Mac|Apple Watch|AirPods|Vision Pro|HomePod|AirTag|Apple TV(?!\\+)|Apple Pencil|MagSafe|Studio Display|Pro Display|Magic (Keyboard|Mouse|Trackpad))\\b",
+              "\\b(A\\d{1,2}|M\\d{1,2}|S\\d{1,2}|H\\d|W\\d|R\\d|C\\d|N\\d)( (Pro|Max|Ultra))?\\b",
+              "\\bApple (introduces|unveils|debuts|reveals|announces) (the |a |an )?(new |all-new )?[A-Z]"
             ],
-            "exclude": ["\\bApple Intelligence\\b|\\bSiri\\b|\\bacross services\\b"]
+            "exclude": [
+              "\\b(iOS|iPadOS|macOS|watchOS|tvOS|visionOS)\\b",
+              "\\b(Apple Intelligence|Siri)\\b",
+              "\\bApple (Music|TV\\+|Arcade|Fitness\\+|News\\+|Pay|Card|Wallet|Books|Podcasts)\\b"
+            ]
+          }
+        },
+        {
+          "roles": ["1539011756297555998"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "include": [
+              "\\b(available to order|available (beginning|starting)|pre-?order)\\b",
+              "\\bstarting at [\\$€£]?\\d"
+            ],
+            "exclude": [
+              "\\b(Apple Intelligence|Siri)\\b",
+              "\\bacross (services|iPhone|iPad|Mac)\\b",
+              "\\b(available|works|compatible|coming|rolling out)\\b[^.]{0,40}\\bacross\\b"
+            ]
           }
         }
       ]
@@ -44,7 +62,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_DEV_NEWS",
       "username": "Apple Dev News",
       "color": "#0071e3",
-      "maxPerRun": 10,
+      "maxPerRun": 20,
       "descriptionChars": 4096,
       "notify": [
         {
@@ -91,7 +109,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES",
       "username": "Apple Releases",
       "color": "#30D158",
-      "maxPerRun": 15,
+      "maxPerRun": 25,
       "descriptionChars": 300,
       "showDescription": false,
       "filters": {
@@ -112,7 +130,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_APPLE_RELEASES_BETA",
       "username": "Apple Releases (beta)",
       "color": "#FF9F0A",
-      "maxPerRun": 20,
+      "maxPerRun": 25,
       "descriptionChars": 300,
       "showDescription": false,
       "filters": {
@@ -133,7 +151,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_NFL_NEWS",
       "username": "NFL News",
       "color": "#0B2265",
-      "maxPerRun": 20,
+      "maxPerRun": 36,
       "descriptionChars": 300,
       "showDescription": true,
       "filters": {
@@ -190,7 +208,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
       "username": "CFB News",
       "color": "#8C1515",
-      "maxPerRun": 20,
+      "maxPerRun": 36,
       "descriptionChars": 300,
       "showDescription": true,
       "filters": {
@@ -236,7 +254,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_OLYMPICS_NEWS",
       "username": "Olympics News",
       "color": "#E50914",
-      "maxPerRun": 20,
+      "maxPerRun": 36,
       "descriptionChars": 300,
       "showDescription": false,
       "filters": {
@@ -261,7 +279,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "GitHub Engineering Blog",
       "color": "#6E5494",
-      "maxPerRun": 20,
+      "maxPerRun": 30,
       "descriptionChars": 300,
       "showDescription": false
     },
@@ -272,7 +290,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "AWS Blog",
       "color": "#FF9900",
-      "maxPerRun": 20,
+      "maxPerRun": 30,
       "descriptionChars": 300,
       "showDescription": false
     },
@@ -280,10 +298,11 @@
       "id": "cloudflare-blog",
       "name": "Cloudflare Blog",
       "url": "https://blog.cloudflare.com/rss/",
+      "disabled": true,
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "Cloudflare Blog",
       "color": "#F48120",
-      "maxPerRun": 20,
+      "maxPerRun": 30,
       "descriptionChars": 300,
       "showDescription": false
     },
@@ -294,7 +313,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": ".Net Blog",
       "color": "#512BD4",
-      "maxPerRun": 20,
+      "maxPerRun": 30,
       "descriptionChars": 300,
       "showDescription": false
     },
@@ -305,7 +324,7 @@
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "CISA Advisories",
       "color": "#D32F2F",
-      "maxPerRun": 20,
+      "maxPerRun": 30,
       "descriptionChars": 300,
       "showDescription": false
     }

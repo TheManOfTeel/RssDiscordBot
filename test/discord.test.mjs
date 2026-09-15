@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { beforeEach, test } from 'node:test';
 import {
   allowedMentionsFor,
   assertWebhookUrl,
@@ -9,8 +9,11 @@ import {
   LIMITS,
   mentionContent,
   postEmbeds,
+  resetPacing,
   sanitizeEmbed,
 } from '../src/discord.mjs';
+
+beforeEach(resetPacing);
 
 const WEBHOOK = 'https://discord.com/api/webhooks/123456789/abcDEF-token_1';
 
@@ -117,10 +120,15 @@ test('honours retry_after on 429 then succeeds', async () => {
     text: async () => '{}',
   };
   const { calls, fetchImpl } = recorder([rateLimited, okResponse()]);
-  const result = await postEmbeds(WEBHOOK, [{ title: 'a' }], { fetchImpl, sleep: async (ms) => slept.push(ms) });
+  let clock = 0;
+  const sleep = async (ms) => { slept.push(ms); clock += ms; };
+  const result = await postEmbeds(WEBHOOK, [{ title: 'a' }], { fetchImpl, sleep, now: () => clock });
   assert.equal(result.messages, 1);
   assert.equal(calls.length, 2);
-  assert.deepEqual(slept, [1000], 'body retry_after (0.75s) wins over the header, plus 250ms margin');
+  // 1000 = body retry_after (0.75s) + 250ms margin, and the header's 9s loses.
+  // 300 = the retried POST is another request to this webhook, so it is paced too; the
+  // 1000ms backoff already counts toward minGapMs (1300), leaving 300.
+  assert.deepEqual(slept, [1000, 300]);
 });
 
 test('gives up on 429 after maxRetries', async () => {
@@ -136,9 +144,12 @@ test('retries 5xx with backoff but throws 4xx immediately', async () => {
   const slept = [];
   const serverError = { ok: false, status: 503, headers: new Headers(), text: async () => 'nope', json: async () => ({}) };
   const { calls, fetchImpl } = recorder([serverError, okResponse()]);
-  await postEmbeds(WEBHOOK, [{ title: 'a' }], { fetchImpl, sleep: async (ms) => slept.push(ms) });
+  let clock = 0;
+  const sleep = async (ms) => { slept.push(ms); clock += ms; };
+  await postEmbeds(WEBHOOK, [{ title: 'a' }], { fetchImpl, sleep, now: () => clock });
   assert.equal(calls.length, 2);
-  assert.deepEqual(slept, [1000]);
+  // 1000ms 5xx backoff, then the 300ms remainder of the per-webhook gap.
+  assert.deepEqual(slept, [1000, 300]);
 
   const badRequest = { ok: false, status: 400, headers: new Headers(), text: async () => '{"embeds":["bad"]}', json: async () => ({}) };
   const second = recorder([badRequest]);
@@ -156,9 +167,15 @@ test('waits when the rate-limit bucket is exhausted', async () => {
 test('inserts a gap between messages to stay under the per-channel cap', async () => {
   const slept = [];
   const { calls, fetchImpl } = recorder([okResponse()]);
+  // The stubbed sleep must drive the clock the pacer reads, or the gap it charges is
+  // 1300 minus however long the real wall clock happened to advance — 1300 on a fast
+  // machine, 1299 on a slower CI runner.
+  let clock = 0;
+  const sleep = async (ms) => { slept.push(ms); clock += ms; };
   await postEmbeds(WEBHOOK, Array.from({ length: 21 }, (_, i) => ({ title: `t${i}` })), {
     fetchImpl,
-    sleep: async (ms) => slept.push(ms),
+    sleep,
+    now: () => clock,
     minGapMs: 1300,
   });
   assert.equal(calls.length, 3);
