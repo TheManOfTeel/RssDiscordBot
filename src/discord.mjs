@@ -43,6 +43,20 @@ export class EmbedSizeOverflowError extends Error {
 }
 
 const sleepDefault = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const lastPostAt = new Map();   // webhook id -> ms timestamp of last POST
+const chains = new Map();       // webhook id -> serialization chain
+const webhookKey = (url) => new URL(url).pathname.split('/')[3] ?? url;
+
+/** Serialize and space every POST to a given webhook, regardless of which feed issued it. */
+async function paced(key, minGapMs, sleep, fn) {
+  const run = (chains.get(key) ?? Promise.resolve()).then(async () => {
+    const since = Date.now() - (lastPostAt.get(key) ?? 0);
+    if (since < minGapMs) await sleep(minGapMs - since);
+    try { return await fn(); } finally { lastPostAt.set(key, Date.now()); }
+  });
+  chains.set(key, run.catch(() => {}));
+  return run;
+}
 
 /** Truncate to `max` characters, ellipsis included in the budget. */
 export function clip(value, max) {
@@ -466,10 +480,9 @@ export async function postEmbeds(webhookUrl, embeds, {
       continue;
     }
 
-    if (index > 0) await sleep(minGapMs);
-
+    const key = webhookKey(target);
     for (let attempt = 0; ; attempt++) {
-      const res = await fetchImpl(endpoint.toString(), {
+      const res = await paced(key, minGapMs, sleep, () => fetchImpl(endpoint.toString(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -481,15 +494,13 @@ export async function postEmbeds(webhookUrl, embeds, {
       });
 
       if (res.status === 429) {
-        let body;
-        try {
-          body = await res.json();
-        } catch {
-          body = undefined;
-        }
+        let body; try { body = await res.json(); } catch { body = undefined; }
         if (attempt >= maxRetries) throw new DiscordError(429, body ?? 'rate limited, retries exhausted');
-        const wait = Math.min(retryAfterMs(res.headers, body) + 250, maxSleepMs);
-        log(`  429 rate limited, waiting ${wait}ms (attempt ${attempt + 1}/${maxRetries})`);
+        // 40062 is the service-resource limiter, not the per-route bucket: its retry_after
+        // under-reports the real window. Escalate past the advertised value.
+        const floor = body?.code === 40062 ? 5000 * 2 ** attempt : 0;
+        const wait = Math.min(Math.max(retryAfterMs(res.headers, body), floor) + 250, maxSleepMs);
+        log(`  429${body?.code ? ` (code ${body.code})` : ''}, waiting ${wait}ms (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(wait);
         continue;
       }
