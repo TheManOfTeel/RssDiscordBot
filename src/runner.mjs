@@ -244,6 +244,9 @@ async function runFeed(feed, options, log) {
   const postedIds = [];
   let currentIds = [];
   let failure;
+  // Captured before the fetch overwrites them: a delivery failure must not advance these.
+  const priorEtag = state.etag;
+  const priorLastModified = state.lastModified;
 
   try {
     const response = await fetchFeed(feed.url, {
@@ -265,8 +268,6 @@ async function runFeed(feed, options, log) {
       currentIds = parsed.items.map((i) => i.id);
       log(`  ${parsed.format}: ${parsed.items.length} item(s)`);
 
-      const priorEtag = state.etag;
-      const priorLastModified = state.lastModified;
       const seen = new Set(state.seen);
       const fresh = parsed.items.filter((item) => !seen.has(item.id));
       result.fresh = fresh.length;
