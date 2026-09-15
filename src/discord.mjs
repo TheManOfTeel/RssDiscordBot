@@ -47,12 +47,23 @@ const lastPostAt = new Map();   // webhook id -> ms timestamp of last POST
 const chains = new Map();       // webhook id -> serialization chain
 const webhookKey = (url) => new URL(url).pathname.split('/')[3] ?? url;
 
+/**
+ * Test-only: clear per-webhook pacing state. The Maps above are module-level on purpose
+ * (they must span every postEmbeds call in a run), which makes them process-global and
+ * leaks pacing between unit tests unless each one starts clean.
+ */
+export function resetPacing() {
+  lastPostAt.clear();
+  chains.clear();
+}
+
 /** Serialize and space every POST to a given webhook, regardless of which feed issued it. */
-async function paced(key, minGapMs, sleep, fn) {
+async function paced(key, minGapMs, sleep, fn, now) {
   const run = (chains.get(key) ?? Promise.resolve()).then(async () => {
-    const since = Date.now() - (lastPostAt.get(key) ?? 0);
+    // -Infinity, not 0: a webhook we have never posted to must not be made to wait.
+    const since = now() - (lastPostAt.get(key) ?? -Infinity);
     if (since < minGapMs) await sleep(minGapMs - since);
-    try { return await fn(); } finally { lastPostAt.set(key, Date.now()); }
+    try { return await fn(); } finally { lastPostAt.set(key, now()); }
   });
   chains.set(key, run.catch(() => {}));
   return run;
@@ -448,6 +459,7 @@ export async function postEmbeds(webhookUrl, embeds, {
   threadId,
   fetchImpl = fetch,
   sleep = sleepDefault,
+  now = () => Date.now(),
   maxRetries = 5,
   minGapMs = 1300,
   maxSleepMs = 60_000,
@@ -491,7 +503,7 @@ export async function postEmbeds(webhookUrl, embeds, {
         },
         body: JSON.stringify(payload),
         redirect: 'follow',
-      }));
+      }), now);
 
       if (res.status === 429) {
         let body; try { body = await res.json(); } catch { body = undefined; }
