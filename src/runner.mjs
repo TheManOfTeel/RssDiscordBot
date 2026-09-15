@@ -265,6 +265,8 @@ async function runFeed(feed, options, log) {
       currentIds = parsed.items.map((i) => i.id);
       log(`  ${parsed.format}: ${parsed.items.length} item(s)`);
 
+      const priorEtag = state.etag;
+      const priorLastModified = state.lastModified;
       const seen = new Set(state.seen);
       const fresh = parsed.items.filter((item) => !seen.has(item.id));
       result.fresh = fresh.length;
@@ -350,6 +352,10 @@ async function runFeed(feed, options, log) {
   if (!options.dryRun) {
     state.lastRun = new Date().toISOString();
     if (failure) {
+      // Must not advance the conditional-GET markers: the next run would 304 and silently
+      // skip the items that never got delivered.
+      state.etag = priorEtag;
+      state.lastModified = priorLastModified;
       // Only what actually landed becomes seen; everything else retries next run.
       state.seen = mergeSeen(postedIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
       if (postedIds.length > 0) state.initialized = true;
