@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/widows-bay-triumphs-as-most-decorated-freshman-comedy-in-emmy-history/",
     "https://www.apple.com/ca/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
     "https://www.apple.com/ca/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
     "https://www.apple.com/ca/newsroom/2026/09/apples-new-child-safety-features-now-available/",
@@ -34,7 +35,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Mon, 14 Sep 2026 17:44:54 GMT",
-  "lastRun": "2026-09-15T18:00:17.644Z",
-  "lastSuccess": "2026-09-15T18:00:17.644Z"
+  "lastModified": "Tue, 15 Sep 2026 18:09:37 GMT",
+  "lastRun": "2026-09-15T18:15:14.110Z",
+  "lastSuccess": "2026-09-15T18:15:14.110Z"
 }
