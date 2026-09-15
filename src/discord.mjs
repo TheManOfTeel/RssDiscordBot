@@ -491,7 +491,7 @@ export async function postEmbeds(webhookUrl, embeds, {
         },
         body: JSON.stringify(payload),
         redirect: 'follow',
-      });
+      }));
 
       if (res.status === 429) {
         let body; try { body = await res.json(); } catch { body = undefined; }
