@@ -174,14 +174,16 @@ const mentionKey = (mention) =>
  * @param {number} chunk - Max items per batch (default CHUNK=10)
  * @returns {object[]} Array of { items, mention } groups
  */
-export function groupForDelivery(queue, notify, now, chunk = CHUNK) {
+export function groupForDelivery(queue, feed, now, chunk = CHUNK) {
   const groups = [];
   let buffer = [];
   let bufferKey = null;
   let bufferMention = null;
+  const notify = feed.notify ?? [];
+  const isReleaseFeed = ((feed.id ?? feed.name) ?? '').toLowerCase().includes('release');
   const flush = () => {
     if (buffer.length > 0) {
-      groups.push({ items: buffer, mention: bufferMention });
+      groups.push({ items: buffer, mention: bufferMention, isReleaseFeed: isReleaseFeed });
     }
     buffer = [];
     bufferKey = null;
@@ -197,7 +199,7 @@ export function groupForDelivery(queue, notify, now, chunk = CHUNK) {
     if (!isBatched) {
       // Non-batched items ship alone
       flush();
-      groups.push({ items: [item], mention });
+      groups.push({ items: [item], mention, isReleaseFeed: isReleaseFeed });
       continue;
     }
     // Buffered path: accumulate until key changes or chunk is full
@@ -307,7 +309,7 @@ async function runFeed(feed, options, log) {
 
         // One postEmbeds call per group so `postedIds` is only credited after a message
         // actually lands. A crash mid-run therefore re-sends at most one group.
-        for (const group of groupForDelivery(queue, feed.notify, now)) {
+        for (const group of groupForDelivery(queue, feed, now)) {
           // Map items to embeds
           const embeds = group.items.map((item) => buildEmbed(item, feed, group.mention !== null));
           // Determine if this group is batched or single-item
@@ -317,14 +319,14 @@ async function runFeed(feed, options, log) {
           if (isBatched) {
             // BATCHED: Top-level message content carries the role ping + combined titles summary. These titles will get summarized for the message content.
             const summary = embeds.map((e) => e.title).join('. ');
-            messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false);
+            messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
           } else {
             // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
             const item = group.items[0];
             const itemBody = `${item.title}\n${item.description ?? item.summary ?? item.title}`.trim();
             
             // Ping role AND include item body directly in the top-level message content
-            messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false);
+            messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
           }
           await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embeds, {
             content: messageContent,

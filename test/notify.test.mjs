@@ -57,13 +57,14 @@ test('a ping rule does not silently require a link', () => {
 
 test('a pinged item never shares a message with a silent one', () => {
   const notify = compile([{ roles: [ROLE_A], when: { include: ['ping me'], fields: ['title'] } }]);
+  const feed = { notify: notify };
   const queue = [
     item({ title: 'quiet 1' }),
     item({ title: 'ping me now' }),
     item({ title: 'quiet 2' }),
     item({ title: 'quiet 3' }),
   ];
-  const groups = groupForDelivery(queue, notify, NOW);
+  const groups = groupForDelivery(queue, feed, NOW);
   assert.deepEqual(
     groups.map((g) => [g.items.map((i) => i.title), g.mention?.roles ?? null]),
     [
@@ -77,10 +78,12 @@ test('a pinged item never shares a message with a silent one', () => {
 test('a run of items sharing one mention becomes ONE message with ONE ping', () => {
   // The always-ping case: an 8-platform beta drop must be one notification, not eight.
   const notify = compile([{ roles: [ROLE_A], text: 'Pre-release:' }]);
+  const feed = { notify: notify, id: 'test-releases' };
   const queue = ['iOS beta', 'iPadOS beta', 'macOS beta', 'watchOS beta'].map((t) => item({ title: t }));
-  const groups = groupForDelivery(queue, notify, NOW);
+  const groups = groupForDelivery(queue, feed, NOW);
   assert.equal(groups.length, 1, 'one message');
   assert.equal(groups[0].items.length, 4, 'all four embeds ride along');
+  assert.equal(groups[0].isReleaseFeed, true, 'determines release feed by id');
   assert.deepEqual(groups[0].mention.roles, [ROLE_A]);
 });
 
@@ -89,7 +92,9 @@ test('items pinging DIFFERENT roles never share a message', () => {
     { roles: [ROLE_A], when: { include: ['\\bios\\b'], fields: ['title'] } },
     { roles: [ROLE_B], when: { include: ['\\bmacos\\b'], fields: ['title'] } },
   ]);
-  const groups = groupForDelivery([item({ title: 'iOS beta 3' }), item({ title: 'macOS beta 3' })], notify, NOW);
+  const feed = { notify: notify, name: 'Test Releases' };
+  const groups = groupForDelivery([item({ title: 'iOS beta 3' }), item({ title: 'macOS beta 3' })], feed, NOW);
+  assert.equal(groups[0].isReleaseFeed, true, 'determines release feed by name');
   assert.deepEqual(
     groups.map((g) => g.mention.roles),
     [[ROLE_A], [ROLE_B]],
@@ -99,9 +104,28 @@ test('items pinging DIFFERENT roles never share a message', () => {
 
 test('a shared-mention run still respects the 10-embed chunk', () => {
   const notify = compile([{ roles: [ROLE_A] }]);
-  const groups = groupForDelivery(Array.from({ length: 23 }, (_, i) => item({ title: `t${i}` })), notify, NOW);
+  const feed = { notify: notify };
+  const groups = groupForDelivery(Array.from({ length: 23 }, (_, i) => item({ title: `t${i}` })), feed, NOW);
   assert.deepEqual(groups.map((g) => g.items.length), [10, 10, 3]);
   assert.equal(groups.every((g) => g.mention.roles[0] === ROLE_A), true);
+});
+
+test('non-release feeds are not release formatted', () => {
+  const notify = compile([
+    { roles: [ROLE_A], when: { include: ['\\bios\\b'], fields: ['title'] } },
+    { roles: [ROLE_B], when: { include: ['\\bmacos\\b'], fields: ['title'] } },
+  ]);
+  let feed = { notify: notify, id: 'test-feed' };
+  let groups = groupForDelivery([item({ title: 'iOS beta 3' }), item({ title: 'macOS beta 3' })], feed, NOW);
+  assert.equal(groups[0].isReleaseFeed, false, 'no release keyword in id means not a release feed');
+  
+  feed = { notify: notify, name: 'Test Feed' };
+  groups = groupForDelivery([item({ title: 'iOS beta 3' }), item({ title: 'macOS beta 3' })], feed, NOW);
+  assert.equal(groups[0].isReleaseFeed, false, 'no release keyword in name means not a release feed');
+
+  feed = { notify: notify };
+  groups = groupForDelivery([item({ title: 'iOS beta 3' }), item({ title: 'macOS beta 3' })], feed, NOW);
+  assert.equal(groups[0].isReleaseFeed, false, 'no id or name means not a release feed');
 });
 
 test('an item matching both rules groups with neither single-rule item', () => {
@@ -111,21 +135,25 @@ test('an item matching both rules groups with neither single-rule item', () => {
     { roles: [ROLE_A], when: { include: ['\\bios\\b'], fields: ['title'] } },
     { roles: [ROLE_B], when: { include: ['\\bmacos\\b'], fields: ['title'] } },
   ]);
+  const feed = { notify: notify, id: 'test-releases', name: 'Test Releases' };
   const queue = [item({ title: 'iOS beta' }), item({ title: 'iOS on macOS beta' }), item({ title: 'macOS beta' })];
-  const groups = groupForDelivery(queue, notify, NOW);
+  const groups = groupForDelivery(queue, feed, NOW);
+  assert.equal(groups[0].isReleaseFeed, true, 'determines release feed with both id and name');
   assert.deepEqual(groups.map((g) => g.mention.roles), [[ROLE_A], [ROLE_A, ROLE_B], [ROLE_B]]);
 });
 
 test('chronological order survives grouping', () => {
   const notify = compile([{ roles: [ROLE_A], when: { include: ['b'], fields: ['title'] } }]);
+  const feed = { notify: notify };
   const queue = ['a', 'b', 'c'].map((t) => item({ title: t }));
-  const flat = groupForDelivery(queue, notify, NOW).flatMap((g) => g.items.map((i) => i.title));
+  const flat = groupForDelivery(queue, feed, NOW).flatMap((g) => g.items.map((i) => i.title));
   assert.deepEqual(flat, ['a', 'b', 'c']);
 });
 
 test('silent items still respect the 10-embed chunk', () => {
   const queue = Array.from({ length: 23 }, (_, i) => item({ title: `t${i}` }));
-  const groups = groupForDelivery(queue, [], NOW);
+  const feed = { notify: [] };
+  const groups = groupForDelivery(queue, feed, NOW);
   assert.deepEqual(groups.map((g) => g.items.length), [10, 10, 3]);
   assert.equal(groups.every((g) => g.mention === null), true);
 });
