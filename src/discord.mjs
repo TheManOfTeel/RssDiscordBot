@@ -261,9 +261,10 @@ function formatMixedPlatformVersions(text) {
  * @param {object} options - { roles, users, text } for mention data; summary is the embed content
  * @param {string} summary - Feed item summary, possibly an OS release formatted string
  * @param {boolean} summarize - Whether to apply algorithmic summarization (TF-IDF sentence scoring)
+ * @param {boolean} isReleaseFeed - Whether to apply Apple-style release grouping (version-first or mixed)
  * @returns {string|undefined} Ping mention(s) optionally followed by formatted content
  */
-export function mentionContent({ roles = [], users = [], text } = {}, summary = '', summarize = false) {
+export function mentionContent({ roles = [], users = [], text = '' } = {}, summary = '', summarize = false, isReleaseFeed = false) {
   const mentions = [
     ...(roles ?? []).map((id) => `<@&${id}>`),
     ...(users ?? []).map((id) => `<@${id}>`)
@@ -299,17 +300,19 @@ export function mentionContent({ roles = [], users = [], text } = {}, summary = 
   }
 
   const rows = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
-  const versionish = /((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:beta|rc|public beta|preview|seed)(?:\s*\d+)?)?/i;
-  const isVersionFirstRelease = rows.length > 0 && rows.every((line) => new RegExp(`^${versionish.source}(?:\\s*(?:-|:)\\s*.*)?$`, 'i').test(line));
-  if (isVersionFirstRelease) {
-    const grouped = formatVersionGroups(rows);
-    if (grouped) formattedSummary = grouped;
-  } else {
-    const grouped = formatMixedPlatformVersions(formattedSummary);
-    if (grouped) formattedSummary = grouped;
+  if (isReleaseFeed) {
+    const versionish = /((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:beta|rc|public beta|preview|seed)(?:\s*\d+)?)?/i;
+    const isVersionFirstRelease = rows.length > 0 && rows.every((line) => new RegExp(`^${versionish.source}(?:\\s*(?:-|:)\\s*.*)?$`, 'i').test(line));
+    if (isVersionFirstRelease) {
+      const grouped = formatVersionGroups(rows);
+      if (grouped) formattedSummary = grouped;
+    } else {
+      const grouped = formatMixedPlatformVersions(formattedSummary);
+      if (grouped) formattedSummary = grouped;
+    }
   }
 
-  if (summarize && !formattedSummary.match(versionish)) {
+  if (summarize && !isReleaseFeed) {
     const totalSentencesCount = splitSentences(formattedSummary).length;
     const calculatedBounds = totalSentencesCount <= 1 ? 1 : Math.min(totalSentencesCount, 4);
     formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);

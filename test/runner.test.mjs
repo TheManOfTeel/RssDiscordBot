@@ -304,6 +304,7 @@ test('mentionsFor unions matching rules and batching overrides are respected', (
     { roles: ['2'.repeat(18)], text: 'Team B', summarize: false, when: compileFilters({ fields: ['summary'], include: ['major'] }) },
     { roles: ['3'.repeat(18)], text: 'Team C', when: compileFilters({ fields: ['title'], include: ['live'] }) },
   ];
+  const feed = { notify: notify };
 
   const mention = mentionsFor(item, notify, now);
   assert.equal(mention.batching, false);
@@ -313,7 +314,7 @@ test('mentionsFor unions matching rules and batching overrides are respected', (
   assert.equal(mention.text, 'Team A');
 
   const nextItem = { title: 'other update', summary: 'extra', link: 'https://example.com/other' };
-  const groups = groupForDelivery([item, nextItem], notify, now);
+  const groups = groupForDelivery([item, nextItem], feed, now);
   assert.equal(groups.length, 2);
   assert.equal(groups[0].items[0].link, 'https://example.com/ios');
   assert.equal(groups[1].items[0].link, 'https://example.com/other');

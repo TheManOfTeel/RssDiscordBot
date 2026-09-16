@@ -33,6 +33,7 @@
             ],
             "exclude": [
               "\\b(iOS|iPadOS|macOS|watchOS|tvOS|visionOS)\\b",
+              "\\bon (iPhone|iPad|iMac|MacBook|Mac|Apple Watch|AirPods|Vision Pro|HomePod|AirTag|Apple TV(?!\\+)|Apple Pencil|MagSafe|Studio Display|Pro Display|Magic (Keyboard|Mouse|Trackpad))\\b",
               "\\b(Apple Intelligence|Siri)\\b",
               "\\bApple (Music|TV\\+|Arcade|Fitness\\+|News\\+|Pay|Card|Wallet|Books|Podcasts)\\b"
             ]
