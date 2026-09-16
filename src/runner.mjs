@@ -169,7 +169,7 @@ const mentionKey = (mention) =>
  * Items with `batching: false` always ship alone. Order is preserved.
  *
  * @param {object[]} queue - Feed items to group
- * @param {object[]} notify - Notify rules (for computing mention sets)
+ * @param {object[]} feed - The feed object that contains notify rules (for computing mention sets), id, and name (for release feed detection)
  * @param {number} now - Current timestamp
  * @param {number} chunk - Max items per batch (default CHUNK=10)
  * @returns {object[]} Array of { items, mention } groups
