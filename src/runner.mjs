@@ -172,7 +172,7 @@ const mentionKey = (mention) =>
  * @param {object[]} feed - The feed object that contains notify rules (for computing mention sets), id, and name (for release feed detection)
  * @param {number} now - Current timestamp
  * @param {number} chunk - Max items per batch (default CHUNK=10)
- * @returns {object[]} Array of { items, mention } groups
+ * @returns {object[]} Array of { items, mention, isReleaseFeed } groups
  */
 export function groupForDelivery(queue, feed, now, chunk = CHUNK) {
   const groups = [];
@@ -199,7 +199,7 @@ export function groupForDelivery(queue, feed, now, chunk = CHUNK) {
     if (!isBatched) {
       // Non-batched items ship alone
       flush();
-      groups.push({ items: [item], mention, isReleaseFeed: isReleaseFeed });
+      groups.push({ items: [item], mention: mention, isReleaseFeed: isReleaseFeed });
       continue;
     }
     // Buffered path: accumulate until key changes or chunk is full
