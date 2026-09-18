@@ -165,6 +165,7 @@
         "exclude": [
           "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bPolymarket\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\blockbuster odds\\b",
           "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
+          "\\bTaylor Swift",
           "^league:Fantasy NFL$|^league:Sports Betting$|^topic:news . sports betting$|^topic:news . best bets$|^topic:news . player props$"
         ]
       },
