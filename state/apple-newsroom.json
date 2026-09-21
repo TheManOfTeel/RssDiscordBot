@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/the-latest-iphone-apple-watch-and-airpods-lineups-arrive-in-stores-worldwide/",
     "https://www.apple.com/ca/newsroom/2026/09/celebrating-what-holds-us-on-iphone-18-pro/",
     "https://www.apple.com/ca/newsroom/2026/09/widows-bay-triumphs-as-most-decorated-freshman-comedy-in-emmy-history/",
     "https://www.apple.com/ca/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
@@ -36,7 +37,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Fri, 18 Sep 2026 18:28:12 GMT",
-  "lastRun": "2026-09-21T14:15:12.707Z",
-  "lastSuccess": "2026-09-21T14:15:12.707Z"
+  "lastModified": "Mon, 21 Sep 2026 14:23:18 GMT",
+  "lastRun": "2026-09-21T14:30:17.855Z",
+  "lastSuccess": "2026-09-21T14:30:17.855Z"
 }
