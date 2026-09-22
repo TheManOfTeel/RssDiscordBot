@@ -438,7 +438,7 @@ function algorithmicSummarize(textString, sentenceCount = 2) {
   const finalSummary = topSentences
     .sort((a, b) => a.index - b.index)
     .map(s => s.text)
-    .join(' ');
+    .join('\n');
   return finalSummary;
 }
 
