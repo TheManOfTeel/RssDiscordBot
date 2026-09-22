@@ -80,6 +80,7 @@ export async function fetchFeed(url, { etag, lastModified, timeoutMs = 20_000, r
         lastModified: res.headers.get('last-modified'),
       };
     } catch (err) {
+      if (err.code === 'CERT_HAS_EXPIRED') return { notModified: true };
       if (err instanceof HttpError) throw err;
       lastError = new Error(describeError(err), { cause: err });
       log(`  ${url} -> ${lastError.message}${attempt < retries ? ', retrying' : ''}`);
