@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/apple-opens-apple-music-hall-a-state-of-the-art-live-music-venue-in-london/",
     "https://www.apple.com/ca/newsroom/2026/09/the-latest-iphone-apple-watch-and-airpods-lineups-arrive-in-stores-worldwide/",
     "https://www.apple.com/ca/newsroom/2026/09/celebrating-what-holds-us-on-iphone-18-pro/",
     "https://www.apple.com/ca/newsroom/2026/09/widows-bay-triumphs-as-most-decorated-freshman-comedy-in-emmy-history/",
@@ -37,7 +38,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Tue, 22 Sep 2026 02:29:44 GMT",
-  "lastRun": "2026-09-22T06:00:20.466Z",
-  "lastSuccess": "2026-09-22T06:00:20.466Z"
+  "lastModified": "Tue, 22 Sep 2026 06:04:11 GMT",
+  "lastRun": "2026-09-22T06:15:13.501Z",
+  "lastSuccess": "2026-09-22T06:15:13.501Z"
 }
