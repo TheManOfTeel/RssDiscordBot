@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/the-new-mac-mini-and-mac-studio-are-available-today/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-opens-apple-music-hall-a-state-of-the-art-live-music-venue-in-london/",
     "https://www.apple.com/ca/newsroom/2026/09/the-latest-iphone-apple-watch-and-airpods-lineups-arrive-in-stores-worldwide/",
     "https://www.apple.com/ca/newsroom/2026/09/celebrating-what-holds-us-on-iphone-18-pro/",
@@ -38,7 +39,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Tue, 22 Sep 2026 06:04:11 GMT",
-  "lastRun": "2026-09-22T13:00:21.100Z",
-  "lastSuccess": "2026-09-22T13:00:21.100Z"
+  "lastModified": "Tue, 22 Sep 2026 13:13:13 GMT",
+  "lastRun": "2026-09-22T13:15:13.560Z",
+  "lastSuccess": "2026-09-22T13:15:13.560Z"
 }
