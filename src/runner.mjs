@@ -320,14 +320,15 @@ async function runFeed(feed, options, log) {
             // BATCHED: Top-level message content carries the role ping + combined titles summary. These titles will get summarized for the message content.
             const summary = embeds.map((e) => e.title.trim())
               .filter(Boolean)
-              .map(title => /[.!?]$/.test(title) ? title : title + '.') // If it already ends in ., !, or ?, leave it; otherwise, add a period
               .join('\n');
             messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
           } else {
             // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
             const item = group.items[0];
-            const itemBody = `${item.title}\n${item.description ?? item.summary ?? item.title}`.trim();
-            
+            // Filter out non-string/falsy/whitespace-only values and join with a newline
+            const bodyContent = (item.summary || item.description || '').trim();
+            const title = (item.title || '').trim();
+            const itemBody = [title, bodyContent].filter(Boolean).join('\n');
             // Ping role AND include item body directly in the top-level message content
             messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
           }
