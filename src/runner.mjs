@@ -320,7 +320,6 @@ async function runFeed(feed, options, log) {
             // BATCHED: Top-level message content carries the role ping + combined titles summary. These titles will get summarized for the message content.
             const summary = embeds.map((e) => e.title.trim())
               .filter(Boolean)
-              .map(title => /[.!?]$/.test(title) ? title : title + '.') // If it already ends in ., !, or ?, leave it; otherwise, add a period
               .join('\n');
             messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
           } else {
