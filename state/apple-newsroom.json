@@ -2,6 +2,9 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/09/final-cut-camera-now-supports-variable-aperture-on-iphone-18-pro/",
+    "https://www.apple.com/ca/newsroom/2026/09/new-updates-coming-to-apple-creator-studio/",
+    "https://www.apple.com/ca/newsroom/2026/09/apple-releases-new-guide-to-help-families-build-healthy-digital-habits/",
     "https://www.apple.com/ca/newsroom/2026/09/the-new-mac-mini-and-mac-studio-are-available-today/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-opens-apple-music-hall-a-state-of-the-art-live-music-venue-in-london/",
     "https://www.apple.com/ca/newsroom/2026/09/the-latest-iphone-apple-watch-and-airpods-lineups-arrive-in-stores-worldwide/",
@@ -39,7 +42,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Fri, 25 Sep 2026 16:48:38 GMT",
-  "lastRun": "2026-09-29T17:00:16.868Z",
-  "lastSuccess": "2026-09-29T17:00:16.868Z"
+  "lastModified": "Tue, 29 Sep 2026 17:09:58 GMT",
+  "lastRun": "2026-09-29T17:15:14.757Z",
+  "lastSuccess": "2026-09-29T17:15:14.757Z"
 }
