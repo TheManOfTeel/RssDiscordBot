@@ -354,38 +354,50 @@ export function allowedMentionsFor({ roles = [], users = [] } = {}) {
  * @returns {string} Summarized text (N sentences in original order)
  */
 function splitSentences(textString) {
+  if (!textString) return [];
+
+  // Known honorifics/abbreviations that do not terminate a sentence
+  const abbrevRegex = /^(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|vs|etc|No|Vol|Inc|Co|Ltd|Dept|Approx|Apt|Gen|Gov|Sgt|Capt|Cmdr|Col|Maj|Lt)$/i;
+
+  // Split pattern matches terminal punctuation (. ! ?) under valid sentence-ending conditions:
+  // 1. Lookbehind ensures punctuation isn't part of a decimal number (?<!\d)
+  // 2. Lookahead checks for trailing quotes/brackets, whitespace, or end of string
+  const splitRegex = /(?<=[.!?])(?=['"”’)]*\s+|$)/g;
+
+  const rawTokens = textString.split(splitRegex);
   const sentences = [];
-  let current = '';
+  let buffer = '';
 
-  for (let i = 0; i < textString.length; i++) {
-    const char = textString[i];
-    current += char;
+  for (let i = 0; i < rawTokens.length; i++) {
+    const token = rawTokens[i];
+    buffer = buffer ? `${buffer}${token}` : token;
 
-    if (!/[.!?]/.test(char)) continue;
+    const trimmedBuffer = buffer.trim();
+    if (!trimmedBuffer) continue;
 
-    const nextText = textString.slice(i + 1);
-    const nextNonSpace = nextText.match(/\S/);
-    const prevWord = current.trim().split(/\s+/).pop() || '';
-    const prevWordBase = prevWord.replace(/[.]+$/, '').trim();
-    const isOrdinalAbbrev = /^(?:No|Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|vs|etc)$/i.test(prevWordBase);
-    const nextStartsWithDigit = /^\d/.test(nextText.trimStart() || '');
+    // Extract the final word before the terminal punctuation mark
+    const lastWordMatch = trimmedBuffer.match(/(\b[\w]+)\.[ '"”’)]*$/);
 
-    if (isOrdinalAbbrev && nextStartsWithDigit) {
-      continue;
+    if (lastWordMatch && i < rawTokens.length - 1) {
+      const lastWord = lastWordMatch[1];
+
+      // Condition A: Single letter initials (e.g., "J.", "U.S.")
+      const isSingleInitial = lastWord.length === 1 && /[A-Za-z]/.test(lastWord);
+
+      // Condition B: Standard abbreviations (e.g., "Dr.", "Mr.")
+      const isAbbrev = abbrevRegex.test(lastWord);
+
+      if (isSingleInitial || isAbbrev) {
+        // Do not split here; merge with next token
+        continue;
+      }
     }
 
-    if (!nextNonSpace || /[A-Z0-9"'\)]/.test(nextNonSpace[0])) {
-      const sentence = current.trim();
-      if (sentence) sentences.push(sentence);
-      current = '';
-    }
+    sentences.push(trimmedBuffer);
+    buffer = '';
   }
 
-  if (current.trim()) {
-    sentences.push(current.trim());
-  }
-
-  return sentences.filter(Boolean);
+  return sentences;
 }
 
 function algorithmicSummarize(textString, sentenceCount = 2) {
