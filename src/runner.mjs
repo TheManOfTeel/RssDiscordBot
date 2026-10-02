@@ -327,7 +327,7 @@ async function runFeed(feed, options, log) {
             const item = group.items[0];
             // Filter out non-string/falsy/whitespace-only values and join with a newline
             const bodyContent = (item.summary || item.description || '').trim();
-            const title = (item.title || '').trim();
+            const title = (`**${item.title}**` || '').trim();
             const itemBody = [title, bodyContent].filter(Boolean).join('\n');
             // Ping role AND include item body directly in the top-level message content
             messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
