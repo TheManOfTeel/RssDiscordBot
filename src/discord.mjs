@@ -564,3 +564,14 @@ export async function postEmbeds(webhookUrl, embeds, {
 
   return { messages, embeds: embeds.length };
 }
+
+export function makeBoldUnicode(text) {
+  const normalChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  // Maps to Mathematical Sans-Serif Bold characters
+  const boldChars   = "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵";
+
+  return text.split('').map(char => {
+      const index = normalChars.indexOf(char);
+      return index !== -1 ? boldChars.match(/./gu)[index] : char;
+  }).join('');
+}

@@ -12,7 +12,7 @@
 import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfig } from './config.mjs';
-import { allowedMentionsFor, clip, mentionContent, postEmbeds } from './discord.mjs';
+import { allowedMentionsFor, clip, mentionContent, postEmbeds, makeBoldUnicode } from './discord.mjs';
 import { parseEspnNews } from './espn.mjs';
 import { parseFeed } from './feed.mjs';
 import { fetchFeed } from './http.mjs';
@@ -327,7 +327,7 @@ async function runFeed(feed, options, log) {
             const item = group.items[0];
             // Filter out non-string/falsy/whitespace-only values and join with a newline
             const bodyContent = (item.summary || item.description || '').trim();
-            const title = (`**${item.title}**` || '').trim();
+            const title = makeBoldUnicode((item.title || '').trim());
             const itemBody = [title, bodyContent].filter(Boolean).join('\n');
             // Ping role AND include item body directly in the top-level message content
             messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
