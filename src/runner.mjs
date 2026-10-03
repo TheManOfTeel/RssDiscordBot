@@ -318,7 +318,7 @@ async function runFeed(feed, options, log) {
           let messageContent = undefined;
           if (isBatched) {
             // BATCHED: Top-level message content carries the role ping + combined titles summary. These titles will get summarized for the message content.
-            const summary = embeds.map((e) => e.title.trim())
+            const summary = embeds.map((e) => makeBoldUnicode(e.title.trim()))
               .filter(Boolean)
               .join('\n');
             messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
