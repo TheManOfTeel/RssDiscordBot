@@ -566,12 +566,27 @@ export async function postEmbeds(webhookUrl, embeds, {
 }
 
 export function makeBoldUnicode(text) {
+  if (!text) return ""; 
+
+  // Regular alphanumeric text mapping
   const normalChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   // Maps to Mathematical Sans-Serif Bold characters
   const boldChars   = "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵";
 
-  return text.split('').map(char => {
+  let result = text.split('').map(char => {
       const index = normalChars.indexOf(char);
       return index !== -1 ? boldChars.match(/./gu)[index] : char;
   }).join('');
+
+  // Color-matched, visually heavier full-width punctuation replacements
+  return result
+      .replace(/\?/g, "？")  // Question Mark
+      .replace(/!/g, "！")  // Exclamation Mark
+      .replace(/:/g, "：")  // Colon
+      .replace(/;/g, "；")  // Semicolon
+      .replace(/,/g, "，")  // Comma
+      .replace(/\./g, "．") // Period / Full Stop
+      .replace(/-/g, "－")  // Hyphen / Minus
+      .replace(/\(/g, "（") // Left Parenthesis
+      .replace(/\)/g, "）"); // Right Parenthesis
 }
