@@ -12,7 +12,7 @@
 import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfig } from './config.mjs';
-import { allowedMentionsFor, clip, mentionContent, postEmbeds, makeBoldUnicode } from './discord.mjs';
+import { allowedMentionsFor, clip, mentionContent, postEmbeds, TITLE_STYLE } from './discord.mjs';
 import { parseEspnNews } from './espn.mjs';
 import { parseFeed } from './feed.mjs';
 import { fetchFeed } from './http.mjs';
@@ -318,19 +318,19 @@ async function runFeed(feed, options, log) {
           let messageContent = undefined;
           if (isBatched) {
             // BATCHED: Top-level message content carries the role ping + combined titles summary. These titles will get summarized for the message content.
-            const summary = embeds.map((e) => makeBoldUnicode(e.title.trim()))
+            const summary = embeds.map((e) => e.title.trim())
               .filter(Boolean)
               .join('\n');
-            messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
+            messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, TITLE_STYLE.ALL);
           } else {
             // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
             const item = group.items[0];
             // Filter out non-string/falsy/whitespace-only values and join with a newline
             const bodyContent = (item.summary || item.description || '').trim();
-            const title = makeBoldUnicode((item.title || '').trim());
+            const title = (item.title || '').trim();
             const itemBody = [title, bodyContent].filter(Boolean).join('\n');
             // Ping role AND include item body directly in the top-level message content
-            messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false);
+            messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, TITLE_STYLE.FIRST);
           }
           await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embeds, {
             content: messageContent,

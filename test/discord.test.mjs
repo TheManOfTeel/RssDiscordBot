@@ -7,10 +7,12 @@ import {
   clip,
   embedCharCount,
   LIMITS,
+  makeBoldUnicode,
   mentionContent,
   postEmbeds,
   resetPacing,
   sanitizeEmbed,
+  TITLE_STYLE,
 } from '../src/discord.mjs';
 
 beforeEach(resetPacing);
@@ -200,6 +202,28 @@ test('mentionContent builds role and user mentions, with optional lead text', ()
   assert.ok(mentionContent({ roles: ['1'.repeat(18)], text: 'x'.repeat(1976) }).length <= LIMITS.CONTENT);
 });
 
+test('Unicode bold titles preserve punctuation and non-ASCII characters', () => {
+  assert.equal(makeBoldUnicode("What's new? iOS 26.1! 日本語"), "𝗪𝗵𝗮𝘁'𝘀 𝗻𝗲𝘄? 𝗶𝗢𝗦 𝟮𝟲.𝟭! 日本語");
+});
+
+test('mentionContent styles single and batched titles for notification previews', () => {
+  assert.equal(
+    mentionContent({}, 'New iPhone: 26.1!\nA better camera.', false, false, TITLE_STYLE.FIRST),
+    '𝗡𝗲𝘄 𝗶𝗣𝗵𝗼𝗻𝗲: 𝟮𝟲.𝟭!\nA better camera.'
+  );
+  assert.equal(
+    mentionContent({}, 'iOS 26.1: New features!\nmacOS 16.1: New tools.', false, false, TITLE_STYLE.ALL),
+    '𝗶𝗢𝗦 𝟮𝟲.𝟭: 𝗡𝗲𝘄 𝗳𝗲𝗮𝘁𝘂𝗿𝗲𝘀!\n𝗺𝗮𝗰𝗢𝗦 𝟭𝟲.𝟭: 𝗡𝗲𝘄 𝘁𝗼𝗼𝗹𝘀.'
+  );
+});
+
+test('Unicode title styling happens after release grouping', () => {
+  assert.equal(
+    mentionContent({}, '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS', false, true, TITLE_STYLE.ALL),
+    '𝟮𝟲.𝟲.𝟮: 𝗶𝗢𝗦, 𝗶𝗣𝗮𝗱𝗢𝗦\n𝟮𝟲.𝟲.𝟭: 𝗺𝗮𝗰𝗢𝗦, 𝘄𝗮𝘁𝗰𝗵𝗢𝗦'
+  );
+});
+
 test('OS release summaries are grouped by version and platform', () => {
   const summary = '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS\n26.6.0 - tvOS';
   assert.equal(mentionContent({}, summary, false, true), '26.6.2: iOS, iPadOS\n26.6.1: macOS, watchOS\n26.6.0: tvOS');
@@ -231,6 +255,21 @@ test('larger headline batches keep their size instead of being squeezed to 20%',
   const result = mentionContent({ roles: ['123456789012345678'] }, summary, true);
   const sentenceCount = (result.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
   assert.ok(sentenceCount >= 4, 'larger batches should respect their headline count rather than dropping to a 20% subset');
+});
+
+test('summarization does not favor a long sentence padded with stop words', () => {
+  const paddedSentence = `The processor and memory improve while ${'the and of to for '.repeat(20)}battery life lasts longer.`;
+  const summary = [
+    'Chip speed doubles.',
+    'Battery life improves.',
+    'Keyboard feels quieter.',
+    'Display looks brighter.',
+    paddedSentence,
+  ].join(' ');
+
+  const result = mentionContent({}, summary, true);
+  assert.ok(!result.includes(paddedSentence));
+  assert.ok(result.includes('Display looks brighter.'));
 });
 
 test('beta and RC release summaries keep their prerelease label', () => {

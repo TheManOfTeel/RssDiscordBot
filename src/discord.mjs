@@ -25,6 +25,12 @@ export const LIMITS = {
   IOS_FRIENDLY_SUMMARY_LIMIT: 400, // Optimal length for mobile push + channel preview
 };
 
+export const TITLE_STYLE = Object.freeze({
+  NONE: 'none',
+  FIRST: 'first',
+  ALL: 'all',
+});
+
 export class DiscordError extends Error {
   constructor(status, body) {
     super(`Discord responded ${status}: ${typeof body === 'string' ? body.slice(0, 500) : JSON.stringify(body).slice(0, 500)}`);
@@ -75,6 +81,17 @@ export function clip(value, max) {
   const s = String(value).trim();
   if (!s) return undefined;
   return s.length <= max ? s : `${s.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+}
+
+/** Use Unicode bold glyphs for ASCII letters and digits, leaving punctuation unchanged. */
+export function makeBoldUnicode(text) {
+  return [...String(text ?? '')].map((char) => {
+    const codePoint = char.codePointAt(0);
+    if (codePoint >= 0x41 && codePoint <= 0x5a) return String.fromCodePoint(codePoint + 0x1d5d4 - 0x41);
+    if (codePoint >= 0x61 && codePoint <= 0x7a) return String.fromCodePoint(codePoint + 0x1d5ee - 0x61);
+    if (codePoint >= 0x30 && codePoint <= 0x39) return String.fromCodePoint(codePoint + 0x1d7ec - 0x30);
+    return char;
+  }).join('');
 }
 
 /** Drop undefined/null/empty members so Discord never sees a null it rejects. */
@@ -264,7 +281,7 @@ function formatMixedPlatformVersions(text) {
  * @param {boolean} isReleaseFeed - Whether to apply Apple-style release grouping (version-first or mixed)
  * @returns {string|undefined} Ping mention(s) optionally followed by formatted content
  */
-export function mentionContent({ roles = [], users = [], text = '' } = {}, summary = '', summarize = false, isReleaseFeed = false) {
+export function mentionContent({ roles = [], users = [], text = '' } = {}, summary = '', summarize = false, isReleaseFeed = false, titleStyle = TITLE_STYLE.NONE) {
   const mentions = [
     ...(roles ?? []).map((id) => `<@&${id}>`),
     ...(users ?? []).map((id) => `<@${id}>`)
@@ -279,23 +296,23 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
   const lines = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   const singleItemTitleBody = lines.length === 2 && lines[0] && lines[1];
 
-  if (singleItemTitleBody) {
+  if (singleItemTitleBody && titleStyle !== TITLE_STYLE.ALL) {
     const [title, ...bodyLines] = lines;
     const body = bodyLines.join('\n');
+    const displayTitle = titleStyle === TITLE_STYLE.NONE ? title : makeBoldUnicode(title);
     let finalBody = body;
-    const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + title.length + 1 : title.length + 1));
+    const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + displayTitle.length + 1 : displayTitle.length + 1));
 
     if (summarize) {
       const sentenceCount = splitSentences(body).length;
       const summaryCount = sentenceCount <= 1 ? 1 : Math.min(sentenceCount, 4);
       finalBody = algorithmicSummarize(body, summaryCount);
     }
-
     if (finalBody.length > bodyTarget) {
       finalBody = finalBody.slice(0, Math.max(0, bodyTarget - 1)).trimEnd() + '…';
     }
 
-    const output = `${pings ? `${pings}` : ''} ${title}${finalBody ? `\n${finalBody}` : ''}`.trim();
+    const output = `${pings ? `${pings}` : ''} ${displayTitle}${finalBody ? `\n${finalBody}` : ''}`.trim();
     return output || undefined;
   }
 
@@ -319,6 +336,12 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
   }
   if (formattedSummary.length > targetLength) {
     formattedSummary = formattedSummary.slice(0, Math.max(0, targetLength - 1)).trimEnd() + '…';
+  }
+  if (titleStyle === TITLE_STYLE.ALL) {
+    formattedSummary = formattedSummary.split('\n').map(makeBoldUnicode).join('\n');
+  } else if (titleStyle === TITLE_STYLE.FIRST) {
+    const [firstLine, ...remainingLines] = formattedSummary.split('\n');
+    formattedSummary = [makeBoldUnicode(firstLine), ...remainingLines].join('\n');
   }
   if (pings.length > 0 && formattedSummary.length > 0) {
     return `${pings}\n${formattedSummary}`;
@@ -438,6 +461,7 @@ function algorithmicSummarize(textString, sentenceCount = 2) {
         score += wordFrequencies[word];
       }
     });
+    score /= Math.sqrt(sentenceWords.length || 1);
     // Save the original sentence text, its score, and its original order index
     sentenceScores.push({ text: sentence.trim(), score, index });
   });
@@ -563,30 +587,4 @@ export async function postEmbeds(webhookUrl, embeds, {
   }
 
   return { messages, embeds: embeds.length };
-}
-
-export function makeBoldUnicode(text) {
-  if (!text) return ""; 
-
-  // Regular alphanumeric text mapping
-  const normalChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  // Maps to Mathematical Sans-Serif Bold characters
-  const boldChars   = "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵";
-
-  let result = text.split('').map(char => {
-      const index = normalChars.indexOf(char);
-      return index !== -1 ? boldChars.match(/./gu)[index] : char;
-  }).join('');
-
-  // Color-matched, visually heavier full-width punctuation replacements
-  return result
-      .replace(/\?/g, "？")  // Question Mark
-      .replace(/!/g, "！")  // Exclamation Mark
-      .replace(/:/g, "：")  // Colon
-      .replace(/;/g, "；")  // Semicolon
-      .replace(/,/g, "，")  // Comma
-      .replace(/\./g, "．") // Period / Full Stop
-      .replace(/-/g, "－")  // Hyphen / Minus
-      .replace(/\(/g, "（") // Left Parenthesis
-      .replace(/\)/g, "）"); // Right Parenthesis
 }
