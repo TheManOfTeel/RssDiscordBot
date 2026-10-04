@@ -30,6 +30,7 @@ export const CONTENT_STYLE = Object.freeze({
 });
 
 export class DiscordError extends Error {
+  /** @param {number} status @param {*} body - Discord response body */
   constructor(status, body) {
     super(`Discord responded ${status}: ${typeof body === 'string' ? body.slice(0, 500) : JSON.stringify(body).slice(0, 500)}`);
     this.status = status;
@@ -38,6 +39,7 @@ export class DiscordError extends Error {
 }
 
 export class EmbedSizeOverflowError extends Error {
+  /** @param {object} embed @param {number} cost @param {number} max */
   constructor(embed, cost, max) {
     super(`Embed size ${cost} exceeds limit ${max}: ${JSON.stringify(embed).slice(0, 500)}`);
     this.embed = embed;
@@ -46,22 +48,28 @@ export class EmbedSizeOverflowError extends Error {
   }
 }
 
+/** @param {number} ms @returns {Promise<void>} */
 const sleepDefault = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const lastPostAt = new Map();   // webhook id -> ms timestamp of last POST
 const chains = new Map();       // webhook id -> serialization chain
+/** @param {string} url @returns {string} */
 const webhookKey = (url) => new URL(url).pathname.split('/')[3] ?? url;
 
-/**
- * Test-only: clear per-webhook pacing state. The Maps above are module-level on purpose
- * (they must span every postEmbeds call in a run), which makes them process-global and
- * leaks pacing between unit tests unless each one starts clean.
- */
+/** Clear shared webhook pacing state between tests. */
 export function resetPacing() {
   lastPostAt.clear();
   chains.clear();
 }
 
-/** Serialize and space every POST to a given webhook, regardless of which feed issued it. */
+/**
+ * Serialize and space POSTs for one webhook.
+ * @param {string} key
+ * @param {number} minGapMs
+ * @param {(ms: number) => Promise<void>} sleep
+ * @param {() => Promise<*>} fn
+ * @param {() => number} now
+ * @returns {Promise<*>}
+ */
 async function paced(key, minGapMs, sleep, fn, now) {
   const run = (chains.get(key) ?? Promise.resolve()).then(async () => {
     // -Infinity, not 0: a webhook we have never posted to must not be made to wait.
@@ -73,7 +81,12 @@ async function paced(key, minGapMs, sleep, fn, now) {
   return run;
 }
 
-/** Truncate to `max` characters, ellipsis included in the budget. */
+/**
+ * Truncate to `max` UTF-16 code units without splitting Unicode characters.
+ * @param {*} value
+ * @param {number} max
+ * @returns {string|undefined}
+ */
 export function clip(value, max) {
   if (value == null) return undefined;
   const s = String(value).trim();
@@ -90,7 +103,11 @@ export function clip(value, max) {
   return `${prefix.trimEnd()}…`;
 }
 
-/** Drop undefined/null/empty members so Discord never sees a null it rejects. */
+/**
+ * Remove nullish, empty-string, and empty-array properties.
+ * @param {object} object
+ * @returns {object}
+ */
 export function compact(object) {
   const out = {};
   for (const [key, value] of Object.entries(object)) {
@@ -102,7 +119,11 @@ export function compact(object) {
   return out;
 }
 
-/** Characters Discord counts against the 6000-per-message budget. */
+/**
+ * Count characters Discord includes in the combined embed budget.
+ * @param {object} embed
+ * @returns {number}
+ */
 export function embedCharCount(embed) {
   let total = 0;
   total += (embed.title ?? '').length;
@@ -113,7 +134,11 @@ export function embedCharCount(embed) {
   return total;
 }
 
-/** Clamp every embed field to its documented maximum. */
+/**
+ * Clamp embed fields to Discord's documented limits.
+ * @param {object} embed
+ * @returns {object}
+ */
 export function sanitizeEmbed(embed) {
   const out = compact({
     title: clip(embed.title, LIMITS.TITLE),
@@ -136,6 +161,9 @@ export function sanitizeEmbed(embed) {
 /**
  * Truncate an embed to fit the 6000-character budget.
  * Tries to trim the description first, then drops fields if needed.
+ * @param {object} embed
+ * @param {number} maxChars
+ * @returns {object}
  */
 function truncateEmbed(embed, maxChars) {
   const currentCost = embedCharCount(embed);
@@ -152,7 +180,12 @@ function truncateEmbed(embed, maxChars) {
   return cloned;
 }
 
-/** Split embeds into messages respecting both the count cap and the 6000-char cap. */
+/**
+ * Split embeds into batches within Discord's per-message limits.
+ * @param {object[]} embeds
+ * @param {{perMessage?: number, totalChars?: number, truncateOnOverflow?: boolean}} [options]
+ * @returns {object[][]}
+ */
 export function batchEmbeds(embeds, { perMessage = LIMITS.EMBEDS_PER_MESSAGE, totalChars = LIMITS.TOTAL_CHARS, truncateOnOverflow = true } = {}) {
   const sanitizedEmbeds = embeds.map(embed => {
     const cost = embedCharCount(embed);
@@ -186,6 +219,8 @@ const WEBHOOK_HOSTS = new Set(['discord.com', 'discordapp.com', 'ptb.discord.com
 /**
  * Reject anything that is not a Discord webhook URL. This is a secret-exfiltration guard:
  * a typo'd or tampered config must not POST feed contents to an arbitrary host.
+ * @param {string} raw
+ * @returns {string} Validated URL
  */
 export function assertWebhookUrl(raw) {
   let url;
@@ -203,8 +238,10 @@ export function assertWebhookUrl(raw) {
 }
 
 /**
- * Parse retry-after response header (or body fallback) to milliseconds.
- * Discord returns this after a 429 rate-limit response.
+ * Parse Discord's retry delay in milliseconds.
+ * @param {Headers} headers
+ * @param {object|undefined} body
+ * @returns {number}
  */
 const retryAfterMs = (headers, body) => {
   const fromBody = Number(body?.retry_after);
@@ -218,6 +255,8 @@ const retryAfterMs = (headers, body) => {
  * Group version-first release summaries (e.g., "1.0.0: iOS, iPadOS") by version,
  * deduplicating platforms.
  * Returns null if the format doesn't match (not a version-first list).
+ * @param {string[]} versionRows
+ * @returns {string|null}
  */
 function formatVersionGroups(versionRows) {
   const ordered = [];
@@ -243,8 +282,9 @@ function formatVersionGroups(versionRows) {
 }
 
 /**
- * Group mixed platform/version release summaries (e.g., "iOS 1.0.0 iPadOS 1.0.0")
- * into version-grouped lines. Returns null if no platform/version pairs are found.
+ * Group platform/version pairs; return null when none are found.
+ * @param {string} text
+ * @returns {string|null}
  */
 function formatMixedPlatformVersions(text) {
   const matches = [...text.matchAll(/\b([A-Za-z]+(?:OS|OSX))\s+(((?:\d+\.){2,}\d+|\d+\.\d+)(?:\s*(?:beta|rc|public beta|preview|seed)(?:\s*\d+)?)?)(?:\s*\([^)]*\))?/gi)];
@@ -265,17 +305,18 @@ function formatMixedPlatformVersions(text) {
 }
 
 /**
- * Build the `content` string that actually pings.
+ * Build top-level message content, including any role or user pings.
  *
  * Mentions inside an embed are inert text — Discord never notifies from embed fields. The
  * mention has to be in the message's top-level `content`, and `allowed_mentions` has to
  * permit it, or it renders as a highlighted-but-silent mention.
  *
- * @param {object} options - { roles, users, text } for mention data; summary is the embed content
- * @param {string} summary - Feed item summary, possibly an OS release formatted string
- * @param {boolean} summarize - Whether to apply algorithmic summarization (TF-IDF sentence scoring)
- * @param {boolean} isReleaseFeed - Whether to apply Apple-style release grouping (version-first or mixed)
- * @returns {string|undefined} Ping mention(s) optionally followed by formatted content
+ * @param {{roles?: string[], users?: string[], text?: string}} options - Ping settings
+ * @param {string} summary - Text for the message body
+ * @param {boolean} summarize - Whether to select the most relevant sentences
+ * @param {boolean} isReleaseFeed - Whether to group platform release versions
+ * @param {'plain'|'bulleted'} contentStyle - Message body layout
+ * @returns {string|undefined} Message content, or undefined when empty
  */
 export function mentionContent({ roles = [], users = [], text = '' } = {}, summary = '', summarize = false, isReleaseFeed = false, contentStyle = CONTENT_STYLE.PLAIN) {
   const mentions = [
@@ -340,14 +381,9 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
 }
 
 /**
- * Build Discord's `allowed_mentions` policy.
- *
- * By default, `parse: []` blocks all mention types. Only explicit IDs in the `roles` or
- * `users` arrays are then allowlisted. This prevents untrusted feed content from pinging
- * via @everyone or @here.
- *
- * @param {object} options - { roles, users } to allowlist
- * @returns {object} Discord allowed_mentions structure
+ * Allow only the configured role and user mentions.
+ * @param {{roles?: string[], users?: string[]}} options
+ * @returns {{parse: string[], roles?: string[], users?: string[]}}
  */
 export function allowedMentionsFor({ roles = [], users = [] } = {}) {
   const allowed = { parse: [] };
@@ -357,14 +393,9 @@ export function allowedMentionsFor({ roles = [], users = [] } = {}) {
 }
 
 /**
- * Algorithmically summarize text using TF-IDF-like sentence scoring.
- *
- * Extracts the N most important sentences by word frequency, then returns them
- * in chronological order. Stop words (common articles, prepositions) are ignored.
- *
- * @param {string} textString - Input text to summarize
- * @param {number} sentenceCount - Number of top sentences to return (default 2)
- * @returns {string} Summarized text (N sentences in original order)
+ * Split text while preserving common abbreviations and decimals.
+ * @param {string} textString
+ * @returns {string[]}
  */
 function splitSentences(textString) {
   if (!textString) return [];
@@ -413,6 +444,12 @@ function splitSentences(textString) {
   return sentences;
 }
 
+/**
+ * Clip at a sentence or line boundary when possible.
+ * @param {*} value
+ * @param {number} max
+ * @returns {string|undefined}
+ */
 function clipAtSentence(value, max) {
   const text = String(value ?? '').trim();
   if (!text) return undefined;
@@ -438,6 +475,12 @@ function clipAtSentence(value, max) {
   return boundary || clipped;
 }
 
+/**
+ * Select relevant original sentences using word frequency and length.
+ * @param {string} textString
+ * @param {number} [sentenceCount=2]
+ * @returns {string}
+ */
 function algorithmicSummarize(textString, sentenceCount = 2) {
   if (!textString || textString.trim() === '') return '';
   // Define common words to ignore (stop words) so they don't skew the scoring
@@ -502,7 +545,7 @@ function algorithmicSummarize(textString, sentenceCount = 2) {
  *
  * @param {string} webhookUrl - Discord webhook URL
  * @param {object[]} embeds - Array of embed objects to post
- * @param {object} options - Configuration including retry, gap, and logging options
+ * @param {object} [options] - Message, webhook, retry, and logging settings
  * @returns {Promise<{messages: number, embeds: number}>} Count of posted messages and embeds
  */
 export async function postEmbeds(webhookUrl, embeds, {

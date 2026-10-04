@@ -102,7 +102,7 @@ const HELP = `rss-discord-bot
  * @param {object} item - Feed item with title, link, summary, author, image, isoDate
  * @param {object} feed - Feed config with showDescription, showImage, etc.
  * @param {boolean} notified - Whether this item matched a notify rule (for showImage="notified")
- * @param {boolean} includeDescription - Whether the embed should include its description
+ * @param {boolean} includeDescription - Whether to include the embed description
  * @returns {object} Discord embed object
  */
 function buildEmbed(item, feed, notified = false, includeDescription = true) {
@@ -315,16 +315,16 @@ async function runFeed(feed, options, log) {
           const notified = group.mention !== null;
           // Map items to embeds
           const embeds = group.items.map((item) => buildEmbed(item, feed, notified, !notified || isBatched));
-          // Build top-level message content
+          // Only notified items need top-level content; silent items use their embeds.
           let messageContent = undefined;
           if (notified && isBatched) {
-            // BATCHED: Top-level message content carries the role ping + combined titles summary. These titles will get summarized for the message content.
+            // Batched notifications ping once and list titles; embeds retain descriptions.
             const summary = embeds.map((e) => e.title.trim())
               .filter(Boolean)
               .join('\n');
             messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, CONTENT_STYLE.BULLETED);
           } else if (notified) {
-            // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
+            // Single notifications include the summary here, so omit it from the embed.
             const item = group.items[0];
             const bodyContent = feed.showDescription && feed.descriptionChars > 0
               ? (item.summary || item.description || '').trim()
@@ -380,6 +380,11 @@ async function runFeed(feed, options, log) {
   return result;
 }
 
+/**
+ * Append run results to the Actions summary.
+ * @param {object[]} results
+ * @returns {Promise<void>}
+ */
 async function writeGithubSummary(results) {
   const file = process.env.GITHUB_STEP_SUMMARY;
   const githubEventName = process.env.GITHUB_EVENT_NAME;
@@ -400,6 +405,11 @@ async function writeGithubSummary(results) {
   await appendFile(file, `${body}\n`, 'utf8');
 }
 
+/**
+ * Run the configured feeds and return an exit code.
+ * @param {string[]} [argv]
+ * @returns {Promise<number>}
+ */
 export async function main(argv = process.argv.slice(2)) {
   let options;
   try {

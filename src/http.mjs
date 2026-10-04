@@ -9,6 +9,11 @@
 export const USER_AGENT = 'rss-discord-bot/1.0 (+https://github.com/features/actions)';
 
 export class HttpError extends Error {
+  /**
+   * @param {number} status
+   * @param {string} statusText
+   * @param {string} url
+   */
   constructor(status, statusText, url) {
     super(`HTTP ${status} ${statusText} for ${url}`);
     this.status = status;

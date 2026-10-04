@@ -37,6 +37,11 @@ export const MAX_LIMIT = 50;
 /** `type` values seen in the wild. `Media` entries are video clips, not articles. */
 const MEDIA_TYPE = 'media';
 
+/**
+ * Check for an HTTP(S) URL.
+ * @param {*} value
+ * @returns {boolean}
+ */
 const isHttpUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value.trim());
 
 /**
@@ -103,6 +108,11 @@ function isoDateOf(article) {
   return new Date(ms).toISOString();
 }
 
+/**
+ * Convert one ESPN article to a feed item.
+ * @param {object} article
+ * @returns {object}
+ */
 function normaliseArticle(article) {
   const title = (article.headline ?? '').trim();
   const summary = (article.description ?? '').trim();

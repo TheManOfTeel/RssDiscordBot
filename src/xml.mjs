@@ -68,6 +68,11 @@ export function decodeEntities(input) {
   });
 }
 
+/**
+ * Return the lower-case local part of a qualified name.
+ * @param {string} raw
+ * @returns {string}
+ */
 const localName = (raw) => {
   const colon = raw.lastIndexOf(':');
   return (colon === -1 ? raw : raw.slice(colon + 1)).toLowerCase();
@@ -113,6 +118,11 @@ function skipDeclaration(src, start) {
   return src.length;
 }
 
+/**
+ * Parse a tag body into an element node.
+ * @param {string} body
+ * @returns {object}
+ */
 function makeElement(body) {
   const nameMatch = /^([^\s/>]+)/.exec(body);
   const name = nameMatch ? nameMatch[1] : '';
@@ -130,6 +140,13 @@ function makeElement(body) {
   return node;
 }
 
+/**
+ * Append text to a node, optionally decoding entities.
+ * @param {object} node
+ * @param {string} text
+ * @param {boolean} decode
+ * @returns {void}
+ */
 function addText(node, text, decode) {
   if (text === '') return;
   const value = decode ? decodeEntities(text) : text;
@@ -209,6 +226,11 @@ export function elements(node) {
   return node ? node.children.filter((c) => typeof c !== 'string') : [];
 }
 
+/**
+ * Return the first element child.
+ * @param {object} node
+ * @returns {object|undefined}
+ */
 export function firstElement(node) {
   return elements(node)[0];
 }
@@ -243,6 +265,12 @@ export function textIn(node, ...locals) {
   return hit ? textOf(hit).trim() : '';
 }
 
+/**
+ * Read an attribute by name.
+ * @param {object} node
+ * @param {string} name
+ * @returns {string|undefined}
+ */
 export function attr(node, name) {
   if (!node) return undefined;
   const key = name.toLowerCase();
