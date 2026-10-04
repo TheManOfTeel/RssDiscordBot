@@ -12,7 +12,7 @@
 import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfig } from './config.mjs';
-import { allowedMentionsFor, clip, mentionContent, postEmbeds, TITLE_STYLE } from './discord.mjs';
+import { allowedMentionsFor, clip, mentionContent, postEmbeds, CONTENT_STYLE } from './discord.mjs';
 import { parseEspnNews } from './espn.mjs';
 import { parseFeed } from './feed.mjs';
 import { fetchFeed } from './http.mjs';
@@ -321,7 +321,7 @@ async function runFeed(feed, options, log) {
             const summary = embeds.map((e) => e.title.trim())
               .filter(Boolean)
               .join('\n');
-            messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, TITLE_STYLE.ALL);
+            messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, CONTENT_STYLE.BULLETED);
           } else {
             // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
             const item = group.items[0];
@@ -330,7 +330,7 @@ async function runFeed(feed, options, log) {
             const title = (item.title || '').trim();
             const itemBody = [title, bodyContent].filter(Boolean).join('\n');
             // Ping role AND include item body directly in the top-level message content
-            messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, TITLE_STYLE.FIRST);
+            messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, CONTENT_STYLE.PLAIN);
           }
           await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embeds, {
             content: messageContent,

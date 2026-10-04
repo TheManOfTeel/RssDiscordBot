@@ -5,14 +5,13 @@ import {
   assertWebhookUrl,
   batchEmbeds,
   clip,
+  CONTENT_STYLE,
   embedCharCount,
   LIMITS,
-  makeBoldUnicode,
   mentionContent,
   postEmbeds,
   resetPacing,
   sanitizeEmbed,
-  TITLE_STYLE,
 } from '../src/discord.mjs';
 
 beforeEach(resetPacing);
@@ -46,6 +45,10 @@ test('clip respects the budget and returns undefined for empties', () => {
   assert.equal(clip('hello world  x', 13), 'hello world…', 'no dangling whitespace before the ellipsis');
   assert.equal(clip('   ', 10), undefined);
   assert.equal(clip(undefined, 10), undefined);
+});
+
+test('clip does not split a Unicode surrogate pair', () => {
+  assert.equal(clip('a😀b', 3), 'a…');
 });
 
 test('sanitizeEmbed clamps every documented limit and drops empty members', () => {
@@ -202,35 +205,31 @@ test('mentionContent builds role and user mentions, with optional lead text', ()
   assert.ok(mentionContent({ roles: ['1'.repeat(18)], text: 'x'.repeat(1976) }).length <= LIMITS.CONTENT);
 });
 
-test('Unicode bold titles preserve punctuation and non-ASCII characters', () => {
-  assert.equal(makeBoldUnicode("What's new? iOS 26.1! 日本語"), "𝗪𝗵𝗮𝘁'𝘀 𝗻𝗲𝘄? 𝗶𝗢𝗦 𝟮𝟲.𝟭! 日本語");
-});
-
-test('mentionContent styles single and batched titles for notification previews', () => {
+test('single-item content stays plain and batch titles use regular-weight bullets', () => {
   assert.equal(
-    mentionContent({}, 'New iPhone: 26.1!\nA better camera.', false, false, TITLE_STYLE.FIRST),
-    '𝗡𝗲𝘄 𝗶𝗣𝗵𝗼𝗻𝗲: 𝟮𝟲.𝟭!\nA better camera.'
+    mentionContent({}, 'New iPhone: 26.1!\nA better camera.', false, false, CONTENT_STYLE.PLAIN),
+    'New iPhone: 26.1!\nA better camera.'
   );
   assert.equal(
-    mentionContent({}, 'iOS 26.1: New features!\nmacOS 16.1: New tools.', false, false, TITLE_STYLE.ALL),
-    '𝗶𝗢𝗦 𝟮𝟲.𝟭: 𝗡𝗲𝘄 𝗳𝗲𝗮𝘁𝘂𝗿𝗲𝘀!\n𝗺𝗮𝗰𝗢𝗦 𝟭𝟲.𝟭: 𝗡𝗲𝘄 𝘁𝗼𝗼𝗹𝘀.'
+    mentionContent({}, 'iOS 26.1: New features!\nmacOS 16.1: New tools.', false, false, CONTENT_STYLE.BULLETED),
+    '• iOS 26.1: New features!\n• macOS 16.1: New tools.'
   );
 });
 
 test('Unicode title styling happens after release grouping', () => {
   assert.equal(
-    mentionContent({}, '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS', false, true, TITLE_STYLE.ALL),
-    '𝟮𝟲.𝟲.𝟮: 𝗶𝗢𝗦, 𝗶𝗣𝗮𝗱𝗢𝗦\n𝟮𝟲.𝟲.𝟭: 𝗺𝗮𝗰𝗢𝗦, 𝘄𝗮𝘁𝗰𝗵𝗢𝗦'
+    mentionContent({}, '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS', false, true, CONTENT_STYLE.BULLETED),
+    '• 26.6.2: iOS, iPadOS\n• 26.6.1: macOS, watchOS'
   );
 });
 
 test('notification content can exceed 400 characters but stays within Discord limits', () => {
   const body = 'This update adds useful details. '.repeat(30);
-  const single = mentionContent({}, `Major update\n${body}`, false, false, TITLE_STYLE.FIRST);
+  const single = mentionContent({}, `Major update\n${body}`, false, false, CONTENT_STYLE.PLAIN);
   assert.ok(single.length > 400);
   assert.ok(single.length <= LIMITS.CONTENT);
 
-  const batch = mentionContent({}, 'Headline '.repeat(300), false, false, TITLE_STYLE.ALL);
+  const batch = mentionContent({}, 'Headline '.repeat(300), false, false, CONTENT_STYLE.BULLETED);
   assert.ok(batch.length <= LIMITS.CONTENT);
   assert.equal(Buffer.from(batch, 'utf8').toString('utf8'), batch, 'truncation must not split a bold Unicode character');
 });

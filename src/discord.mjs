@@ -24,10 +24,9 @@ export const LIMITS = {
   CONTENT: 2000,
 };
 
-export const TITLE_STYLE = Object.freeze({
-  NONE: 'none',
-  FIRST: 'first',
-  ALL: 'all',
+export const CONTENT_STYLE = Object.freeze({
+  PLAIN: 'plain',
+  BULLETED: 'bulleted',
 });
 
 export class DiscordError extends Error {
@@ -88,17 +87,6 @@ export function clip(value, max) {
     length += char.length;
   }
   return `${prefix.trimEnd()}…`;
-}
-
-/** Use Unicode bold glyphs for ASCII letters and digits, leaving punctuation unchanged. */
-export function makeBoldUnicode(text) {
-  return [...String(text ?? '')].map((char) => {
-    const codePoint = char.codePointAt(0);
-    if (codePoint >= 0x41 && codePoint <= 0x5a) return String.fromCodePoint(codePoint + 0x1d5d4 - 0x41);
-    if (codePoint >= 0x61 && codePoint <= 0x7a) return String.fromCodePoint(codePoint + 0x1d5ee - 0x61);
-    if (codePoint >= 0x30 && codePoint <= 0x39) return String.fromCodePoint(codePoint + 0x1d7ec - 0x30);
-    return char;
-  }).join('');
 }
 
 /** Drop undefined/null/empty members so Discord never sees a null it rejects. */
@@ -288,7 +276,7 @@ function formatMixedPlatformVersions(text) {
  * @param {boolean} isReleaseFeed - Whether to apply Apple-style release grouping (version-first or mixed)
  * @returns {string|undefined} Ping mention(s) optionally followed by formatted content
  */
-export function mentionContent({ roles = [], users = [], text = '' } = {}, summary = '', summarize = false, isReleaseFeed = false, titleStyle = TITLE_STYLE.NONE) {
+export function mentionContent({ roles = [], users = [], text = '' } = {}, summary = '', summarize = false, isReleaseFeed = false, contentStyle = CONTENT_STYLE.PLAIN) {
   const mentions = [
     ...(roles ?? []).map((id) => `<@&${id}>`),
     ...(users ?? []).map((id) => `<@${id}>`)
@@ -303,11 +291,11 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
   const lines = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   const singleItemTitleBody = lines.length === 2 && lines[0] && lines[1];
 
-  if (singleItemTitleBody && titleStyle !== TITLE_STYLE.ALL) {
+  if (singleItemTitleBody && contentStyle !== CONTENT_STYLE.BULLETED) {
     const [title, ...bodyLines] = lines;
     const body = bodyLines.join('\n');
     const clippedTitle = clip(title, LIMITS.TITLE) ?? '';
-    const displayTitle = titleStyle === TITLE_STYLE.NONE ? clippedTitle : makeBoldUnicode(clippedTitle);
+    const displayTitle = clippedTitle;
     let finalBody = body;
     const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + displayTitle.length + 1 : displayTitle.length + 1));
 
@@ -340,11 +328,8 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
     const calculatedBounds = totalSentencesCount <= 1 ? 1 : Math.min(totalSentencesCount, 4);
     formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
   }
-  if (titleStyle === TITLE_STYLE.ALL) {
-    formattedSummary = formattedSummary.split('\n').map(makeBoldUnicode).join('\n');
-  } else if (titleStyle === TITLE_STYLE.FIRST) {
-    const [firstLine, ...remainingLines] = formattedSummary.split('\n');
-    formattedSummary = [makeBoldUnicode(firstLine), ...remainingLines].join('\n');
+  if (contentStyle === CONTENT_STYLE.BULLETED) {
+    formattedSummary = formattedSummary.split('\n').map((line) => line ? `• ${line}` : line).join('\n');
   }
   if (formattedSummary.length > targetLength) formattedSummary = clip(formattedSummary, targetLength) ?? '';
   if (pings.length > 0 && formattedSummary.length > 0) {
