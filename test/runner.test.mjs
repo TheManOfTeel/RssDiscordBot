@@ -144,7 +144,7 @@ test('single-item notifications avoid repeating descriptions between content and
 
   const notification = postedMessages.find((message) => message.content?.includes(`<@&${role}>`));
   const silentMessage = postedMessages.find((message) => message.embeds.some((embed) => embed.title === 'Routine update'));
-  assert.equal(notification.content, `<@&${role}> Breaking launch\nThe launch adds a faster chip and longer battery life.`);
+  assert.equal(notification.content, `<@&${role}> Breaking launch\n\nThe launch adds a faster chip and longer battery life.`);
   assert.equal(notification.embeds[0].description, undefined, 'the summary appears only in the notification text');
   assert.equal(silentMessage.content, undefined, 'silent items rely on their rich embed');
   assert.equal(silentMessage.embeds[0].description, 'Routine maintenance details.');
