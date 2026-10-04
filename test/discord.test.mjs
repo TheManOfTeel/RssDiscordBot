@@ -224,6 +224,17 @@ test('Unicode title styling happens after release grouping', () => {
   );
 });
 
+test('notification content can exceed 400 characters but stays within Discord limits', () => {
+  const body = 'This update adds useful details. '.repeat(30);
+  const single = mentionContent({}, `Major update\n${body}`, false, false, TITLE_STYLE.FIRST);
+  assert.ok(single.length > 400);
+  assert.ok(single.length <= LIMITS.CONTENT);
+
+  const batch = mentionContent({}, 'Headline '.repeat(300), false, false, TITLE_STYLE.ALL);
+  assert.ok(batch.length <= LIMITS.CONTENT);
+  assert.equal(Buffer.from(batch, 'utf8').toString('utf8'), batch, 'truncation must not split a bold Unicode character');
+});
+
 test('OS release summaries are grouped by version and platform', () => {
   const summary = '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS\n26.6.0 - tvOS';
   assert.equal(mentionContent({}, summary, false, true), '26.6.2: iOS, iPadOS\n26.6.1: macOS, watchOS\n26.6.0: tvOS');

@@ -22,7 +22,6 @@ export const LIMITS = {
   FIELD_NAME: 256,
   FIELD_VALUE: 1024,
   CONTENT: 2000,
-  IOS_FRIENDLY_SUMMARY_LIMIT: 400, // Optimal length for mobile push + channel preview
 };
 
 export const TITLE_STYLE = Object.freeze({
@@ -80,7 +79,15 @@ export function clip(value, max) {
   if (value == null) return undefined;
   const s = String(value).trim();
   if (!s) return undefined;
-  return s.length <= max ? s : `${s.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+  if (s.length <= max) return s;
+  let prefix = '';
+  let length = 0;
+  for (const char of s) {
+    if (length + char.length > Math.max(0, max - 1)) break;
+    prefix += char;
+    length += char.length;
+  }
+  return `${prefix.trimEnd()}…`;
 }
 
 /** Use Unicode bold glyphs for ASCII letters and digits, leaving punctuation unchanged. */
@@ -290,7 +297,7 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
   // Reserve space for pings + newline (\n) if pings exist
   const pingOffset = pings.length > 0 ? pings.length + 1 : 0;
   const availableBodyChars = Math.max(0, LIMITS.CONTENT - pingOffset);
-  let targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
+  const targetLength = availableBodyChars;
   let formattedSummary = summary ?? '';
 
   const lines = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
@@ -299,7 +306,8 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
   if (singleItemTitleBody && titleStyle !== TITLE_STYLE.ALL) {
     const [title, ...bodyLines] = lines;
     const body = bodyLines.join('\n');
-    const displayTitle = titleStyle === TITLE_STYLE.NONE ? title : makeBoldUnicode(title);
+    const clippedTitle = clip(title, LIMITS.TITLE) ?? '';
+    const displayTitle = titleStyle === TITLE_STYLE.NONE ? clippedTitle : makeBoldUnicode(clippedTitle);
     let finalBody = body;
     const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + displayTitle.length + 1 : displayTitle.length + 1));
 
@@ -308,9 +316,7 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
       const summaryCount = sentenceCount <= 1 ? 1 : Math.min(sentenceCount, 4);
       finalBody = algorithmicSummarize(body, summaryCount);
     }
-    if (finalBody.length > bodyTarget) {
-      finalBody = finalBody.slice(0, Math.max(0, bodyTarget - 1)).trimEnd() + '…';
-    }
+    if (finalBody.length > bodyTarget) finalBody = bodyTarget > 0 ? clip(finalBody, bodyTarget) : '';
 
     const output = `${pings ? `${pings}` : ''} ${displayTitle}${finalBody ? `\n${finalBody}` : ''}`.trim();
     return output || undefined;
@@ -334,15 +340,13 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
     const calculatedBounds = totalSentencesCount <= 1 ? 1 : Math.min(totalSentencesCount, 4);
     formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
   }
-  if (formattedSummary.length > targetLength) {
-    formattedSummary = formattedSummary.slice(0, Math.max(0, targetLength - 1)).trimEnd() + '…';
-  }
   if (titleStyle === TITLE_STYLE.ALL) {
     formattedSummary = formattedSummary.split('\n').map(makeBoldUnicode).join('\n');
   } else if (titleStyle === TITLE_STYLE.FIRST) {
     const [firstLine, ...remainingLines] = formattedSummary.split('\n');
     formattedSummary = [makeBoldUnicode(firstLine), ...remainingLines].join('\n');
   }
+  if (formattedSummary.length > targetLength) formattedSummary = clip(formattedSummary, targetLength) ?? '';
   if (pings.length > 0 && formattedSummary.length > 0) {
     return `${pings}\n${formattedSummary}`;
   }
