@@ -78,6 +78,7 @@ export function clip(value, max) {
   if (value == null) return undefined;
   const s = String(value).trim();
   if (!s) return undefined;
+  if (max <= 0) return '';
   if (s.length <= max) return s;
   let prefix = '';
   let length = 0;
@@ -304,7 +305,7 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
       const summaryCount = sentenceCount <= 1 ? 1 : Math.min(sentenceCount, 4);
       finalBody = algorithmicSummarize(body, summaryCount);
     }
-    if (finalBody.length > bodyTarget) finalBody = bodyTarget > 0 ? clip(finalBody, bodyTarget) : '';
+    if (finalBody.length > bodyTarget) finalBody = clipAtSentence(finalBody, bodyTarget) ?? '';
 
     const output = `${pings ? `${pings}` : ''} ${displayTitle}${finalBody ? `\n${finalBody}` : ''}`.trim();
     return output || undefined;
@@ -331,7 +332,7 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
   if (contentStyle === CONTENT_STYLE.BULLETED) {
     formattedSummary = formattedSummary.split('\n').map((line) => line ? `• ${line}` : line).join('\n');
   }
-  if (formattedSummary.length > targetLength) formattedSummary = clip(formattedSummary, targetLength) ?? '';
+  if (formattedSummary.length > targetLength) formattedSummary = clipAtSentence(formattedSummary, targetLength) ?? '';
   if (pings.length > 0 && formattedSummary.length > 0) {
     return `${pings}\n${formattedSummary}`;
   }
@@ -410,6 +411,31 @@ function splitSentences(textString) {
   }
 
   return sentences;
+}
+
+function clipAtSentence(value, max) {
+  const text = String(value ?? '').trim();
+  if (!text) return undefined;
+  if (text.length <= max) return text;
+
+  const clipped = clip(text, max);
+  const prefix = clipped.slice(0, -1).trimEnd();
+  const candidates = [];
+  const completeSentences = [];
+  for (const sentence of splitSentences(prefix)) {
+    if (!/[.!?]["'”’)]*$/.test(sentence)) break;
+    completeSentences.push(sentence.trim());
+  }
+  if (completeSentences.length > 0) candidates.push(completeSentences.join('\n'));
+
+  const lastLineBreak = prefix.lastIndexOf('\n');
+  if (lastLineBreak >= 0) candidates.push(prefix.slice(0, lastLineBreak).trimEnd());
+
+  const minimumUsefulLength = Math.floor(max / 2);
+  const boundary = candidates
+    .filter((candidate) => candidate.length >= minimumUsefulLength)
+    .sort((left, right) => right.length - left.length)[0];
+  return boundary || clipped;
 }
 
 function algorithmicSummarize(textString, sentenceCount = 2) {

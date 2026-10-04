@@ -216,7 +216,7 @@ test('single-item content stays plain and batch titles use regular-weight bullet
   );
 });
 
-test('Unicode title styling happens after release grouping', () => {
+test('release grouping happens before batch bullet formatting', () => {
   assert.equal(
     mentionContent({}, '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS', false, true, CONTENT_STYLE.BULLETED),
     '• 26.6.2: iOS, iPadOS\n• 26.6.1: macOS, watchOS'
@@ -231,7 +231,16 @@ test('notification content can exceed 400 characters but stays within Discord li
 
   const batch = mentionContent({}, 'Headline '.repeat(300), false, false, CONTENT_STYLE.BULLETED);
   assert.ok(batch.length <= LIMITS.CONTENT);
-  assert.equal(Buffer.from(batch, 'utf8').toString('utf8'), batch, 'truncation must not split a bold Unicode character');
+  assert.equal(Buffer.from(batch, 'utf8').toString('utf8'), batch, 'truncation must preserve valid Unicode');
+});
+
+test('long notification content prefers a complete sentence boundary', () => {
+  const firstSentence = `${'Performance and stability improvements '.repeat(30)}are included.`;
+  const laterSentence = `Additional details ${'support the update '.repeat(80)}`;
+  const content = mentionContent({}, `Major update\n${firstSentence} ${laterSentence}`);
+
+  assert.equal(content, `Major update\n${firstSentence}`);
+  assert.ok(content.length <= LIMITS.CONTENT);
 });
 
 test('OS release summaries are grouped by version and platform', () => {
