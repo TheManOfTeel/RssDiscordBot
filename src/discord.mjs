@@ -22,8 +22,12 @@ export const LIMITS = {
   FIELD_NAME: 256,
   FIELD_VALUE: 1024,
   CONTENT: 2000,
-  IOS_FRIENDLY_SUMMARY_LIMIT: 400, // Optimal length for mobile push + channel preview
 };
+
+export const CONTENT_STYLE = Object.freeze({
+  PLAIN: 'plain',
+  BULLETED: 'bulleted',
+});
 
 export class DiscordError extends Error {
   constructor(status, body) {
@@ -74,7 +78,16 @@ export function clip(value, max) {
   if (value == null) return undefined;
   const s = String(value).trim();
   if (!s) return undefined;
-  return s.length <= max ? s : `${s.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+  if (max <= 0) return '';
+  if (s.length <= max) return s;
+  let prefix = '';
+  let length = 0;
+  for (const char of s) {
+    if (length + char.length > Math.max(0, max - 1)) break;
+    prefix += char;
+    length += char.length;
+  }
+  return `${prefix.trimEnd()}…`;
 }
 
 /** Drop undefined/null/empty members so Discord never sees a null it rejects. */
@@ -264,7 +277,7 @@ function formatMixedPlatformVersions(text) {
  * @param {boolean} isReleaseFeed - Whether to apply Apple-style release grouping (version-first or mixed)
  * @returns {string|undefined} Ping mention(s) optionally followed by formatted content
  */
-export function mentionContent({ roles = [], users = [], text = '' } = {}, summary = '', summarize = false, isReleaseFeed = false) {
+export function mentionContent({ roles = [], users = [], text = '' } = {}, summary = '', summarize = false, isReleaseFeed = false, contentStyle = CONTENT_STYLE.PLAIN) {
   const mentions = [
     ...(roles ?? []).map((id) => `<@&${id}>`),
     ...(users ?? []).map((id) => `<@${id}>`)
@@ -273,29 +286,28 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
   // Reserve space for pings + newline (\n) if pings exist
   const pingOffset = pings.length > 0 ? pings.length + 1 : 0;
   const availableBodyChars = Math.max(0, LIMITS.CONTENT - pingOffset);
-  let targetLength = Math.min(LIMITS.IOS_FRIENDLY_SUMMARY_LIMIT, availableBodyChars);
+  const targetLength = availableBodyChars;
   let formattedSummary = summary ?? '';
 
   const lines = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   const singleItemTitleBody = lines.length === 2 && lines[0] && lines[1];
 
-  if (singleItemTitleBody) {
+  if (singleItemTitleBody && contentStyle !== CONTENT_STYLE.BULLETED) {
     const [title, ...bodyLines] = lines;
     const body = bodyLines.join('\n');
+    const clippedTitle = clip(title, LIMITS.TITLE) ?? '';
+    const displayTitle = clippedTitle;
     let finalBody = body;
-    const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + title.length + 1 : title.length + 1));
+    const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + displayTitle.length + 1 : displayTitle.length + 1));
 
     if (summarize) {
       const sentenceCount = splitSentences(body).length;
       const summaryCount = sentenceCount <= 1 ? 1 : Math.min(sentenceCount, 4);
       finalBody = algorithmicSummarize(body, summaryCount);
     }
+    if (finalBody.length > bodyTarget) finalBody = clipAtSentence(finalBody, bodyTarget) ?? '';
 
-    if (finalBody.length > bodyTarget) {
-      finalBody = finalBody.slice(0, Math.max(0, bodyTarget - 1)).trimEnd() + '…';
-    }
-
-    const output = `${pings ? `${pings}` : ''} ${title}${finalBody ? `\n${finalBody}` : ''}`.trim();
+    const output = `${pings ? `${pings}` : ''} ${displayTitle}${finalBody ? `\n${finalBody}` : ''}`.trim();
     return output || undefined;
   }
 
@@ -317,9 +329,10 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
     const calculatedBounds = totalSentencesCount <= 1 ? 1 : Math.min(totalSentencesCount, 4);
     formattedSummary = algorithmicSummarize(formattedSummary, calculatedBounds);
   }
-  if (formattedSummary.length > targetLength) {
-    formattedSummary = formattedSummary.slice(0, Math.max(0, targetLength - 1)).trimEnd() + '…';
+  if (contentStyle === CONTENT_STYLE.BULLETED) {
+    formattedSummary = formattedSummary.split('\n').map((line) => line ? `• ${line}` : line).join('\n');
   }
+  if (formattedSummary.length > targetLength) formattedSummary = clipAtSentence(formattedSummary, targetLength) ?? '';
   if (pings.length > 0 && formattedSummary.length > 0) {
     return `${pings}\n${formattedSummary}`;
   }
@@ -400,6 +413,31 @@ function splitSentences(textString) {
   return sentences;
 }
 
+function clipAtSentence(value, max) {
+  const text = String(value ?? '').trim();
+  if (!text) return undefined;
+  if (text.length <= max) return text;
+
+  const clipped = clip(text, max);
+  const prefix = clipped.slice(0, -1).trimEnd();
+  const candidates = [];
+  const completeSentences = [];
+  for (const sentence of splitSentences(prefix)) {
+    if (!/[.!?]["'”’)]*$/.test(sentence)) break;
+    completeSentences.push(sentence.trim());
+  }
+  if (completeSentences.length > 0) candidates.push(completeSentences.join('\n'));
+
+  const lastLineBreak = prefix.lastIndexOf('\n');
+  if (lastLineBreak >= 0) candidates.push(prefix.slice(0, lastLineBreak).trimEnd());
+
+  const minimumUsefulLength = Math.floor(max / 2);
+  const boundary = candidates
+    .filter((candidate) => candidate.length >= minimumUsefulLength)
+    .sort((left, right) => right.length - left.length)[0];
+  return boundary || clipped;
+}
+
 function algorithmicSummarize(textString, sentenceCount = 2) {
   if (!textString || textString.trim() === '') return '';
   // Define common words to ignore (stop words) so they don't skew the scoring
@@ -438,6 +476,7 @@ function algorithmicSummarize(textString, sentenceCount = 2) {
         score += wordFrequencies[word];
       }
     });
+    score /= Math.sqrt(sentenceWords.length || 1);
     // Save the original sentence text, its score, and its original order index
     sentenceScores.push({ text: sentence.trim(), score, index });
   });
@@ -563,30 +602,4 @@ export async function postEmbeds(webhookUrl, embeds, {
   }
 
   return { messages, embeds: embeds.length };
-}
-
-export function makeBoldUnicode(text) {
-  if (!text) return ""; 
-
-  // Regular alphanumeric text mapping
-  const normalChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  // Maps to Mathematical Sans-Serif Bold characters
-  const boldChars   = "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵";
-
-  let result = text.split('').map(char => {
-      const index = normalChars.indexOf(char);
-      return index !== -1 ? boldChars.match(/./gu)[index] : char;
-  }).join('');
-
-  // Color-matched, visually heavier full-width punctuation replacements
-  return result
-      .replace(/\?/g, "？")  // Question Mark
-      .replace(/!/g, "！")  // Exclamation Mark
-      .replace(/:/g, "：")  // Colon
-      .replace(/;/g, "；")  // Semicolon
-      .replace(/,/g, "，")  // Comma
-      .replace(/\./g, "．") // Period / Full Stop
-      .replace(/-/g, "－")  // Hyphen / Minus
-      .replace(/\(/g, "（") // Left Parenthesis
-      .replace(/\)/g, "）"); // Right Parenthesis
 }

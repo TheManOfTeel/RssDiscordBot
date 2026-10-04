@@ -5,6 +5,7 @@ import {
   assertWebhookUrl,
   batchEmbeds,
   clip,
+  CONTENT_STYLE,
   embedCharCount,
   LIMITS,
   mentionContent,
@@ -44,6 +45,10 @@ test('clip respects the budget and returns undefined for empties', () => {
   assert.equal(clip('hello world  x', 13), 'hello world…', 'no dangling whitespace before the ellipsis');
   assert.equal(clip('   ', 10), undefined);
   assert.equal(clip(undefined, 10), undefined);
+});
+
+test('clip does not split a Unicode surrogate pair', () => {
+  assert.equal(clip('a😀b', 3), 'a…');
 });
 
 test('sanitizeEmbed clamps every documented limit and drops empty members', () => {
@@ -200,6 +205,44 @@ test('mentionContent builds role and user mentions, with optional lead text', ()
   assert.ok(mentionContent({ roles: ['1'.repeat(18)], text: 'x'.repeat(1976) }).length <= LIMITS.CONTENT);
 });
 
+test('single-item content stays plain and batch titles use regular-weight bullets', () => {
+  assert.equal(
+    mentionContent({}, 'New iPhone: 26.1!\nA better camera.', false, false, CONTENT_STYLE.PLAIN),
+    'New iPhone: 26.1!\nA better camera.'
+  );
+  assert.equal(
+    mentionContent({}, 'iOS 26.1: New features!\nmacOS 16.1: New tools.', false, false, CONTENT_STYLE.BULLETED),
+    '• iOS 26.1: New features!\n• macOS 16.1: New tools.'
+  );
+});
+
+test('release grouping happens before batch bullet formatting', () => {
+  assert.equal(
+    mentionContent({}, '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS', false, true, CONTENT_STYLE.BULLETED),
+    '• 26.6.2: iOS, iPadOS\n• 26.6.1: macOS, watchOS'
+  );
+});
+
+test('notification content can exceed 400 characters but stays within Discord limits', () => {
+  const body = 'This update adds useful details. '.repeat(30);
+  const single = mentionContent({}, `Major update\n${body}`, false, false, CONTENT_STYLE.PLAIN);
+  assert.ok(single.length > 400);
+  assert.ok(single.length <= LIMITS.CONTENT);
+
+  const batch = mentionContent({}, 'Headline '.repeat(300), false, false, CONTENT_STYLE.BULLETED);
+  assert.ok(batch.length <= LIMITS.CONTENT);
+  assert.equal(Buffer.from(batch, 'utf8').toString('utf8'), batch, 'truncation must preserve valid Unicode');
+});
+
+test('long notification content prefers a complete sentence boundary', () => {
+  const firstSentence = `${'Performance and stability improvements '.repeat(30)}are included.`;
+  const laterSentence = `Additional details ${'support the update '.repeat(80)}`;
+  const content = mentionContent({}, `Major update\n${firstSentence} ${laterSentence}`);
+
+  assert.equal(content, `Major update\n${firstSentence}`);
+  assert.ok(content.length <= LIMITS.CONTENT);
+});
+
 test('OS release summaries are grouped by version and platform', () => {
   const summary = '26.6.2 - iOS, iPadOS\n26.6.1 - macOS, watchOS\n26.6.0 - tvOS';
   assert.equal(mentionContent({}, summary, false, true), '26.6.2: iOS, iPadOS\n26.6.1: macOS, watchOS\n26.6.0: tvOS');
@@ -231,6 +274,21 @@ test('larger headline batches keep their size instead of being squeezed to 20%',
   const result = mentionContent({ roles: ['123456789012345678'] }, summary, true);
   const sentenceCount = (result.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length;
   assert.ok(sentenceCount >= 4, 'larger batches should respect their headline count rather than dropping to a 20% subset');
+});
+
+test('summarization does not favor a long sentence padded with stop words', () => {
+  const paddedSentence = `The processor and memory improve while ${'the and of to for '.repeat(20)}battery life lasts longer.`;
+  const summary = [
+    'Chip speed doubles.',
+    'Battery life improves.',
+    'Keyboard feels quieter.',
+    'Display looks brighter.',
+    paddedSentence,
+  ].join(' ');
+
+  const result = mentionContent({}, summary, true);
+  assert.ok(!result.includes(paddedSentence));
+  assert.ok(result.includes('Display looks brighter.'));
 });
 
 test('beta and RC release summaries keep their prerelease label', () => {
