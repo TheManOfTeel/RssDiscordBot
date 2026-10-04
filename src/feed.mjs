@@ -155,6 +155,11 @@ function categoriesOf(node) {
   return [...new Set(out)];
 }
 
+/**
+ * Convert an RSS item to the shared feed shape.
+ * @param {object} item
+ * @returns {object}
+ */
 function normaliseRssItem(item) {
   const title = textIn(item, 'title');
   const guidNode = pick(item, 'guid', 'identifier');
@@ -185,6 +190,11 @@ function normaliseRssItem(item) {
   };
 }
 
+/**
+ * Convert an Atom entry to the shared feed shape.
+ * @param {object} entry
+ * @returns {object}
+ */
 function normaliseAtomEntry(entry) {
   const title = stripHtml(textIn(entry, 'title')) || textIn(entry, 'title');
   const id = textIn(entry, 'id');

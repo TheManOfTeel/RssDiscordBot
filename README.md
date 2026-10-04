@@ -107,7 +107,7 @@ The config validator accepts the following fields:
 - `webhookEnv`: required environment variable name
 - `maxPerRun`: positive integer, default `5`
 - `seenCap`: integer between `10` and `20000`, default `500`
-- `descriptionChars`: integer between `0` and `4096`, default `400`
+- `descriptionChars`: embed-description limit, integer between `0` and `4096`, default `400`
 - `showDescription`: boolean, default `true`
 - `showImage`: `true`, `false`, or `"notified"`, default `false`
 - `showAuthor`: boolean, default `true`
@@ -186,8 +186,15 @@ Important behavior:
 - `text` is prepended to the top-level message content
 - `when` is optional; without it a rule matches every item
 - `batching` defaults to `true`; if a matched rule sets it to `false`, that item is sent separately
-- `summarize` defaults to `false`; when `true`, message content may be compressed into a brief summary
+- `summarize` defaults to `false`; when `true`, notification content selects relevant original sentences (it does not paraphrase)
 - multiple matching rules union their mentions, dedupe IDs, and keep the first text value
+
+Notification formatting:
+
+- single-item pings include the title and, when enabled, summary in message content; the duplicate embed description is omitted
+- batched pings use a bulleted title list in message content; embeds retain their configured descriptions
+- silent items use embeds without top-level message content
+- `showDescription` and a positive `descriptionChars` include the summary in single-item notification text; `descriptionChars` caps embed descriptions
 
 The bot intentionally rejects placeholder IDs like `000000000000000000` with a warning, not a hard failure, so a dry-run config still runs.
 
@@ -265,6 +272,8 @@ Embed rules enforced in code include:
 - `content` max 2000
 
 When content exceeds limits, the bot truncates safely rather than sending a broken payload.
+
+Top-level message content is limited to 2000 characters and is clipped at a sentence or line boundary when possible. Embed descriptions use `descriptionChars` and have a separate 4096-character Discord maximum.
 
 ---
 
