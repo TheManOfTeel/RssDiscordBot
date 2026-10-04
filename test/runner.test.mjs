@@ -24,15 +24,19 @@ ${items.map((i) => `<item><title>${i.title}</title><link>${i.link}</link><guid>$
 let realFetch;
 let realLog;
 let posted;
+let postedMessages;
 let routes;
 let dir;
 
 function stubFetch() {
   posted = [];
+  postedMessages = [];
   globalThis.fetch = async (url, init) => {
     const href = String(url);
     if (href.startsWith('https://discord.com/')) {
-      posted.push(...JSON.parse(init.body).embeds);
+      const payload = JSON.parse(init.body);
+      postedMessages.push(payload);
+      posted.push(...payload.embeds);
       return { ok: true, status: 200, headers: new Headers(), json: async () => ({ id: '1' }), text: async () => '{}' };
     }
     const route = routes[href.split('?')[0]];
@@ -118,6 +122,32 @@ test('feed-level description toggle suppresses the body text while keeping the t
   assert.equal(posted[0].title, 'Beta about TypeScript');
   assert.equal(posted[0].url, 'https://example.com/b');
   assert.equal(posted[0].description, undefined, 'body text disabled via config should not ship in the embed');
+});
+
+test('single-item notifications avoid repeating descriptions between content and embed', async () => {
+  const role = '123456789012345678';
+  const file = await writeConfig({
+    feeds: [{
+      id: 'f',
+      url: FEED_URL,
+      notify: [{ roles: [role], when: { fields: ['title'], include: ['Breaking'] } }],
+    }],
+  });
+  const seed = { ...ITEM_A, title: 'Seed item', desc: 'Seed description' };
+  const alert = { ...ITEM_B, title: 'Breaking launch', desc: 'The launch adds a faster chip and longer battery life.' };
+  const silent = { ...ITEM_C, title: 'Routine update', desc: 'Routine maintenance details.' };
+  routes[FEED_URL] = { body: rss([seed]) };
+  await run(file);
+
+  routes[FEED_URL] = { body: rss([alert, silent, seed]) };
+  await run(file);
+
+  const notification = postedMessages.find((message) => message.content?.includes(`<@&${role}>`));
+  const silentMessage = postedMessages.find((message) => message.embeds.some((embed) => embed.title === 'Routine update'));
+  assert.equal(notification.content, `<@&${role}> Breaking launch\nThe launch adds a faster chip and longer battery life.`);
+  assert.equal(notification.embeds[0].description, undefined, 'the summary appears only in the notification text');
+  assert.equal(silentMessage.content, undefined, 'silent items rely on their rich embed');
+  assert.equal(silentMessage.embeds[0].description, 'Routine maintenance details.');
 });
 
 test('304 Not Modified short-circuits the run', async () => {

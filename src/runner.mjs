@@ -102,13 +102,14 @@ const HELP = `rss-discord-bot
  * @param {object} item - Feed item with title, link, summary, author, image, isoDate
  * @param {object} feed - Feed config with showDescription, showImage, etc.
  * @param {boolean} notified - Whether this item matched a notify rule (for showImage="notified")
+ * @param {boolean} includeDescription - Whether the embed should include its description
  * @returns {object} Discord embed object
  */
-function buildEmbed(item, feed, notified = false) {
+function buildEmbed(item, feed, notified = false, includeDescription = true) {
   return {
     title: item.title || '(untitled)',
     url: item.link || undefined,
-    description: feed.showDescription && feed.descriptionChars > 0 ? clip(item.summary, feed.descriptionChars) : undefined,
+    description: includeDescription && feed.showDescription && feed.descriptionChars > 0 ? clip(item.summary, feed.descriptionChars) : undefined,
     timestamp: item.isoDate,
     color: feed.color,
     author: feed.showAuthor && item.author ? { name: item.author } : undefined,
@@ -310,26 +311,26 @@ async function runFeed(feed, options, log) {
         // One postEmbeds call per group so `postedIds` is only credited after a message
         // actually lands. A crash mid-run therefore re-sends at most one group.
         for (const group of groupForDelivery(queue, feed, now)) {
-          // Map items to embeds
-          const embeds = group.items.map((item) => buildEmbed(item, feed, group.mention !== null));
-          // Determine if this group is batched or single-item
           const isBatched = group.items.length > 1;
+          const notified = group.mention !== null;
+          // Map items to embeds
+          const embeds = group.items.map((item) => buildEmbed(item, feed, notified, !notified || isBatched));
           // Build top-level message content
           let messageContent = undefined;
-          if (isBatched) {
+          if (notified && isBatched) {
             // BATCHED: Top-level message content carries the role ping + combined titles summary. These titles will get summarized for the message content.
             const summary = embeds.map((e) => e.title.trim())
               .filter(Boolean)
               .join('\n');
             messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, CONTENT_STYLE.BULLETED);
-          } else {
+          } else if (notified) {
             // UNBATCHED / SINGLE ITEM: Top-level message content carries the role ping + full item summary/description
             const item = group.items[0];
-            // Filter out non-string/falsy/whitespace-only values and join with a newline
-            const bodyContent = (item.summary || item.description || '').trim();
+            const bodyContent = feed.showDescription && feed.descriptionChars > 0
+              ? (item.summary || item.description || '').trim()
+              : '';
             const title = (item.title || '').trim();
             const itemBody = [title, bodyContent].filter(Boolean).join('\n');
-            // Ping role AND include item body directly in the top-level message content
             messageContent = mentionContent(group.mention ?? {}, itemBody, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, CONTENT_STYLE.PLAIN);
           }
           await postEmbeds(webhook ?? DRY_RUN_WEBHOOK, embeds, {
