@@ -333,7 +333,7 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
   const lines = formattedSummary.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   const singleItemTitleBody = lines.length === 2 && lines[0] && lines[1];
 
-  if (singleItemTitleBody && contentStyle !== CONTENT_STYLE.BULLETED) {
+  if (!isReleaseFeed && singleItemTitleBody && contentStyle !== CONTENT_STYLE.BULLETED) {
     const [title, ...bodyLines] = lines;
     const body = bodyLines.join('\n');
     const clippedTitle = clip(title, LIMITS.TITLE) ?? '';
