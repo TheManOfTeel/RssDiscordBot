@@ -339,7 +339,7 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
     const clippedTitle = clip(title, LIMITS.TITLE) ?? '';
     const displayTitle = clippedTitle;
     let finalBody = body;
-    const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + displayTitle.length + 1 : displayTitle.length + 1));
+    const bodyTarget = Math.max(0, LIMITS.CONTENT - (pings.length > 0 ? pings.length + 1 + displayTitle.length + 2 : displayTitle.length + 2));
 
     if (summarize) {
       const sentenceCount = splitSentences(body).length;
@@ -348,7 +348,7 @@ export function mentionContent({ roles = [], users = [], text = '' } = {}, summa
     }
     if (finalBody.length > bodyTarget) finalBody = clipAtSentence(finalBody, bodyTarget) ?? '';
 
-    const output = `${pings ? `${pings}` : ''} ${displayTitle}${finalBody ? `\n${finalBody}` : ''}`.trim();
+    const output = `${pings ? `${pings}` : ''} ${displayTitle}${finalBody ? `\n\n${finalBody}` : ''}`.trim();
     return output || undefined;
   }
 

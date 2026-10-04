@@ -208,7 +208,7 @@ test('mentionContent builds role and user mentions, with optional lead text', ()
 test('single-item content stays plain and batch titles use regular-weight bullets', () => {
   assert.equal(
     mentionContent({}, 'New iPhone: 26.1!\nA better camera.', false, false, CONTENT_STYLE.PLAIN),
-    'New iPhone: 26.1!\nA better camera.'
+    'New iPhone: 26.1!\n\nA better camera.'
   );
   assert.equal(
     mentionContent({}, 'iOS 26.1: New features!\nmacOS 16.1: New tools.', false, false, CONTENT_STYLE.BULLETED),
@@ -239,7 +239,7 @@ test('long notification content prefers a complete sentence boundary', () => {
   const laterSentence = `Additional details ${'support the update '.repeat(80)}`;
   const content = mentionContent({}, `Major update\n${firstSentence} ${laterSentence}`);
 
-  assert.equal(content, `Major update\n${firstSentence}`);
+  assert.equal(content, `Major update\n\n${firstSentence}`);
   assert.ok(content.length <= LIMITS.CONTENT);
 });
 
