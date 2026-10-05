@@ -95,10 +95,10 @@ test('explicit flags override the im default', () => {
   assert.equal(evaluate(item({ title: 'announcing typescript 6' }), caseSensitive, NOW).pass, false);
 });
 
-test('CBS NFL and CFB feeds block sports betting language', () => {
+test('CBS NFL and NCAAF feeds block sports betting language', () => {
   const feeds = JSON.parse(fs.readFileSync(new URL('../feeds.json', import.meta.url), 'utf8')).feeds;
   const nfl = feeds.find((feed) => feed.id === 'nfl-news');
-  const cfb = feeds.find((feed) => feed.id === 'cfb-news');
+  const cfb = feeds.find((feed) => feed.id === 'ncaaf-news');
   const patterns = [nfl.filters.exclude.join('\n'), cfb.filters.exclude.join('\n')].join('\n');
 
   assert.match(patterns, /best bets|player props|odds|sportsbook/i);
