@@ -155,6 +155,55 @@
       ]
     },
     {
+      "id": "cfb-news",
+      "name": "College Football News",
+      "enabled": true,
+      "url": "https://www.cbssports.com/rss/headlines/college-football/",
+      "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
+      "username": "CFB News",
+      "color": "#8C1515",
+      "maxPerRun": 36,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": true,
+      "filters": {
+        "fields": ["title", "summary", "categories"],
+        "exclude": [
+          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bBetMGM\\b|\\bKalshi\\b|\\bPolymarket\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bbonus bets?\\b|\\bbonus code\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\bblockbuster odds\\b",
+          "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
+          "\\bDonald Trump\\b|\\bTrump\\b",
+          "^league:Sports Betting$|^topic:news . sports betting$|^topic:news . best bets$|^topic:news . player props$"
+        ]
+      },
+      "notify": [
+        {
+          "roles": ["1542594778854592622"],
+          "summarize": true,
+          "when": {
+            "fields": ["categories"],
+            "include": ["^league:NCAA Football$"],
+            "exclude": ["^team:"]
+          }
+        },
+        {
+          "roles": ["1542594897641734155"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "include": ["\\bOhio State\\b|\\bBuckeyes\\b"]
+          }
+        },
+        {
+          "roles": ["1542594987412160615"],
+          "summarize": true,
+          "when": {
+            "fields": ["title", "summary"],
+            "include": ["\\bArmy\\b|\\bBlack Knights\\b"]
+          }
+        }
+      ]
+    },
+    {
       "id": "nfl-news",
       "name": "NFL News",
       "enabled": true,
@@ -169,7 +218,7 @@
       "filters": {
         "fields": ["title", "summary", "categories"],
         "exclude": [
-          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bKalshi\\b|\\bPolymarket\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\blockbuster odds\\b",
+          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bBetMGM\\b|\\bKalshi\\b|\\bPolymarket\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bbonus bets?\\b|\\bbonus code\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\blockbuster odds\\b",
           "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
           "\\bTaylor Swift\\b", "\\bDonald Trump\\b|\\bTrump\\b",
           "^league:Fantasy NFL$|^league:Sports Betting$|^topic:news . sports betting$|^topic:news . best bets$|^topic:news . player props$"
@@ -210,55 +259,6 @@
             "fields": ["title", "summary"],
             "flags": "m",
             "include": ["\\bLions\\b"]
-          }
-        }
-      ]
-    },
-    {
-      "id": "cfb-news",
-      "name": "College Football News",
-      "enabled": true,
-      "url": "https://www.cbssports.com/rss/headlines/college-football/",
-      "webhookEnv": "DISCORD_WEBHOOK_CFB_NEWS",
-      "username": "CFB News",
-      "color": "#8C1515",
-      "maxPerRun": 36,
-      "descriptionChars": 4096,
-      "showDescription": true,
-      "showAuthor": true,
-      "filters": {
-        "fields": ["title", "summary", "categories"],
-        "exclude": [
-          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bKalshi\\b|\\bPolymarket\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\bblockbuster odds\\b",
-          "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
-          "\\bDonald Trump\\b|\\bTrump\\b",
-          "^league:Sports Betting$|^topic:news . sports betting$|^topic:news . best bets$|^topic:news . player props$"
-        ]
-      },
-      "notify": [
-        {
-          "roles": ["1542594778854592622"],
-          "summarize": true,
-          "when": {
-            "fields": ["categories"],
-            "include": ["^league:NCAA Football$"],
-            "exclude": ["^team:"]
-          }
-        },
-        {
-          "roles": ["1542594897641734155"],
-          "summarize": true,
-          "when": {
-            "fields": ["title", "summary"],
-            "include": ["\\bOhio State\\b|\\bBuckeyes\\b"]
-          }
-        },
-        {
-          "roles": ["1542594987412160615"],
-          "summarize": true,
-          "when": {
-            "fields": ["title", "summary"],
-            "include": ["\\bArmy\\b|\\bBlack Knights\\b"]
           }
         }
       ]
