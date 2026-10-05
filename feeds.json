@@ -218,7 +218,7 @@
       "filters": {
         "fields": ["title", "summary", "categories"],
         "exclude": [
-          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bBetMGM\\b|\\bKalshi\\b|\\bPolymarket\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bbonus bets?\\b|\\bbonus code\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\blockbuster odds\\b",
+          "\\bbetting\\b|\\bbettors?\\b|\\bsportsbook|\\bDraftKings\\b|\\bBetMGM\\b|\\bKalshi\\b|\\bPolymarket\\b|\\bFanDuel\\b|\\bbest bets?\\b|\\bbonus bets?\\b|\\bbonus code\\b|\\bplayer props?\\b|\\bprop(s)?\\b|\\bparlays?\\b|\\bodds?\\b|\\bmoneyline|\\bpoint spread\\b|\\bwager|\\bline movement\\b|\\bcovering\\b|\\bblockbuster odds\\b",
           "\\bfantasy\\b|\\bbest ball\\b|\\bADP\\b",
           "\\bTaylor Swift\\b", "\\bDonald Trump\\b|\\bTrump\\b",
           "^league:Fantasy NFL$|^league:Sports Betting$|^topic:news . sports betting$|^topic:news . best bets$|^topic:news . player props$"
