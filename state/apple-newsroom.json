@@ -2,6 +2,8 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/10/apple-announces-the-next-generation-of-homepod-mini/",
+    "https://www.apple.com/ca/newsroom/2026/10/introducing-apple-home-collection-a-new-lineup-of-smart-home-accessories/",
     "https://www.apple.com/ca/newsroom/2026/09/final-cut-camera-now-supports-variable-aperture-on-iphone-18-pro/",
     "https://www.apple.com/ca/newsroom/2026/09/new-updates-coming-to-apple-creator-studio/",
     "https://www.apple.com/ca/newsroom/2026/09/apple-releases-new-guide-to-help-families-build-healthy-digital-habits/",
@@ -42,7 +44,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Wed, 07 Oct 2026 02:30:17 GMT",
-  "lastRun": "2026-10-13T13:00:21.074Z",
-  "lastSuccess": "2026-10-13T13:00:21.074Z"
+  "lastModified": "Tue, 13 Oct 2026 13:12:07 GMT",
+  "lastRun": "2026-10-13T13:15:21.710Z",
+  "lastSuccess": "2026-10-13T13:15:21.710Z"
 }
