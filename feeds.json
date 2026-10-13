@@ -345,11 +345,17 @@
       "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "CISA Advisories",
-      "color": "#D32F2F",
+      "color": "#B71C1C",
       "maxPerRun": 30,
       "descriptionChars": 4096,
       "showDescription": true,
-      "showAuthor": false
+      "showAuthor": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "include": [
+          "\\b(vulnerab\\w+|critical|zero-day|0-day|exploit|ransomware|cve-\\d{4}-\\d+|patch|update|alert|warning)\\b"
+        ]
+      }
     }
   ]
 }
