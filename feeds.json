@@ -26,17 +26,15 @@
           "roles": ["1539011756297555998"],
           "summarize": true,
           "when": {
-            "fields": ["title"],
+            "fields": ["title", "summary"],
             "include": [
-              "\\b(iPhone|iPad|iMac|MacBook|Mac|Apple Watch|AirPods|Vision Pro|HomePod|AirTag|Apple TV(?!\\+)|Apple Pencil|MagSafe|Studio Display|Pro Display|Magic (Keyboard|Mouse|Trackpad))\\b",
+              "\\b(iPhone|iPad|iMac|MacBook|Mac|Apple Watch|AirPods|Vision Pro|HomePod|AirTag|Apple TV(?!\\+)|Apple Pencil|MagSafe|Studio Display|Pro Display|Magic (Keyboard|Mouse|Trackpad)|Home Collection|HomeView)\\b",
               "\\b(A\\d{1,2}|M\\d{1,2}|S\\d{1,2}|H\\d|W\\d|R\\d|C\\d|N\\d)( (Pro|Max|Ultra))?\\b",
-              "\\bApple (introduces|unveils|debuts|reveals|announces) (the |a |an )?(new |all-new )?[A-Z]"
+              "\\b(introduces|unveils|debuts|reveals|announces|introducing|meet)\\b"
             ],
             "exclude": [
-              "\\b(iOS|iPadOS|macOS|watchOS|tvOS|visionOS)\\b",
-              "\\bon (iPhone|iPad|iMac|MacBook|Mac|Apple Watch|AirPods|Vision Pro|HomePod|AirTag|Apple TV(?!\\+)|Apple Pencil|MagSafe|Studio Display|Pro Display|Magic (Keyboard|Mouse|Trackpad))\\b",
-              "\\b(Apple Intelligence|Siri)\\b",
-              "\\bApple (Music|TV\\+|Arcade|Fitness\\+|News\\+|Pay|Card|Wallet|Books|Podcasts)\\b"
+              "^Apple (reports|announces) (Q[1-4]|first|second|third|fourth) quarter",
+              "\\bApple (Music|TV\\+|Arcade|Fitness\\+|News\\+|Pay|Card|Wallet|Books|Podcasts)\\b(?!.*\\b(hardware|device|accessory|accessories|lineup)\\b)"
             ]
           }
         },
@@ -47,12 +45,10 @@
             "fields": ["title", "summary"],
             "include": [
               "\\b(available to order|available (beginning|starting)|pre-?order)\\b",
-              "\\bstarting at [\\$€£]?\\d"
+              "\\bstarting at [\\$€£]?\\d+"
             ],
             "exclude": [
-              "\\b(Apple Intelligence|Siri)\\b",
-              "\\bacross (services|iPhone|iPad|Mac)\\b",
-              "\\b(available|works|compatible|coming|rolling out)\\b[^.]{0,40}\\bacross\\b"
+              "\\bacross services\\b"
             ]
           }
         }
