@@ -277,11 +277,11 @@
       },
       "notify": [
         {
-        "roles": ["1549147253384417290"],
+          "roles": ["1549147253384417290"],
           "summarize": true,
           "when": {
             "fields": ["title", "summary"],
-            "include": ["\\bUSA\\b|\\bUnites States\\b"]
+            "include": ["\\bUSA\\b|\\bUnited States\\b"]
           }
         }
       ]
