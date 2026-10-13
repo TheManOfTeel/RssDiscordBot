@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/10/app-store-indie-games-week-kicks-off-today/",
     "https://www.apple.com/ca/newsroom/2026/10/meet-apple-homeview-a-new-way-to-enjoy-entertainment-and-manage-the-home/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-the-new-apple-tv-4k/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-announces-the-next-generation-of-homepod-mini/",
@@ -46,7 +47,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Tue, 13 Oct 2026 13:29:23 GMT",
-  "lastRun": "2026-10-13T15:45:13.676Z",
-  "lastSuccess": "2026-10-13T15:45:13.676Z"
+  "lastModified": "Tue, 13 Oct 2026 15:55:43 GMT",
+  "lastRun": "2026-10-13T16:00:18.596Z",
+  "lastSuccess": "2026-10-13T16:00:18.596Z"
 }
