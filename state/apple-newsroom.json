@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/10/bunyamin-aydins-new-collection-from-earth-to-sky-soars-with-ipad-pro/",
     "https://www.apple.com/ca/newsroom/2026/10/app-store-indie-games-week-kicks-off-today/",
     "https://www.apple.com/ca/newsroom/2026/10/meet-apple-homeview-a-new-way-to-enjoy-entertainment-and-manage-the-home/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-the-new-apple-tv-4k/",
@@ -47,7 +48,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Tue, 13 Oct 2026 15:56:08 GMT",
-  "lastRun": "2026-10-14T20:15:16.154Z",
-  "lastSuccess": "2026-10-14T20:15:16.154Z"
+  "lastModified": "Wed, 14 Oct 2026 20:17:21 GMT",
+  "lastRun": "2026-10-14T20:30:19.548Z",
+  "lastSuccess": "2026-10-14T20:30:19.548Z"
 }
