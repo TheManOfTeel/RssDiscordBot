@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/",
     "https://www.apple.com/ca/newsroom/2026/10/developers-bring-incredible-new-app-experiences-to-iphone-duo/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-the-2026-designers-of-tomorrow/",
     "https://www.apple.com/ca/newsroom/2026/10/open-up-to-new-possibilities-with-iphone-duo/",
@@ -51,7 +52,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Fri, 23 Oct 2026 16:42:22 GMT",
-  "lastRun": "2026-10-23T20:10:14.221Z",
-  "lastSuccess": "2026-10-23T20:10:14.221Z"
+  "lastModified": "Fri, 23 Oct 2026 20:15:16 GMT",
+  "lastRun": "2026-10-23T20:20:15.118Z",
+  "lastSuccess": "2026-10-23T20:20:15.118Z"
 }
