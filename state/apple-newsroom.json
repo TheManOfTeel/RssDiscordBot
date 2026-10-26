@@ -2,6 +2,8 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/10/hearing-test-available-today-with-airpods-pro-in-canada/",
+    "https://www.apple.com/ca/newsroom/2026/10/siri-ai-is-available-in-more-languages-starting-today/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-gives-ipad-mini-its-biggest-update-ever/",
     "https://www.apple.com/ca/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/",
     "https://www.apple.com/ca/newsroom/2026/10/developers-bring-incredible-new-app-experiences-to-iphone-duo/",
@@ -53,7 +55,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Mon, 26 Oct 2026 13:10:52 GMT",
-  "lastRun": "2026-10-26T18:40:14.387Z",
-  "lastSuccess": "2026-10-26T18:40:14.387Z"
+  "lastModified": "Mon, 26 Oct 2026 18:40:28 GMT",
+  "lastRun": "2026-10-26T18:50:21.890Z",
+  "lastSuccess": "2026-10-26T18:50:21.890Z"
 }
