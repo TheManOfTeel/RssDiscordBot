@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/10/apple-gives-ipad-mini-its-biggest-update-ever/",
     "https://www.apple.com/ca/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/",
     "https://www.apple.com/ca/newsroom/2026/10/developers-bring-incredible-new-app-experiences-to-iphone-duo/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-the-2026-designers-of-tomorrow/",
@@ -52,7 +53,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Sat, 24 Oct 2026 00:14:57 GMT",
-  "lastRun": "2026-10-26T13:00:17.417Z",
-  "lastSuccess": "2026-10-26T13:00:17.417Z"
+  "lastModified": "Mon, 26 Oct 2026 13:09:28 GMT",
+  "lastRun": "2026-10-26T13:10:17.688Z",
+  "lastSuccess": "2026-10-26T13:10:17.688Z"
 }
