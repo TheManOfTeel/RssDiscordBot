@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-groundbreaking-macbook-pro-with-proled-xdr-display/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-introduces-the-new-14-inch-macbook-pro-with-m6/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-creator-studio-adds-powerful-new-ai-features-and-even-more-creative-tools/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-new-imac-with-m6/",
@@ -58,7 +59,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Tue, 27 Oct 2026 14:39:12 GMT",
-  "lastRun": "2026-10-28T17:20:20.936Z",
-  "lastSuccess": "2026-10-28T17:20:20.936Z"
+  "lastModified": "Wed, 28 Oct 2026 17:22:43 GMT",
+  "lastRun": "2026-10-28T17:30:17.300Z",
+  "lastSuccess": "2026-10-28T17:30:17.300Z"
 }
