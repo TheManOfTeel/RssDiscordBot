@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/11/apple-reports-fourth-quarter-results/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-groundbreaking-macbook-pro-with-proled-xdr-display/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-introduces-the-new-14-inch-macbook-pro-with-m6/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-creator-studio-adds-powerful-new-ai-features-and-even-more-creative-tools/",
@@ -59,7 +60,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Fri, 30 Oct 2026 00:59:53 GMT",
-  "lastRun": "2026-11-02T23:20:15.507Z",
-  "lastSuccess": "2026-11-02T23:20:15.507Z"
+  "lastModified": "Mon, 02 Nov 2026 23:26:27 GMT",
+  "lastRun": "2026-11-02T23:30:20.256Z",
+  "lastSuccess": "2026-11-02T23:30:20.256Z"
 }
