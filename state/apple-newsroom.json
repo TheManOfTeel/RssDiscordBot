@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/11/redesigned-health-app-expands-language-support/",
     "https://www.apple.com/ca/newsroom/2026/11/apple-reports-fourth-quarter-results/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-groundbreaking-macbook-pro-with-proled-xdr-display/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-introduces-the-new-14-inch-macbook-pro-with-m6/",
@@ -60,7 +61,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Mon, 02 Nov 2026 23:26:52 GMT",
-  "lastRun": "2026-11-03T18:20:14.686Z",
-  "lastSuccess": "2026-11-03T18:20:14.686Z"
+  "lastModified": "Tue, 03 Nov 2026 18:27:16 GMT",
+  "lastRun": "2026-11-03T18:30:27.681Z",
+  "lastSuccess": "2026-11-03T18:30:27.681Z"
 }
