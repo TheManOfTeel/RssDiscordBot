@@ -1,13 +1,13 @@
 # RSS → Discord Bot ![Cron job status](https://api.cron-job.org/jobs/8340106/fd899f9ee657c924/status-3.svg) [![RSS to Discord](https://github.com/TheManOfTeel/RssDiscordBot/actions/workflows/rss-to-discord.yml/badge.svg)](https://github.com/TheManOfTeel/RssDiscordBot/actions/workflows/rss-to-discord.yml)
 
-A lightweight RSS/Atom and ESPN JSON feed relay that posts new items to Discord via webhooks. It runs on GitHub Actions or locally, persists per-feed state in the repo, and enforces Discord embed limits before posting.
+A lightweight RSS/Atom and JSON feed relay that posts new items to Discord via webhooks. It runs on GitHub Actions or locally, persists per-feed state in the repo, and enforces Discord embed limits before posting.
 
 ---
 
 ## What it does
 
 - polls configured feeds on a schedule or from a local run
-- normalizes RSS 2.0, RSS 1.0/RDF, Atom, and ESPN JSON feeds into one item model
+- normalizes RSS 2.0, RSS 1.0/RDF, Atom, and mapped JSON feeds into one item model
 - filters items with regex include/exclude rules
 - deduplicates by GUID/id/link
 - posts Discord embeds with batching, rate-limit handling, and webhook validation
@@ -25,10 +25,10 @@ This project intentionally has zero runtime dependencies beyond Node.js 20+.
 ├── src/
 │   ├── config.mjs      load + validate feeds.json
 │   ├── discord.mjs     embed limits, mention content, webhook POSTs
-│   ├── espn.mjs        ESPN JSON parser
 │   ├── feed.mjs        RSS/Atom normalizer
 │   ├── filter.mjs      regex filter evaluation
 │   ├── http.mjs        HTTP fetch + ETag/Last-Modified handling
+│   ├── json.mjs        configurable JSON feed normalizer
 │   ├── runner.mjs      CLI + orchestration
 │   ├── state.mjs       state load/save helpers
 │   └── xml.mjs         tolerant XML parser
@@ -116,8 +116,8 @@ The config validator accepts the following fields:
 - `threadId`: optional Discord thread ID
 - `timeoutMs`: request timeout in ms, default `20000`
 - `color`: hex string like `#5865F2` or integer color value
-- `parser`: `feed` or `espn-json`, default `feed`
-- `parserOptions`: object passed to the selected parser
+- `parser`: `feed` or `json`, default `feed`
+- `parserOptions`: parser-specific object; for `json`, see [JSON feeds](#feed-parsers)
 - `filters`: filter block
 - `notify`: array of notify rules
 - `enabled`: set to `false` to skip a feed without deleting it
@@ -282,9 +282,30 @@ Top-level message content is limited to 2000 characters and is clipped at a sent
 The bot supports these parsers:
 
 - `feed`: standard RSS/Atom parser for XML feeds
-- `espn-json`: ESPN JSON news endpoint parser, used for NFL and CFB feeds
+- `json`: configurable parser for JSON feeds with an array at the root or at a configured path
 
 The parser name is validated in config, and each parser output is normalized so the rest of the runner never needs to care whether the upstream feed was XML or JSON.
+
+For JSON feeds, `parserOptions.rootPath` is an optional dotted path to the array of items. `parserOptions.mapping` maps normalized item fields to dotted paths in each item. Unspecified fields default to paths with the same name as the normalized field. Link mappings can also be templates; `{path}` placeholders are replaced with values from the item.
+
+```json
+{
+  "parser": "json",
+  "parserOptions": {
+    "rootPath": "vulnerabilities",
+    "mapping": {
+      "id": "cveID",
+      "title": "vulnerabilityName",
+      "link": "https://nvd.nist.gov/vuln/detail/{cveID}",
+      "summary": "shortDescription",
+      "author": "vendorProject",
+      "isoDate": "dateAdded"
+    }
+  }
+}
+```
+
+The supported mapping fields are `id`, `title`, `link`, `summary`, `content`, `author`, `categories`, `isoDate`, and `image`. Missing IDs receive a stable content-derived ID; invalid or absent dates become undefined. The committed `cisa-kev-web` feed uses this parser and mapping.
 
 ---
 
