@@ -341,7 +341,7 @@
     {
       "id": "cisa-advisories",
       "name": "CISA Advisories",
-      "enabled": true,
+      "enabled": false,
       "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
       "username": "CISA Advisories",
