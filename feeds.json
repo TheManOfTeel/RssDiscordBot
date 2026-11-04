@@ -356,6 +356,19 @@
           "\\b(vulnerab\\w+|critical|zero-day|0-day|exploit|ransomware|cve-\\d{4}-\\d+|patch|update|alert|warning)\\b"
         ]
       }
+    },
+    {
+      "id": "github-status",
+      "name": "GitHub Status",
+      "enabled": true,
+      "url": "https://www.githubstatus.com/history.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
+      "username": "GitHub Status",
+      "color": "#222222",
+      "maxPerRun": 30,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": false
     }
   ]
 }
