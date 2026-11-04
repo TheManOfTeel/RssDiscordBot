@@ -86,6 +86,38 @@ test('first run seeds state and posts nothing', async () => {
   assert.equal(state.seen.length, 2);
 });
 
+test('JSON parser options map API data through to Discord embeds', async () => {
+  const jsonUrl = 'https://example.com/vulnerabilities.json';
+  const feed = {
+    id: 'json-feed',
+    url: jsonUrl,
+    parser: 'json',
+    parserOptions: {
+      rootPath: 'records',
+      mapping: {
+        id: 'cve.id',
+        title: 'name',
+        link: 'https://nvd.nist.gov/vuln/detail/{cve.id}',
+        summary: 'description',
+      },
+    },
+  };
+  const file = await writeConfig({ feeds: [feed] });
+  routes[jsonUrl] = { body: JSON.stringify({ records: [{ cve: { id: 'CVE-2026-1234' }, name: 'Example', description: 'Details' }] }) };
+  await run(file); // Seed existing items before delivery.
+
+  routes[jsonUrl] = { body: JSON.stringify({ records: [
+    { cve: { id: 'CVE-2026-1234' }, name: 'Example', description: 'Details' },
+    { cve: { id: 'CVE-2026-5678' }, name: 'New example', description: 'New details' },
+  ] }) };
+  assert.equal(await run(file), 0);
+
+  assert.equal(posted.length, 1);
+  assert.equal(posted[0].title, 'New example');
+  assert.equal(posted[0].url, 'https://nvd.nist.gov/vuln/detail/CVE-2026-5678');
+  assert.equal(posted[0].description, 'New details');
+});
+
 test('the second run posts only what is new, oldest first', async () => {
   const file = await writeConfig({ feeds: [{ id: 'f', url: FEED_URL, filters: { include: ['typescript'] } }] });
   routes[FEED_URL] = { body: rss([ITEM_B]) };

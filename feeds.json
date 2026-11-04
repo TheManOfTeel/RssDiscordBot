@@ -339,21 +339,33 @@
       "showAuthor": true
     },
     {
-      "id": "cisa-advisories",
-      "name": "CISA Advisories",
-      "enabled": false,
-      "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+      "id": "cisa-kev-web",
+      "name": "CISA KEV Web",
+      "enabled": true,
+      "url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+      "parser": "json",
+      "parserOptions": {
+        "rootPath": "vulnerabilities",
+        "mapping": {
+          "id": "cveID",
+          "title": "vulnerabilityName",
+          "link": "https://nvd.nist.gov/vuln/detail/{cveID}",
+          "summary": "shortDescription",
+          "author": "vendorProject",
+          "isoDate": "dateAdded"
+        }
+      },
       "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
-      "username": "CISA Advisories",
+      "username": "CISA KEV Web",
       "color": "#B71C1C",
       "maxPerRun": 30,
       "descriptionChars": 4096,
       "showDescription": true,
-      "showAuthor": false,
+      "showAuthor": true,
       "filters": {
-        "fields": ["title", "summary"],
+        "fields": ["title", "summary", "author"],
         "include": [
-          "\\b(vulnerab\\w+|critical|zero-day|0-day|exploit|ransomware|cve-\\d{4}-\\d+|patch|update|alert|warning)\\b"
+          "\\b(node|react|vue|angular|next\\.js|express|php|python|django|flask|fastapi|ruby|rails|javascript|typescript|api|sql|cve-\\d{4}-\\d+)\\b"
         ]
       }
     },
