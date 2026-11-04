@@ -6,7 +6,7 @@
  * A bot polling every 15 minutes without it is a bot that gets rate-limited or blocked.
  */
 
-export const USER_AGENT = 'rss-discord-bot/1.0 (+https://github.com/features/actions)';
+export const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'; // 'rss-discord-bot/1.0 (+https://github.com/features/actions)';
 
 export class HttpError extends Error {
   /**
