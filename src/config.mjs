@@ -40,7 +40,7 @@ const DEFAULTS = {
  * imported so config validation has no dependency on the runner — a typo'd parser name is a
  * config error reported alongside the others, before any request is made.
  */
-const VALID_PARSERS = new Set(['feed', 'espn-json']);
+const VALID_PARSERS = new Set(['feed', 'json']);
 
 /**
  * Parse a color value into an integer.

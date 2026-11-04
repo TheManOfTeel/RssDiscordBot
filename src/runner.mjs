@@ -13,7 +13,7 @@ import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfig } from './config.mjs';
 import { allowedMentionsFor, clip, mentionContent, postEmbeds, CONTENT_STYLE } from './discord.mjs';
-import { parseEspnNews } from './espn.mjs';
+import { parseJsonFeed } from './json.mjs'
 import { parseFeed } from './feed.mjs';
 import { fetchFeed } from './http.mjs';
 import { evaluate } from './filter.mjs';
@@ -29,7 +29,7 @@ const DRY_RUN_WEBHOOK = 'https://discord.com/api/webhooks/0/dry-run-no-secret-ne
  */
 export const PARSERS = {
   feed: (body) => parseFeed(body),
-  'espn-json': (body, feed) => parseEspnNews(body, feed.parserOptions),
+  'json': (body, feed) => parseJsonFeed(body, feed),
 };
 
 /**
