@@ -370,17 +370,137 @@
       }
     },
     {
+      "id": "aws-status",
+      "name": "AWS Status",
+      "enabled": true,
+      "url": "https://status.aws.amazon.com/rss/all.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
+      "username": "AWS Status",
+      "color": "#ff0000",
+      "maxPerRun": 30,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": false,
+      "notify": [
+        {
+          "roles": ["1567948989725278278"],
+          "summarize": true
+        }
+      ]
+    },
+    {
+      "id": "azure-status",
+      "name": "Azure Status",
+      "enabled": true,
+      "url": "https://status.azure.com/en-us/status/feed/",
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
+      "username": "Azure Status",
+      "color": "#ff0000",
+      "maxPerRun": 30,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": false,
+      "notify": [
+        {
+          "roles": ["1567948989725278278"],
+          "summarize": true
+        }
+      ]
+    },
+    {
+      "id": "cloudflare-status",
+      "name": "Cloudflare Status",
+      "enabled": true,
+      "url": "https://www.cloudflarestatus.com/api/v3/incidents.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
+      "username": "Cloudflare Status",
+      "color": "#ff0000",
+      "maxPerRun": 30,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": false,
+      "notify": [
+        {
+          "roles": ["1567948989725278278"],
+          "summarize": true
+        }
+      ]
+    },
+    {
+      "id": "claude-status",
+      "name": "Claude Status",
+      "enabled": true,
+      "url": "https://status.claude.com/history.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
+      "username": "Claude Status",
+      "color": "#ff0000",
+      "maxPerRun": 30,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": false,
+      "notify": [
+        {
+          "roles": ["1567948989725278278"],
+          "summarize": true
+        }
+      ]
+    },
+    {
       "id": "github-status",
       "name": "GitHub Status",
       "enabled": true,
       "url": "https://www.githubstatus.com/history.rss",
-      "webhookEnv": "DISCORD_WEBHOOK_DEV_NEWS",
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
       "username": "GitHub Status",
-      "color": "#222222",
+      "color": "#ff0000",
       "maxPerRun": 30,
       "descriptionChars": 4096,
       "showDescription": true,
-      "showAuthor": false
+      "showAuthor": false,
+      "notify": [
+        {
+          "roles": ["1567948989725278278"],
+          "summarize": true
+        }
+      ]
+    },
+    {
+      "id": "google-cloud-status",
+      "name": "Google Cloud Status",
+      "enabled": true,
+      "url": "https://status.cloud.google.com/en/feed.atom",
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
+      "username": "Google Cloud Status",
+      "color": "#ff0000",
+      "maxPerRun": 30,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": false,
+      "notify": [
+        {
+          "roles": ["1567948989725278278"],
+          "summarize": true
+        }
+      ]
+    },
+    {
+      "id": "openai-status",
+      "name": "OpenAI Status",
+      "enabled": true,
+      "url": "https://status.openai.com/feed.rss",
+      "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
+      "username": "OpenAI Status",
+      "color": "#ff0000",
+      "maxPerRun": 30,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": false,
+      "notify": [
+        {
+          "roles": ["1567948989725278278"],
+          "summarize": true
+        }
+      ]
     }
   ]
 }
