@@ -2,10 +2,6 @@
   "version": 1,
   "initialized": true,
   "seen": [
-    "https://status.aws.amazon.com/#ec2-us-west-2_1794013936",
-    "https://status.aws.amazon.com/#ec2-us-west-2_1794010112",
-    "https://status.aws.amazon.com/#ec2-us-west-2_1794007152",
-    "https://status.aws.amazon.com/#ec2-us-west-2_1794005465",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1789468030",
     "https://status.aws.amazon.com/#multipleservices-me-south-1_1789467748",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1777533954",
@@ -43,10 +39,14 @@
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772377753",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772374140",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772371152",
-    "https://status.aws.amazon.com/#multipleservices-me-central-1_1772369485"
+    "https://status.aws.amazon.com/#multipleservices-me-central-1_1772369485",
+    "https://status.aws.amazon.com/#ec2-us-west-2_1794013936",
+    "https://status.aws.amazon.com/#ec2-us-west-2_1794010112",
+    "https://status.aws.amazon.com/#ec2-us-west-2_1794007152",
+    "https://status.aws.amazon.com/#ec2-us-west-2_1794005465"
   ],
-  "etag": "\"9e765688135af878a38fbfb664f3e8e4\"",
-  "lastModified": "Sun, 08 Nov 2026 01:09:36 GMT",
-  "lastRun": "2026-11-08T01:10:17.650Z",
-  "lastSuccess": "2026-11-08T01:10:17.650Z"
+  "etag": "\"1afd4d68deae812baf22b396bbd4a21c\"",
+  "lastModified": "Sun, 08 Nov 2026 01:19:16 GMT",
+  "lastRun": "2026-11-08T01:20:14.897Z",
+  "lastSuccess": "2026-11-08T01:20:14.897Z"
 }
