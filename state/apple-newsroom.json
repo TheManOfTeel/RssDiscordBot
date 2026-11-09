@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/11/olivia-dean-is-apple-musics-artist-of-the-year-for-2026/",
     "https://www.apple.com/ca/newsroom/2026/11/redesigned-health-app-expands-language-support/",
     "https://www.apple.com/ca/newsroom/2026/11/apple-reports-fourth-quarter-results/",
     "https://www.apple.com/ca/newsroom/2026/10/apple-unveils-groundbreaking-macbook-pro-with-proled-xdr-display/",
@@ -61,7 +62,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Mon, 09 Nov 2026 16:00:40 GMT",
-  "lastRun": "2026-11-09T16:20:13.354Z",
-  "lastSuccess": "2026-11-09T16:20:13.354Z"
+  "lastModified": "Mon, 09 Nov 2026 16:01:39 GMT",
+  "lastRun": "2026-11-09T16:30:17.009Z",
+  "lastSuccess": "2026-11-09T16:30:17.009Z"
 }
