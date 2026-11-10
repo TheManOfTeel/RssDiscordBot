@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://developer.apple.com/news/?id=jkykd58d",
     "https://developer.apple.com/news/?id=fk9ps3gv",
     "https://developer.apple.com/news/?id=gdk2umrf",
     "https://developer.apple.com/news/?id=6gpufove",
@@ -171,6 +172,6 @@
   ],
   "etag": null,
   "lastModified": "",
-  "lastRun": "2026-11-10T17:10:18.445Z",
-  "lastSuccess": "2026-11-10T17:10:18.445Z"
+  "lastRun": "2026-11-10T17:20:17.259Z",
+  "lastSuccess": "2026-11-10T17:20:17.259Z"
 }
