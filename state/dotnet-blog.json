@@ -3,6 +3,7 @@
   "initialized": true,
   "seen": [
     "https://devblogs.microsoft.com/dotnet/?p=61205",
+    "https://devblogs.microsoft.com/dotnet/?p=61211",
     "https://devblogs.microsoft.com/dotnet/?p=61189",
     "https://devblogs.microsoft.com/dotnet/?p=61184",
     "https://devblogs.microsoft.com/dotnet/?p=61169",
@@ -41,8 +42,8 @@
     "https://devblogs.microsoft.com/dotnet/?p=60537",
     "https://devblogs.microsoft.com/dotnet/?p=60526"
   ],
-  "etag": "W/\"b705fbaa442ad13fe555b7590ee42e56\"",
-  "lastModified": "Tue, 10 Nov 2026 16:01:16 GMT",
-  "lastRun": "2026-11-10T16:10:15.978Z",
-  "lastSuccess": "2026-11-10T16:10:15.978Z"
+  "etag": "W/\"cf692681087a89d2bc8f42471db11989\"",
+  "lastModified": "Tue, 10 Nov 2026 16:16:49 GMT",
+  "lastRun": "2026-11-10T16:20:16.965Z",
+  "lastSuccess": "2026-11-10T16:20:16.965Z"
 }
