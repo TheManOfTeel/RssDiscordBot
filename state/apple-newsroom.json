@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/11/football-manager-and-other-hit-franchises-headline-apple-arcades-holiday-lineup/",
     "https://www.apple.com/ca/newsroom/2026/11/olivia-dean-is-apple-musics-artist-of-the-year-for-2026/",
     "https://www.apple.com/ca/newsroom/2026/11/redesigned-health-app-expands-language-support/",
     "https://www.apple.com/ca/newsroom/2026/11/apple-reports-fourth-quarter-results/",
@@ -62,7 +63,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Mon, 09 Nov 2026 16:01:39 GMT",
-  "lastRun": "2026-11-10T15:00:19.341Z",
-  "lastSuccess": "2026-11-10T15:00:19.341Z"
+  "lastModified": "Tue, 10 Nov 2026 15:02:35 GMT",
+  "lastRun": "2026-11-10T15:10:16.364Z",
+  "lastSuccess": "2026-11-10T15:10:16.364Z"
 }
