@@ -151,6 +151,26 @@
       ]
     },
     {
+      "id": "apple-status",
+      "name": "Apple System Status",
+      "enabled": true,
+      "url": "https://www.apple.com/support/systemstatus/data/system_status_en_US.js",
+      "parser": "apple-status",
+      "webhookEnv": "DISCORD_WEBHOOK_APPLE_SYS_STATUS",
+      "username": "Apple System Status",
+      "color": "#ff0000",
+      "maxPerRun": 30,
+      "descriptionChars": 4096,
+      "showDescription": true,
+      "showAuthor": false,
+      "notify": [
+        {
+          "roles": ["1569891392791257169"],
+          "summarize": true
+        }
+      ]
+    },
+    {
       "id": "ncaaf-news",
       "name": "NCAA Football News",
       "enabled": true,

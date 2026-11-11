@@ -1,6 +1,6 @@
 # RSS → Discord Bot ![Cron job status](https://api.cron-job.org/jobs/8340106/fd899f9ee657c924/status-3.svg) [![RSS to Discord](https://github.com/TheManOfTeel/RssDiscordBot/actions/workflows/rss-to-discord.yml/badge.svg)](https://github.com/TheManOfTeel/RssDiscordBot/actions/workflows/rss-to-discord.yml)
 
-A lightweight RSS/Atom and JSON feed relay that posts new items to Discord via webhooks. It runs on GitHub Actions or locally, persists per-feed state in the repo, and enforces Discord embed limits before posting.
+A lightweight RSS/Atom, JSON, and Apple System Status relay that posts new items to Discord via webhooks. It runs on GitHub Actions or locally, persists per-feed state in the repo, and enforces Discord embed limits before posting.
 
 ---
 
@@ -23,6 +23,7 @@ This project intentionally has zero runtime dependencies beyond Node.js 20+.
 ```text
 .
 ├── src/
+│   ├── apple-status.mjs  Apple System Status normalizer
 │   ├── config.mjs      load + validate feeds.json
 │   ├── discord.mjs     embed limits, mention content, webhook POSTs
 │   ├── feed.mjs        RSS/Atom normalizer
@@ -116,7 +117,7 @@ The config validator accepts the following fields:
 - `threadId`: optional Discord thread ID
 - `timeoutMs`: request timeout in ms, default `20000`
 - `color`: hex string like `#5865F2` or integer color value
-- `parser`: `feed` or `json`, default `feed`
+- `parser`: `feed`, `json`, or `apple-status`, default `feed`
 - `parserOptions`: parser-specific object; for `json`, see [JSON feeds](#feed-parsers)
 - `filters`: filter block
 - `notify`: array of notify rules

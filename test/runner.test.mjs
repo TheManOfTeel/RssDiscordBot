@@ -118,6 +118,42 @@ test('JSON parser options map API data through to Discord embeds', async () => {
   assert.equal(posted[0].description, 'New details');
 });
 
+test('Apple status parser seeds existing events and alerts on incident updates', async () => {
+  const role = '1567948989725278278';
+  const statusUrl = 'https://www.apple.com/support/systemstatus/data/system_status_en_US.js';
+  const file = await writeConfig({
+    feeds: [{
+      id: 'apple-status',
+      name: 'Apple System Status',
+      url: statusUrl,
+      parser: 'apple-status',
+      notify: [{ roles: [role], summarize: true }],
+    }],
+  });
+  const incident = {
+    messageId: 'incident-1',
+    statusType: 'Outage',
+    message: 'Some users may be experiencing an issue.',
+    datePosted: '2026-11-10T17:11:00-08:00',
+    startDate: '2026-11-10T16:00:00-08:00',
+    eventStatus: 'ongoing',
+    affectedServices: ['Apple Music'],
+  };
+  routes[statusUrl] = { body: JSON.stringify({ services: [{ serviceName: 'Apple Music', events: [incident] }] }) };
+  assert.equal(await run(file), 0, 'existing events are seeded without posting');
+  assert.equal(posted.length, 0);
+
+  routes[statusUrl] = { body: JSON.stringify({ services: [{
+    serviceName: 'Apple Music',
+    events: [{ ...incident, eventStatus: 'resolved', endDate: '2026-11-10T17:30:00-08:00' }],
+  }] }) };
+  assert.equal(await run(file), 0);
+  assert.equal(posted.length, 1);
+  assert.equal(posted[0].title, 'Apple Music: Outage (resolved)');
+  assert.equal(posted[0].url, 'https://www.apple.com/support/systemstatus/');
+  assert.ok(postedMessages.some((message) => message.content?.includes(`<@&${role}>`)));
+});
+
 test('the second run posts only what is new, oldest first', async () => {
   const file = await writeConfig({ feeds: [{ id: 'f', url: FEED_URL, filters: { include: ['typescript'] } }] });
   routes[FEED_URL] = { body: rss([ITEM_B]) };
