@@ -430,7 +430,7 @@
     {
       "id": "cloudflare-status",
       "name": "Cloudflare Status",
-      "enabled": true,
+      "enabled": false,
       "url": "https://www.cloudflarestatus.com/api/v3/incidents.rss",
       "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
       "username": "Cloudflare Status",
