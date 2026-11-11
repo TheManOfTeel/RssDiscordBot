@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://status.openai.com//incidents/01M76CW2D7FM7K7F8NJ4W0G08N",
     "https://status.openai.com//incidents/01M765MJQK7F85SC82RMTYN0V3",
     "https://status.openai.com//incidents/01M6S2FV5TZWQ753NHRB7BF5K7",
     "https://status.openai.com//incidents/01M71W79MAGEXEX93QTVTBYJ4K",
@@ -112,6 +113,6 @@
   ],
   "etag": null,
   "lastModified": null,
-  "lastRun": "2026-11-11T22:50:14.193Z",
-  "lastSuccess": "2026-11-11T22:50:14.193Z"
+  "lastRun": "2026-11-11T23:00:20.155Z",
+  "lastSuccess": "2026-11-11T23:00:20.155Z"
 }
