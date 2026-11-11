@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794431489",
     "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794426872",
     "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794423289",
     "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794419962",
@@ -51,8 +52,8 @@
     "https://status.aws.amazon.com/#ec2-us-west-2_1794007152",
     "https://status.aws.amazon.com/#ec2-us-west-2_1794005465"
   ],
-  "etag": "\"6a7f313d735ccfc7dcb5aa5002c25e4a\"",
-  "lastModified": "Wed, 11 Nov 2026 21:10:16 GMT",
-  "lastRun": "2026-11-11T21:10:19.713Z",
-  "lastSuccess": "2026-11-11T21:10:19.713Z"
+  "etag": "\"b09a77d07a30e989d7659de43d5d9cff\"",
+  "lastModified": "Wed, 11 Nov 2026 21:20:16 GMT",
+  "lastRun": "2026-11-11T21:20:19.792Z",
+  "lastSuccess": "2026-11-11T21:20:19.792Z"
 }
