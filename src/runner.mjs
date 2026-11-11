@@ -11,6 +11,7 @@
 
 import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
+import { parseAppleStatus } from './apple-status.mjs';
 import { loadConfig } from './config.mjs';
 import { allowedMentionsFor, clip, mentionContent, postEmbeds, CONTENT_STYLE } from './discord.mjs';
 import { parseJsonFeed } from './json.mjs'
@@ -30,6 +31,7 @@ const DRY_RUN_WEBHOOK = 'https://discord.com/api/webhooks/0/dry-run-no-secret-ne
 export const PARSERS = {
   feed: (body) => parseFeed(body),
   'json': (body, feed) => parseJsonFeed(body, feed),
+  'apple-status': (body, feed) => parseAppleStatus(body, feed),
 };
 
 /**
