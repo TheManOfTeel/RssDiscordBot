@@ -139,19 +139,84 @@ test('Apple status parser seeds existing events and alerts on incident updates',
     eventStatus: 'ongoing',
     affectedServices: ['Apple Music'],
   };
-  routes[statusUrl] = { body: JSON.stringify({ services: [{ serviceName: 'Apple Music', events: [incident] }] }) };
-  assert.equal(await run(file), 0, 'existing events are seeded without posting');
+  routes[statusUrl] = { body: JSON.stringify({ services: [{ serviceName: 'Apple Music', events: [] }] }) };
+  assert.equal(await run(file), 0, 'an empty status is seeded without posting');
   assert.equal(posted.length, 0);
+
+  routes[statusUrl] = { body: JSON.stringify({ services: [{ serviceName: 'Apple Music', events: [incident] }] }) };
+  assert.equal(await run(file), 0);
+  assert.equal(posted.length, 1, 'a newly active incident is announced');
 
   routes[statusUrl] = { body: JSON.stringify({ services: [{
     serviceName: 'Apple Music',
     events: [{ ...incident, eventStatus: 'resolved', endDate: '2026-11-10T17:30:00-08:00' }],
   }] }) };
   assert.equal(await run(file), 0);
-  assert.equal(posted.length, 1);
-  assert.equal(posted[0].title, 'Apple Music: Outage (resolved)');
-  assert.equal(posted[0].url, 'https://www.apple.com/support/systemstatus/');
+  assert.equal(posted.length, 2);
+  assert.equal(posted[1].title, 'Apple Music: Outage (resolved)');
+  assert.equal(posted[1].url, 'https://www.apple.com/support/systemstatus/');
   assert.ok(postedMessages.some((message) => message.content?.includes(`<@&${role}>`)));
+});
+
+test('Apple status suppresses a resolution unless its active incident was posted', async () => {
+  const statusUrl = 'https://www.apple.com/support/systemstatus/data/system_status_en_US.js';
+  const file = await writeConfig({
+    feeds: [{
+      id: 'apple-status',
+      url: statusUrl,
+      parser: 'apple-status',
+      notify: [{ roles: ['1567948989725278278'] }],
+    }],
+  });
+  const incident = {
+    messageId: 'incident-unseen-active',
+    statusType: 'Outage',
+    message: 'Some users may be affected.',
+    datePosted: '2026-11-10T17:11:00-08:00',
+    startDate: '2026-11-10T16:00:00-08:00',
+    affectedServices: ['Apple Music'],
+  };
+  routes[statusUrl] = { body: JSON.stringify({ services: [{ serviceName: 'Apple Music', events: [] }] }) };
+  await run(file); // Initialize this feed without the incident.
+
+  routes[statusUrl] = { body: JSON.stringify({ services: [{ serviceName: 'Apple Music', events: [{ ...incident, eventStatus: 'resolved' }] }] }) };
+  assert.equal(await run(file), 0);
+  assert.equal(posted.length, 0, 'a resolution without a previously posted active alert is suppressed');
+});
+
+test('Apple status resolution is posted after its active incident was posted', async () => {
+  const statusUrl = 'https://www.apple.com/support/systemstatus/data/system_status_en_US.js';
+  const file = await writeConfig({
+    feeds: [{
+      id: 'apple-status',
+      url: statusUrl,
+      parser: 'apple-status',
+      notify: [{ roles: ['1567948989725278278'] }],
+    }],
+  });
+  const incident = {
+    messageId: 'incident-observed-active',
+    statusType: 'Outage',
+    message: 'Some users may be affected.',
+    datePosted: '2026-11-10T17:11:00-08:00',
+    startDate: '2026-11-10T16:00:00-08:00',
+    affectedServices: ['Apple Music'],
+    eventStatus: 'ongoing',
+  };
+  routes[statusUrl] = { body: JSON.stringify({ services: [{ serviceName: 'Apple Music', events: [] }] }) };
+  await run(file);
+
+  routes[statusUrl] = { body: JSON.stringify({ services: [{ serviceName: 'Apple Music', events: [incident] }] }) };
+  await run(file);
+  assert.equal(posted.length, 1, 'the active incident is announced');
+
+  routes[statusUrl] = { body: JSON.stringify({ services: [{
+    serviceName: 'Apple Music',
+    events: [{ ...incident, eventStatus: 'resolved', endDate: '2026-11-10T17:30:00-08:00' }],
+  }] }) };
+  assert.equal(await run(file), 0);
+  assert.equal(posted.length, 2, 'the resolution follows the alert for the same incident');
+  assert.match(posted[1].title, /\(resolved\)$/);
 });
 
 test('the second run posts only what is new, oldest first', async () => {

@@ -28,6 +28,8 @@ test('normalizes Apple service events and their affected services', () => {
   assert.equal(parsed.title, 'Apple Status');
   assert.equal(parsed.items.length, 1);
   assert.equal(parsed.items[0].title, 'Apple Music: Outage (ongoing)');
+  assert.equal(parsed.items[0].incidentId, parseAppleStatus(payload({ ...event, eventStatus: 'resolved' })).items[0].incidentId);
+  assert.equal(parsed.items[0].eventStatus, 'ongoing');
   assert.equal(parsed.items[0].link, 'https://www.apple.com/support/systemstatus/');
   assert.match(parsed.items[0].summary, /Some users may be experiencing an issue\./);
   assert.match(parsed.items[0].summary, /Affected services: Apple Music, Podcasts/);
