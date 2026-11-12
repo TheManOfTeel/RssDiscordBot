@@ -61,6 +61,7 @@ export function parseAppleStatus(rawText, feedConfig = {}) {
         eventStatus,
       };
       const identity = event.messageId ?? revision;
+      const incidentId = `apple-status-incident:${fingerprint([service.serviceName, identity])}`;
       const id = `apple-status:${fingerprint([service.serviceName, identity, revision])}`;
       const redirectUrl = typeof service.redirectUrl === 'string' && /^https?:\/\//i.test(service.redirectUrl)
         ? service.redirectUrl
@@ -68,6 +69,8 @@ export function parseAppleStatus(rawText, feedConfig = {}) {
 
       items.push({
         id,
+        incidentId,
+        eventStatus,
         title: `${service.serviceName}: ${statusType} (${eventStatus})`,
         link: redirectUrl,
         summary: details.join('\n'),

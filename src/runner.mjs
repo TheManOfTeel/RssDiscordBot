@@ -247,6 +247,7 @@ async function runFeed(feed, options, log) {
   if (state.corruptedAt) log(`  ! state file was unreadable and has been reset`);
 
   const postedIds = [];
+  const postedActiveIncidentIds = [];
   let currentIds = [];
   let failure;
   // Captured before the fetch overwrites them: a delivery failure must not advance these.
@@ -270,7 +271,7 @@ async function runFeed(feed, options, log) {
       state.etag = response.etag ?? null;
       state.lastModified = response.lastModified ?? null;
       result.fetched = parsed.items.length;
-      currentIds = parsed.items.map((i) => i.id);
+      currentIds = parsed.items.map((item) => item.id);
       log(`  ${parsed.format}: ${parsed.items.length} item(s)`);
 
       const seen = new Set(state.seen);
@@ -285,6 +286,10 @@ async function runFeed(feed, options, log) {
         const now = Date.now();
         const passing = [];
         for (const item of fresh) {
+          if (feed.parser === 'apple-status' && item.eventStatus === 'resolved' && !seen.has(item.incidentId)) {
+            if (options.verbose) log(`    drop: resolution without a previously posted active alert — ${item.title?.slice(0, 70)}`);
+            continue;
+          }
           // Each filter block in the chain must pass (global + feed-level)
           let verdict = { pass: true };
           for (const filters of feed.filterChain) {
@@ -347,6 +352,9 @@ async function runFeed(feed, options, log) {
           if (group.mention) result.pinged += group.items.length;
           for (const item of group.items) {
             postedIds.push(item.id);
+            if (feed.parser === 'apple-status' && item.eventStatus !== 'resolved') {
+              postedActiveIncidentIds.push(item.incidentId);
+            }
             log(`  ${group.mention ? '🔔' : '→'}${group.mention?.summarize ?? false ? '🤖' : ''} ${item.title?.slice(0, 90) ?? item.id}`);
           }
         }
@@ -368,9 +376,11 @@ async function runFeed(feed, options, log) {
       state.lastModified = priorLastModified;
       // Only what actually landed becomes seen; everything else retries next run.
       state.seen = mergeSeen(postedIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
+      state.seen = mergeSeen(postedActiveIncidentIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
       if (postedIds.length > 0) state.initialized = true;
     } else {
       state.seen = mergeSeen(currentIds.length > 0 ? currentIds : postedIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
+      state.seen = mergeSeen(postedActiveIncidentIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
       state.initialized = true;
       state.lastSuccess = state.lastRun;
       delete state.corruptedAt;
