@@ -2,13 +2,6 @@
   "version": 1,
   "initialized": true,
   "seen": [
-    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794431489",
-    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794426872",
-    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794423289",
-    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794419962",
-    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794418681",
-    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794415243",
-    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794411633",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1789468030",
     "https://status.aws.amazon.com/#multipleservices-me-south-1_1789467748",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1777533954",
@@ -47,13 +40,20 @@
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772374140",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772371152",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772369485",
+    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794431489",
+    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794426872",
+    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794423289",
+    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794419962",
+    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794418681",
+    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794415243",
+    "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794411633",
     "https://status.aws.amazon.com/#ec2-us-west-2_1794013936",
     "https://status.aws.amazon.com/#ec2-us-west-2_1794010112",
     "https://status.aws.amazon.com/#ec2-us-west-2_1794007152",
     "https://status.aws.amazon.com/#ec2-us-west-2_1794005465"
   ],
-  "etag": "\"1b9ca7eda6a1a537de4415fa873c0a73\"",
-  "lastModified": "Fri, 13 Nov 2026 05:49:35 GMT",
-  "lastRun": "2026-11-13T05:50:14.898Z",
-  "lastSuccess": "2026-11-13T05:50:14.898Z"
+  "etag": "\"4f7513f3cbf700d3d2fe81c1dc3d0ef9\"",
+  "lastModified": "Fri, 13 Nov 2026 05:59:36 GMT",
+  "lastRun": "2026-11-13T06:00:18.678Z",
+  "lastSuccess": "2026-11-13T06:00:18.678Z"
 }
