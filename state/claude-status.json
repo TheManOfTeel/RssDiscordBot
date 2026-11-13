@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://status.claude.com/incidents/nn11wk485zfn",
     "https://status.claude.com/incidents/sqn3fg1l96dl",
     "https://status.claude.com/incidents/pgz8r13pk4sm",
     "https://status.claude.com/incidents/kw2lxj1th04c",
@@ -31,8 +32,8 @@
     "https://status.claude.com/incidents/2pt83vlkk7x7",
     "https://status.claude.com/incidents/461yvfrzpwtt"
   ],
-  "etag": "W/\"b1dac73e8a74fac55efb3e4229e1dc1a\"",
+  "etag": "W/\"8cb358871184ccb21119326a61de26ea\"",
   "lastModified": null,
-  "lastRun": "2026-11-13T09:50:14.588Z",
-  "lastSuccess": "2026-11-13T09:50:14.588Z"
+  "lastRun": "2026-11-13T10:00:22.864Z",
+  "lastSuccess": "2026-11-13T10:00:22.864Z"
 }
