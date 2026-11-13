@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/11/apple-homeview-available-today/",
     "https://www.apple.com/ca/newsroom/2026/11/apple-tv-introduces-new-sign-language-interpretation-feature/",
     "https://www.apple.com/ca/newsroom/2026/11/football-manager-and-other-hit-franchises-headline-apple-arcades-holiday-lineup/",
     "https://www.apple.com/ca/newsroom/2026/11/olivia-dean-is-apple-musics-artist-of-the-year-for-2026/",
@@ -64,7 +65,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Wed, 11 Nov 2026 19:33:44 GMT",
-  "lastRun": "2026-11-13T14:00:20.409Z",
-  "lastSuccess": "2026-11-13T14:00:20.409Z"
+  "lastModified": "Fri, 13 Nov 2026 14:02:02 GMT",
+  "lastRun": "2026-11-13T14:10:18.625Z",
+  "lastSuccess": "2026-11-13T14:10:18.625Z"
 }
