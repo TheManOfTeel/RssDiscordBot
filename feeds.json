@@ -401,6 +401,14 @@
       "descriptionChars": 4096,
       "showDescription": true,
       "showAuthor": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "include": [
+          "\\b(EC2|S3|Lambda|RDS|DynamoDB|EKS|ECS|Fargate|API Gateway|CloudFormation|CloudWatch|CodeBuild|CodeDeploy|CodePipeline|Elastic Beanstalk|App Runner|Cognito|IAM|Secrets Manager|Systems Manager|Route 53|CloudFront|Kinesis|SQS|SNS|EventBridge|Step Functions|Bedrock|ECR|EFS|VPC|OpenSearch|ElastiCache)\\b",
+          "\\b(resources and data hosted exclusively|unable to reliably support customer applications|multiple Availability Zones)\\b"
+        ],
+        "exclude": ["\\b(billing|payments?|invoices?|tax|Marketplace)\\b"]
+      },
       "notify": [
         {
           "roles": ["1567948989725278278"],
@@ -420,6 +428,13 @@
       "descriptionChars": 4096,
       "showDescription": true,
       "showAuthor": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "include": [
+          "\\b(Azure DevOps|Azure Functions|Functions|App Service|AKS|Kubernetes Service|Container Apps|Container Registry|Virtual Machines|VMs?|Azure Storage|Blob Storage|Azure SQL|SQL Database|Cosmos DB|Key Vault|API Management|Azure OpenAI|Entra ID|Azure Active Directory|Resource Manager|ExpressRoute|Application Gateway)\\b"
+        ],
+        "exclude": ["\\b(billing|payments?|cost management|Microsoft 365|Office 365|Exchange Online|SharePoint|OneDrive|Teams|Outlook)\\b"]
+      },
       "notify": [
         {
           "roles": ["1567948989725278278"],
@@ -430,7 +445,7 @@
     {
       "id": "cloudflare-status",
       "name": "Cloudflare Status",
-      "enabled": false,
+      "enabled": true,
       "url": "https://www.cloudflarestatus.com/api/v3/incidents.rss",
       "webhookEnv": "DISCORD_WEBHOOK_DEV_ALERTS",
       "username": "Cloudflare Status",
@@ -439,6 +454,15 @@
       "descriptionChars": 4096,
       "showDescription": true,
       "showAuthor": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "requireAll": true,
+        "include": [
+          "\\b(Workers API|Workers|Pages|R2|D1|Durable Objects|Queues|Workflows|Workers AI|AI Gateway|Cloudflare API)\\b",
+          "\\b(unavailable|unavailability|outage|availability|unable to (?:access|use|deploy|publish|start)|cannot (?:access|deploy|publish)|failed to (?:access|deploy|publish)|service disruption)\\b"
+        ],
+        "exclude": ["\\b(1\\.1\\.1\\.1|public resolver|billing|payments?|FedRAMP|support portal|small percentage|small number of requests|minor impact|limited impact)\\b"]
+      },
       "notify": [
         {
           "roles": ["1567948989725278278"],
@@ -458,6 +482,16 @@
       "descriptionChars": 4096,
       "showDescription": true,
       "showAuthor": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "include": [
+          "\\b(claude\\s+(?:opus|sonnet|haiku|fable|mythos)(?:\\s*\\d+(?:\\.\\d+)?)?|claude\\s+(?:api|code|cowork|desktop)|claude\\.ai)\\b"
+        ],
+        "exclude": [
+          "\\b(billing|payments?|purchas(?:e|es|ing)|plan changes?|subscriptions?|credit cards?|mastercards?|refunds?)\\b",
+          "\\b(microsoft 365|google calendar|gmail|google drive|outlook) connector\\b"
+        ]
+      },
       "notify": [
         {
           "roles": ["1567948989725278278"],
@@ -496,6 +530,14 @@
       "descriptionChars": 4096,
       "showDescription": true,
       "showAuthor": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "include": [
+          "\\b(Cloud Run|Compute Engine|GKE|Google Kubernetes Engine|Cloud Build|Cloud Storage|Cloud SQL|Spanner|BigQuery|Pub/Sub|Cloud Functions|Artifact Registry|API Gateway|Cloud Deploy|Cloud Scheduler|Secret Manager|IAM|Cloud DNS|Cloud Load Balancing|Vertex AI|Firebase|Dataflow|Dataproc|VPC|Cloud Monitoring|Cloud Logging)\\b",
+          "\\bmultiple services\\b.*\\b(region|zone)\\b"
+        ],
+        "exclude": ["\\b(billing|payments?|Google Workspace|Gmail|Google Drive|Google Meet|Google Calendar)\\b"]
+      },
       "notify": [
         {
           "roles": ["1567948989725278278"],
@@ -515,6 +557,16 @@
       "descriptionChars": 4096,
       "showDescription": true,
       "showAuthor": false,
+      "filters": {
+        "fields": ["title", "summary"],
+        "include": [
+          "\\b(gpt[- ]?(?:\\d+(?:\\.\\d+)?o?|image(?:[- ]\\d+(?:\\.\\d+)?)?|audio|realtime)(?:[- ]?(?:mini|pro|high))?|o[1-4](?:[- ]?(?:mini|pro))?|chat completions|responses|chatgpt|workspace agent|codex|code reviews?|security reviews?|image generation|file uploads?|dots)\\b"
+        ],
+        "exclude": [
+          "\\b(billing|payments?|costs?|pricing|invoices?|purchas(?:e|es|ing)|subscriptions?|credit cards?|mastercards?|refunds?)\\b",
+          "\\b(costs? data|costs? api|compliance api|data freshness)\\b"
+        ]
+      },
       "notify": [
         {
           "roles": ["1567948989725278278"],
