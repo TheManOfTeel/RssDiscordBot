@@ -104,3 +104,60 @@ test('CBS NFL and NCAAF feeds block sports betting language', () => {
   assert.match(patterns, /best bets|player props|odds|sportsbook/i);
   assert.match(patterns, /betting/i);
 });
+
+test('OpenAI and Claude status feeds keep model incidents and drop payment issues', () => {
+  const feeds = JSON.parse(fs.readFileSync(new URL('../feeds.json', import.meta.url), 'utf8')).feeds;
+  const openai = compileFilters(feeds.find((feed) => feed.id === 'openai-status').filters);
+  const claude = compileFilters(feeds.find((feed) => feed.id === 'claude-status').filters);
+  const passes = (filters, title, summary = '') => evaluate(item({ title, summary }), filters, NOW).pass;
+
+  assert.equal(passes(openai, 'Elevated errors for GPT-5.2'), true);
+  assert.equal(passes(openai, 'Elevated Errors On API', 'Affected components: Chat Completions (Degraded performance)'), true);
+  assert.equal(passes(openai, 'Elevated ChatGPT Conversation Errors'), true);
+  assert.equal(passes(openai, 'Unable to start new Workspace Agent runs'), true);
+  assert.equal(passes(openai, 'Elevated error rates for hosted Code Reviews'), true);
+  assert.equal(passes(
+    openai,
+    'Delayed Costs Data in the Compliance API',
+    'We have identified an issue causing delays in publishing Organization cost data through the Costs API. API and ChatGPT usage are not affected. We are working to restore normal data freshness. Affected components: Compliance API (Degraded performance)'
+  ), false);
+  assert.equal(passes(openai, 'Elevated errors with ChatGPT billing and Ads billing'), false);
+  assert.equal(passes(openai, 'Elevated errors for some U.S. business Mastercards'), false);
+  assert.equal(passes(openai, 'Elevated errors affecting the Microsoft 365 connector'), false);
+
+  assert.equal(passes(claude, 'Elevated errors for Claude Opus 4.1'), true);
+  assert.equal(passes(claude, 'Elevated errors on claude.ai and the Claude API'), true);
+  assert.equal(passes(claude, 'Elevated errors on claude.ai, Claude Code, and platform.claude.com'), true);
+  assert.equal(passes(claude, 'Elevated purchasing errors on claude.ai'), false);
+  assert.equal(passes(claude, 'Elevated errors affecting the Google Calendar connector on claude.ai, Claude Code, and Claude Cowork'), false);
+  assert.equal(passes(claude, 'Some users unable to sign up with Apple on the Claude iOS app'), false);
+});
+
+test('cloud status feeds keep developer-service disruptions and drop unrelated incidents', () => {
+  const feeds = JSON.parse(fs.readFileSync(new URL('../feeds.json', import.meta.url), 'utf8')).feeds;
+  const filtersFor = (id) => compileFilters(feeds.find((feed) => feed.id === id).filters);
+  const passes = (filters, title, summary = '') => evaluate(item({ title, summary }), filters, NOW).pass;
+  const aws = filtersFor('aws-status');
+  const azure = filtersFor('azure-status');
+  const cloudflare = filtersFor('cloudflare-status');
+  const google = filtersFor('google-cloud-status');
+
+  assert.equal(passes(aws, 'Lambda elevated error rates'), true);
+  assert.equal(passes(aws, 'Service disruption: Increased Error Rates', 'Unable to reliably support customer applications in the region.'), true);
+  assert.equal(passes(aws, 'AWS Marketplace billing delays'), false);
+
+  assert.equal(passes(azure, 'Elevated errors in Azure Functions'), true);
+  assert.equal(passes(azure, 'Azure DevOps pipelines unavailable'), true);
+  assert.equal(passes(azure, 'Microsoft 365 sign-in issues'), false);
+
+  assert.equal(passes(cloudflare, 'Elevated error rate for Workers startup'), false);
+  assert.equal(passes(cloudflare, 'Cloudflare is seeing an issue with Workers API availability'), true);
+  assert.equal(passes(cloudflare, 'Workers API is unavailable'), true);
+  assert.equal(passes(cloudflare, 'Increased errors for R2 and Tiered Cache', 'A small percentage of requests failed.'), false);
+  assert.equal(passes(cloudflare, 'Elevated error rate for workers startup'), false);
+  assert.equal(passes(cloudflare, 'Issues with 1.1.1.1 public resolver in Canada'), false);
+
+  assert.equal(passes(google, 'Cloud Run elevated error rates'), true);
+  assert.equal(passes(google, 'RESOLVED: Multiple services were experiencing issues in the europe-west2 region'), true);
+  assert.equal(passes(google, 'Delayed billing export data'), false);
+});
