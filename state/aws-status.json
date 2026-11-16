@@ -2,12 +2,6 @@
   "version": 1,
   "initialized": true,
   "seen": [
-    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794754409",
-    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794753176",
-    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794752627",
-    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794748931",
-    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794748545",
-    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794746282",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1789468030",
     "https://status.aws.amazon.com/#multipleservices-me-south-1_1789467748",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1777533954",
@@ -46,6 +40,12 @@
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772374140",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772371152",
     "https://status.aws.amazon.com/#multipleservices-me-central-1_1772369485",
+    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794754409",
+    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794753176",
+    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794752627",
+    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794748931",
+    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794748545",
+    "https://status.aws.amazon.com/#multipleservices-us-east-1_1794746282",
     "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794431489",
     "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794426872",
     "https://status.aws.amazon.com/#ec2-ap-northeast-1_1794423289",
@@ -58,8 +58,8 @@
     "https://status.aws.amazon.com/#ec2-us-west-2_1794007152",
     "https://status.aws.amazon.com/#ec2-us-west-2_1794005465"
   ],
-  "etag": "\"f8313be1814fe7724713c75d2fc3413c\"",
-  "lastModified": "Mon, 16 Nov 2026 14:49:36 GMT",
-  "lastRun": "2026-11-16T14:50:15.335Z",
-  "lastSuccess": "2026-11-16T14:50:15.335Z"
+  "etag": "\"a4ac71389b1d7827a60b16aa4543bd75\"",
+  "lastModified": "Mon, 16 Nov 2026 14:59:19 GMT",
+  "lastRun": "2026-11-16T15:00:20.889Z",
+  "lastSuccess": "2026-11-16T15:00:20.889Z"
 }
