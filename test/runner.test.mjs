@@ -158,6 +158,58 @@ test('Apple status parser seeds existing events and alerts on incident updates',
   assert.ok(postedMessages.some((message) => message.content?.includes(`<@&${role}>`)));
 });
 
+test('Apple status batches sharing the system status URL into one generic embed', async () => {
+  const role = '1567948989725278278';
+  const statusUrl = 'https://www.apple.com/support/systemstatus/data/system_status_en_US.js';
+  const file = await writeConfig({
+    feeds: [{
+      id: 'apple-status',
+      name: 'Apple System Status',
+      url: statusUrl,
+      parser: 'apple-status',
+      notify: [{ roles: [role], summarize: true }],
+    }],
+  });
+  const incident = {
+    statusType: 'Outage',
+    message: 'Some users may be affected.',
+    datePosted: '2026-11-10T17:11:00-08:00',
+    startDate: '2026-11-10T16:00:00-08:00',
+    eventStatus: 'ongoing',
+  };
+  routes[statusUrl] = { body: JSON.stringify({ services: [
+    { serviceName: 'Apple Music', events: [] },
+    { serviceName: 'Apple TV', events: [] },
+  ] }) };
+  await run(file);
+
+  routes[statusUrl] = { body: JSON.stringify({ services: [
+    { serviceName: 'Apple Music', events: [{ ...incident, messageId: 'incident-1' }] },
+    { serviceName: 'Apple TV', events: [{ ...incident, messageId: 'incident-2' }] },
+  ] }) };
+  assert.equal(await run(file), 0);
+
+  assert.equal(postedMessages.length, 1);
+  assert.equal(postedMessages[0].embeds.length, 1);
+  assert.equal(postedMessages[0].embeds[0].title, 'Apple System Status');
+  assert.equal(postedMessages[0].embeds[0].url, 'https://www.apple.com/support/systemstatus/');
+  assert.match(postedMessages[0].embeds[0].description, /Apple Music: Outage \(ongoing\)/);
+  assert.match(postedMessages[0].embeds[0].description, /Apple TV: Outage \(ongoing\)/);
+  assert.match(postedMessages[0].content, /Apple Music: Outage \(ongoing\)/);
+  assert.match(postedMessages[0].content, /Apple TV: Outage \(ongoing\)/);
+
+  routes[statusUrl] = { body: JSON.stringify({ services: [
+    { serviceName: 'Apple Music', events: [{ ...incident, messageId: 'incident-3' }] },
+    {
+      serviceName: 'Apple TV',
+      redirectUrl: 'https://www.apple.com/tv/',
+      events: [{ ...incident, messageId: 'incident-4' }],
+    },
+  ] }) };
+  assert.equal(await run(file), 0);
+  assert.equal(postedMessages[1].embeds.length, 2, 'service-specific links retain separate embeds');
+});
+
 test('Apple status suppresses a resolution unless its active incident was posted', async () => {
   const statusUrl = 'https://www.apple.com/support/systemstatus/data/system_status_en_US.js';
   const file = await writeConfig({

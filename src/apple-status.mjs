@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { FeedFormatError, toIsoDate } from './feed.mjs';
 
-const STATUS_URL = 'https://www.apple.com/support/systemstatus/';
+export const APPLE_STATUS_URL = 'https://www.apple.com/support/systemstatus/';
 
 function fingerprint(value) {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 32);
@@ -65,7 +65,7 @@ export function parseAppleStatus(rawText, feedConfig = {}) {
       const id = `apple-status:${fingerprint([service.serviceName, identity, revision])}`;
       const redirectUrl = typeof service.redirectUrl === 'string' && /^https?:\/\//i.test(service.redirectUrl)
         ? service.redirectUrl
-        : STATUS_URL;
+        : APPLE_STATUS_URL;
 
       items.push({
         id,
@@ -83,5 +83,5 @@ export function parseAppleStatus(rawText, feedConfig = {}) {
     }
   }
 
-  return { format: 'apple-status', title: feedConfig.name ?? 'Apple System Status', link: STATUS_URL, items };
+  return { format: 'apple-status', title: feedConfig.name ?? 'Apple System Status', link: APPLE_STATUS_URL, items };
 }
