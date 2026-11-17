@@ -11,7 +11,7 @@
 
 import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
-import { parseAppleStatus } from './apple-status.mjs';
+import { APPLE_STATUS_URL, parseAppleStatus } from './apple-status.mjs';
 import { loadConfig } from './config.mjs';
 import { allowedMentionsFor, clip, mentionContent, postEmbeds, CONTENT_STYLE } from './discord.mjs';
 import { parseJsonFeed } from './json.mjs'
@@ -120,6 +120,19 @@ function buildEmbed(item, feed, notified = false, includeDescription = true) {
       ? { url: item.image }
       : undefined,
   };
+}
+
+function buildAppleStatusBatchEmbed(items, feed, notified, includeDescription) {
+  const latestItem = items.at(-1);
+  const summary = items
+    .map((item) => [item.title, item.summary].filter(Boolean).join('\n'))
+    .join('\n\n');
+  return buildEmbed({
+    ...latestItem,
+    title: feed.name || 'Apple System Status',
+    link: APPLE_STATUS_URL,
+    summary,
+  }, feed, notified, includeDescription);
 }
 
 /**
@@ -320,13 +333,18 @@ async function runFeed(feed, options, log) {
         for (const group of groupForDelivery(queue, feed, now)) {
           const isBatched = group.items.length > 1;
           const notified = group.mention !== null;
-          // Map items to embeds
-          const embeds = group.items.map((item) => buildEmbed(item, feed, notified, !notified || isBatched));
+          // Combine Apple updates with the standard URL; otherwise build one embed per item.
+          const combineAppleStatusUpdates = feed.parser === 'apple-status'
+            && group.items.length > 1
+            && group.items.every((item) => item.link === APPLE_STATUS_URL);
+          const embeds = combineAppleStatusUpdates
+            ? [buildAppleStatusBatchEmbed(group.items, feed, notified, !notified || isBatched)]
+            : group.items.map((item) => buildEmbed(item, feed, notified, !notified || isBatched));
           // Only notified items need top-level content; silent items use their embeds.
           let messageContent = undefined;
           if (notified && isBatched) {
             // Batched notifications ping once and list titles; embeds retain descriptions.
-            const summary = embeds.map((e) => e.title.trim())
+            const summary = group.items.map((item) => item.title.trim())
               .filter(Boolean)
               .join('\n');
             messageContent = mentionContent(group.mention ?? {}, summary, group.mention?.summarize ?? false, group.isReleaseFeed ?? false, CONTENT_STYLE.BULLETED);
