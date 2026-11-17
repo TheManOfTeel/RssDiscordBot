@@ -262,6 +262,7 @@ async function runFeed(feed, options, log) {
   const postedIds = [];
   const postedActiveIncidentIds = [];
   let currentIds = [];
+  let currentStateIds = [];
   let failure;
   // Captured before the fetch overwrites them: a delivery failure must not advance these.
   const priorEtag = state.etag;
@@ -285,10 +286,11 @@ async function runFeed(feed, options, log) {
       state.lastModified = response.lastModified ?? null;
       result.fetched = parsed.items.length;
       currentIds = parsed.items.map((item) => item.id);
+      currentStateIds = parsed.items.flatMap((item) => [item.id, item.dedupeId].filter(Boolean));
       log(`  ${parsed.format}: ${parsed.items.length} item(s)`);
 
       const seen = new Set(state.seen);
-      const fresh = parsed.items.filter((item) => !seen.has(item.id));
+      const fresh = parsed.items.filter((item) => !seen.has(item.id) && (!item.dedupeId || !seen.has(item.dedupeId)));
       result.fresh = fresh.length;
 
       if (!state.initialized || options.seed) {
@@ -370,6 +372,7 @@ async function runFeed(feed, options, log) {
           if (group.mention) result.pinged += group.items.length;
           for (const item of group.items) {
             postedIds.push(item.id);
+            if (item.dedupeId) postedIds.push(item.dedupeId);
             if (feed.parser === 'apple-status' && item.eventStatus !== 'resolved') {
               postedActiveIncidentIds.push(item.incidentId);
             }
@@ -397,7 +400,7 @@ async function runFeed(feed, options, log) {
       state.seen = mergeSeen(postedActiveIncidentIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
       if (postedIds.length > 0) state.initialized = true;
     } else {
-      state.seen = mergeSeen(currentIds.length > 0 ? currentIds : postedIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
+      state.seen = mergeSeen(currentStateIds.length > 0 ? currentStateIds : postedIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
       state.seen = mergeSeen(postedActiveIncidentIds, state.seen, feed.seenCap ?? DEFAULT_SEEN_CAP);
       state.initialized = true;
       state.lastSuccess = state.lastRun;

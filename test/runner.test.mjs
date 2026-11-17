@@ -149,6 +149,13 @@ test('Apple status parser seeds existing events and alerts on incident updates',
 
   routes[statusUrl] = { body: JSON.stringify({ services: [{
     serviceName: 'Apple Music',
+    events: [{ ...incident, messageId: 'incident-revision-2', datePosted: '2026-11-10T18:11:00-08:00' }],
+  }] }) };
+  assert.equal(await run(file), 0);
+  assert.equal(posted.length, 1, 'the same service state is not announced again when timestamps change');
+
+  routes[statusUrl] = { body: JSON.stringify({ services: [{
+    serviceName: 'Apple Music',
     events: [{ ...incident, eventStatus: 'resolved', endDate: '2026-11-10T17:30:00-08:00' }],
   }] }) };
   assert.equal(await run(file), 0);
@@ -199,11 +206,11 @@ test('Apple status batches sharing the system status URL into one generic embed'
   assert.match(postedMessages[0].content, /Apple TV: Outage \(ongoing\)/);
 
   routes[statusUrl] = { body: JSON.stringify({ services: [
-    { serviceName: 'Apple Music', events: [{ ...incident, messageId: 'incident-3' }] },
+    { serviceName: 'Apple Music', events: [{ ...incident, messageId: 'incident-3', startDate: '2026-11-11T16:00:00-08:00' }] },
     {
       serviceName: 'Apple TV',
       redirectUrl: 'https://www.apple.com/tv/',
-      events: [{ ...incident, messageId: 'incident-4' }],
+      events: [{ ...incident, messageId: 'incident-4', startDate: '2026-11-11T17:00:00-08:00' }],
     },
   ] }) };
   assert.equal(await run(file), 0);

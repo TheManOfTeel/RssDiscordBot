@@ -48,6 +48,23 @@ test('uses a service redirect and gives changed incident revisions new IDs', () 
   assert.match(updated.items[0].title, /\(resolved\)$/);
 });
 
+test('dedupe identity ignores changing timestamps but tracks meaningful status changes', () => {
+  const first = parseAppleStatus(payload(event)).items[0];
+  const refreshed = parseAppleStatus(payload({
+    ...event,
+    messageId: 'incident-revision-2',
+    datePosted: '2026-11-10T18:11:00-08:00',
+  })).items[0];
+  const changed = parseAppleStatus(payload({
+    ...event,
+    usersAffected: 'All users',
+  })).items[0];
+
+  assert.notEqual(first.id, refreshed.id, 'legacy item IDs remain unchanged for state compatibility');
+  assert.equal(first.dedupeId, refreshed.dedupeId);
+  assert.notEqual(first.dedupeId, changed.dedupeId);
+});
+
 test('returns no items when services have no events', () => {
   assert.deepEqual(parseAppleStatus('{"services":[{"serviceName":"Apple Music","events":[]}]}').items, []);
 });

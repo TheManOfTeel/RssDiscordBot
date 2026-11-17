@@ -284,7 +284,7 @@ The bot supports these parsers:
 
 - `feed`: standard RSS/Atom parser for XML feeds
 - `json`: configurable parser for JSON feeds with an array at the root or at a configured path
-- `apple-status`: Apple System Status updates; multiple updates in one delivery are combined into one generic embed when they share Apple's system-status page URL
+- `apple-status`: Apple System Status updates; unchanged service updates are deduplicated across polls, and multiple updates in one delivery are combined into one generic embed when they share Apple's system-status page URL
 
 The parser name is validated in config, and each parser output is normalized so the rest of the runner never needs to care whether the upstream feed was XML or JSON.
 
