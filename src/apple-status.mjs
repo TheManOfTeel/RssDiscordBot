@@ -63,12 +63,24 @@ export function parseAppleStatus(rawText, feedConfig = {}) {
       const identity = event.messageId ?? revision;
       const incidentId = `apple-status-incident:${fingerprint([service.serviceName, identity])}`;
       const id = `apple-status:${fingerprint([service.serviceName, identity, revision])}`;
+      const stableIdentity = event.startDate
+        ? toIsoDate(event.startDate) ?? event.startDate
+        : event.messageId ?? [statusType, message];
+      const dedupeRevision = {
+        statusType,
+        message,
+        usersAffected: event.usersAffected ?? '',
+        affectedServices,
+        eventStatus,
+      };
+      const dedupeId = `apple-status-state:${fingerprint([service.serviceName, stableIdentity, dedupeRevision])}`;
       const redirectUrl = typeof service.redirectUrl === 'string' && /^https?:\/\//i.test(service.redirectUrl)
         ? service.redirectUrl
         : APPLE_STATUS_URL;
 
       items.push({
         id,
+        dedupeId,
         incidentId,
         eventStatus,
         title: `${service.serviceName}: ${statusType} (${eventStatus})`,
