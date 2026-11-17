@@ -2,14 +2,6 @@
   "version": 1,
   "initialized": true,
   "seen": [
-    "apple-status-incident:9d0260765620146f5fc6a3f8ef590eaf",
-    "apple-status-incident:de79756ec15b360deb0e75b1cc4ee674",
-    "apple-status-incident:bbf3bf4296b5f5074cb0c0e93888a2e1",
-    "apple-status-incident:7953bff0377594d56fe549efe88672c1",
-    "apple-status-incident:f3b18ca52f6fe482a6aa107e95b59422",
-    "apple-status-incident:8bb60232a33a042c79daeed08c6cd004",
-    "apple-status-incident:77a51e2b421247f77e835c81b5384819",
-    "apple-status-incident:e36f39b99401f3d13bc3c223bf862268",
     "apple-status:5eefebc1d0bbb12b5a1f14de4a2fc0b0",
     "apple-status:1ef15e7a88f823897a50fd4836a866f9",
     "apple-status:4a48cb2135933c88d78b99be9b9b6601",
@@ -20,6 +12,14 @@
     "apple-status:021b8e85c39aa121623a23334144a831",
     "apple-status:9e1662c1a7dfa12c95ac9eb0557e1299",
     "apple-status:13b0c9eae83224de6b51be0f377c3691",
+    "apple-status-incident:9d0260765620146f5fc6a3f8ef590eaf",
+    "apple-status-incident:de79756ec15b360deb0e75b1cc4ee674",
+    "apple-status-incident:bbf3bf4296b5f5074cb0c0e93888a2e1",
+    "apple-status-incident:7953bff0377594d56fe549efe88672c1",
+    "apple-status-incident:f3b18ca52f6fe482a6aa107e95b59422",
+    "apple-status-incident:8bb60232a33a042c79daeed08c6cd004",
+    "apple-status-incident:77a51e2b421247f77e835c81b5384819",
+    "apple-status-incident:e36f39b99401f3d13bc3c223bf862268",
     "apple-status-incident:c3210c2f98eea6aea09385a03b70e072",
     "apple-status:61b3ff590420586af1437644b3a312e9",
     "apple-status:e7f180b0030b05e3b87ea07f48a833da",
@@ -93,6 +93,6 @@
   ],
   "etag": "W/\"8877-1794944242125\"",
   "lastModified": "Tue, 17 Nov 2026 19:37:22 GMT",
-  "lastRun": "2026-11-17T19:40:14.217Z",
-  "lastSuccess": "2026-11-17T19:40:14.217Z"
+  "lastRun": "2026-11-17T19:50:14.298Z",
+  "lastSuccess": "2026-11-17T19:50:14.298Z"
 }
