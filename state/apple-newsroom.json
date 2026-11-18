@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.apple.com/ca/newsroom/2026/11/meet-the-2026-app-store-award-finalists/",
     "https://www.apple.com/ca/newsroom/2026/11/apple-podcasts-names-baby-this-is-keke-palmer-the-2026-show-of-the-year/",
     "https://www.apple.com/ca/newsroom/2026/11/apple-homeview-available-today/",
     "https://www.apple.com/ca/newsroom/2026/11/apple-tv-introduces-new-sign-language-interpretation-feature/",
@@ -66,7 +67,7 @@
     "https://www.apple.com/ca/newsroom/2026/06/apple-intelligence-brings-powerful-ai-capabilities-into-everyday-experiences/"
   ],
   "etag": null,
-  "lastModified": "Tue, 17 Nov 2026 13:02:25 GMT",
-  "lastRun": "2026-11-18T15:50:14.413Z",
-  "lastSuccess": "2026-11-18T15:50:14.413Z"
+  "lastModified": "Wed, 18 Nov 2026 15:49:55 GMT",
+  "lastRun": "2026-11-18T16:00:34.134Z",
+  "lastSuccess": "2026-11-18T16:00:34.134Z"
 }
