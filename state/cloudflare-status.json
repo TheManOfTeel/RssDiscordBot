@@ -4,6 +4,7 @@
   "seen": [
     "https://www.cloudflarestatus.com/incidents/k3r9i5tbre4i",
     "https://www.cloudflarestatus.com/incidents/sv9tnfpjiojf",
+    "https://www.cloudflarestatus.com/incidents/pi6wgeh78wsn",
     "https://www.cloudflarestatus.com/incidents/0jozucwnpzy0",
     "https://www.cloudflarestatus.com/incidents/ylj5po752g6h",
     "https://www.cloudflarestatus.com/incidents/gcn9xop0f7zm",
@@ -95,7 +96,7 @@
     "https://www.cloudflarestatus.com/incidents/lhdg2tq46faq"
   ],
   "etag": null,
-  "lastModified": "Wed, 18 Nov 2026 03:57:17 GMT",
-  "lastRun": "2026-11-18T04:00:17.181Z",
-  "lastSuccess": "2026-11-18T04:00:17.181Z"
+  "lastModified": "Wed, 18 Nov 2026 04:05:37 GMT",
+  "lastRun": "2026-11-18T04:10:26.426Z",
+  "lastSuccess": "2026-11-18T04:10:26.426Z"
 }
