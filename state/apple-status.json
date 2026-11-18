@@ -2,7 +2,6 @@
   "version": 1,
   "initialized": true,
   "seen": [
-    "apple-status-incident:b669006fbde989956b15ec4a1ce1804a",
     "apple-status:1d66ea56e9f418163003450128f47ac6",
     "apple-status-state:4cb72d0014b47c772c714e333f9cae42",
     "apple-status:295902c217d530974d8cc9161122a883",
@@ -27,6 +26,7 @@
     "apple-status-state:63b64fbb6dcb040dce65fc0ea5e2647f",
     "apple-status:3fa0886fd2e9c84cd9c0300a3b393e4f",
     "apple-status-state:82c84fbeef0457f16e991c0f24c20e77",
+    "apple-status-incident:b669006fbde989956b15ec4a1ce1804a",
     "apple-status:4043fa767ed2efe4bc44ab676de567ff",
     "apple-status:bf3ada091f4c413701af738353ea6f5e",
     "apple-status:5b932b3578fac17c9c8f4113ecee9eb8",
@@ -231,8 +231,8 @@
     "apple-status:dfdf7016194f9d0937b20a45e3a5b7a4",
     "apple-status:ee488abd387676225908b281dd371258"
   ],
-  "etag": "W/\"9894-1795035651222\"",
+  "etag": "W/\"9893-1795035651222\"",
   "lastModified": "Wed, 18 Nov 2026 21:00:51 GMT",
-  "lastRun": "2026-11-18T21:10:19.543Z",
-  "lastSuccess": "2026-11-18T21:10:19.543Z"
+  "lastRun": "2026-11-18T21:20:14.042Z",
+  "lastSuccess": "2026-11-18T21:20:14.042Z"
 }
