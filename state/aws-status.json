@@ -58,8 +58,8 @@
     "https://status.aws.amazon.com/#ec2-us-west-2_1794007152",
     "https://status.aws.amazon.com/#ec2-us-west-2_1794005465"
   ],
-  "etag": "\"fdc7399f68e9adbde7ca3374dbc7988a\"",
-  "lastModified": "Thu, 19 Nov 2026 06:49:36 GMT",
-  "lastRun": "2026-11-19T06:50:15.323Z",
-  "lastSuccess": "2026-11-19T06:50:15.323Z"
+  "etag": "\"44343f398f42544c8b47f0be5efec771\"",
+  "lastModified": "Thu, 19 Nov 2026 06:59:16 GMT",
+  "lastRun": "2026-11-19T07:00:22.571Z",
+  "lastSuccess": "2026-11-19T07:00:22.571Z"
 }
