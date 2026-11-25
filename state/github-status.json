@@ -2,6 +2,7 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "https://www.githubstatus.com/incidents/qn8mfv6q5hlx",
     "https://www.githubstatus.com/incidents/189rrqcfhc75",
     "https://www.githubstatus.com/incidents/m0wx9qml7yjh",
     "https://www.githubstatus.com/incidents/d56dzxzzlw0b",
@@ -49,8 +50,8 @@
     "https://www.githubstatus.com/incidents/93njd414rpbx",
     "https://www.githubstatus.com/incidents/qpfv5p86dmrl"
   ],
-  "etag": "W/\"504372b890926b1713b9b953e8a93554\"",
+  "etag": "W/\"ffb560cddbd4235c2d80771347c10165\"",
   "lastModified": null,
-  "lastRun": "2026-11-25T15:50:17.608Z",
-  "lastSuccess": "2026-11-25T15:50:17.608Z"
+  "lastRun": "2026-11-25T16:00:20.282Z",
+  "lastSuccess": "2026-11-25T16:00:20.282Z"
 }
