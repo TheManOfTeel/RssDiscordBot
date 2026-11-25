@@ -2,8 +2,8 @@
   "version": 1,
   "initialized": true,
   "seen": [
-    "https://www.cloudflarestatus.com/incidents/x5ma22sji8wi",
     "https://www.cloudflarestatus.com/incidents/k8utv1c3ubf2",
+    "https://www.cloudflarestatus.com/incidents/x5ma22sji8wi",
     "https://www.cloudflarestatus.com/incidents/00dp7cliyqqt",
     "https://www.cloudflarestatus.com/incidents/kwqke6nmketa",
     "https://www.cloudflarestatus.com/incidents/no721jcnlrbh",
@@ -120,7 +120,7 @@
     "https://www.cloudflarestatus.com/incidents/lhdg2tq46faq"
   ],
   "etag": null,
-  "lastModified": "Tue, 24 Nov 2026 22:55:37 GMT",
-  "lastRun": "2026-11-25T00:10:13.720Z",
-  "lastSuccess": "2026-11-25T00:10:13.720Z"
+  "lastModified": "Wed, 25 Nov 2026 00:12:11 GMT",
+  "lastRun": "2026-11-25T00:20:16.640Z",
+  "lastSuccess": "2026-11-25T00:20:16.640Z"
 }
