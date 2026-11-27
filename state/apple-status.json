@@ -2,6 +2,8 @@
   "version": 1,
   "initialized": true,
   "seen": [
+    "apple-status:30f8655d6b0459fbd2554cf180058f7e",
+    "apple-status-state:903724d003319d1edf0e8c7040fb03a0",
     "apple-status:a89b83000f83d6f314ea797177d533d3",
     "apple-status-state:592f7793509f98cebdc3432155878dd2",
     "apple-status:1007d086af21fa0717a68c587b2c89c2",
@@ -269,8 +271,8 @@
     "apple-status:dfdf7016194f9d0937b20a45e3a5b7a4",
     "apple-status:ee488abd387676225908b281dd371258"
   ],
-  "etag": "W/\"5581-1795165202944\"",
-  "lastModified": "Fri, 20 Nov 2026 09:00:02 GMT",
-  "lastRun": "2026-11-27T21:30:15.698Z",
-  "lastSuccess": "2026-11-27T21:30:15.698Z"
+  "etag": "W/\"5575-1795815585449\"",
+  "lastModified": "Fri, 27 Nov 2026 21:39:45 GMT",
+  "lastRun": "2026-11-27T21:40:13.776Z",
+  "lastSuccess": "2026-11-27T21:40:13.776Z"
 }
